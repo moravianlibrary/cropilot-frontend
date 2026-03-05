@@ -320,13 +320,29 @@
   }
 
   .block.permissions {
-    gap: var(--spacing-x2);
+    padding: 0;
+    position: relative;
+
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-x3);
+      padding: var(--spacing-x4);
+      padding-bottom: var(--spacing-x3-5);
+      position: sticky;
+      top: 0;
+      background-color: var(--bg-base);
+      z-index: 2;
+
+      .label {
+        margin: 0;
+      }
+    }
 
     .add-permission-wrapper {
       display: flex;
       flex-direction: column;
       gap: var(--spacing-x1);
-      margin-bottom: var(--spacing-x1);
 
       .main {
         display: flex;
@@ -346,6 +362,15 @@
           }
         }
       }
+    }
+
+    .permissions-rows {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: var(--spacing-x2);
+      padding: var(--spacing-x4);
+      padding-top: 0;
     }
 
     .permissions-row {
