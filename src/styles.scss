@@ -107,6 +107,12 @@ html, body {
   svg {
     cursor: url('/assets/pointer-cursor.png') 6.5 0, pointer;
   }
+
+  &:focus {
+    outline: 1px solid var(--primary);
+    border: none;
+    border-radius: var(--spacing-x2);
+  }
 }
 
 
@@ -244,9 +250,15 @@ html, body {
 .quaternary.primary {
   color: var(--primary);
   background-color: var(--bg-base);
+  transition: color .2s ease;
 
   svg {
     fill: var(--primary);
+  }
+
+  &:hover, &:focus {
+    color: var(--primary-hover);
+    outline: none;
   }
 }
 
