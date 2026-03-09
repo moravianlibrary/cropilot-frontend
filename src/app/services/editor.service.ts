@@ -434,12 +434,51 @@ export class EditorService {
       ?.pages
       ?.forEach(p => {
         const { left, right, top, bottom } = this.computeBounds(p.xc, p.yc, p.width, p.height, p.angle);
+        
+        // Correction of edges going outside canvas (should be done on BE)
+        let correctXc = p.xc;
+        let correctYc = p.yc;
+        let correctWidth = p.width;
+        let correctHeight = p.height;
+        let correctLeft = left;
+        let correctRight = right;
+        let correctTop = top;
+        let correctBottom = bottom;
+        
+        if (left < 0) {
+          correctLeft = 0;
+          correctXc += Math.abs(left / 2);
+          correctWidth -= Math.abs(left);
+        }
+
+        if (right > 1) {
+          correctRight = 1;
+          correctXc -= Math.abs((right - 1) / 2);
+          correctWidth -= right - 1;
+        }
+
+        if (top < 0) {
+          correctTop = 0;
+          correctYc += Math.abs(top / 2);
+          correctHeight -= Math.abs(top);
+        }
+
+        if (bottom > 1) {
+          correctBottom = 1;
+          correctYc -= Math.abs((bottom - 1) / 2);
+          correctHeight -= bottom - 1;
+        }
+        
         const updatedPage = {
           ...p,
-          left: roundToDecimals(left, 4),
-          right: roundToDecimals(right, 4),
-          top: roundToDecimals(top, 4),
-          bottom: roundToDecimals(bottom, 4)
+          xc: roundToDecimals(correctXc, 4),
+          yc: roundToDecimals(correctYc, 4),
+          width: roundToDecimals(correctWidth, 4),
+          height: roundToDecimals(correctHeight, 4),
+          left: roundToDecimals(correctLeft, 4),
+          right: roundToDecimals(correctRight, 4),
+          top: roundToDecimals(correctTop, 4),
+          bottom: roundToDecimals(correctBottom, 4)
         }
         
         this.currentPages.push(updatedPage);
