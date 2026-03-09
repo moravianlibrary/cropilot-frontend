@@ -1342,7 +1342,10 @@ export class DashboardService {
     // Open groups or users
     if ((key === '+' || key === 'ě' || key === 'Ě' || key === '1' || key === '2') && !dialogOpen) {
       const isGroupKey = key === '+' || key === '1';
-      this.router.navigate([isGroupKey ? '/groups' : '/users']);
+      const page = isGroupKey ? 'groups' : 'users';
+      this.dashboardPage.set(page);;
+      this.router.navigate([`/${page}`]);
+      focusMainWrapper();
     }
 
     // Close dialog or drawer
