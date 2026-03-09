@@ -60,12 +60,12 @@ export class EditorComponent {
         edtSvc.originalImages.set(imgItems);
 
         edtSvc.gridMode.set(localStorage.getItem('gridMode') as GridMode ?? 'when-rotating');
-        this.edtSvc.gridRadio.set(edtSvc.gridMode());
+        edtSvc.gridRadio.set(edtSvc.gridMode());
         edtSvc.outlineTransparent = localStorage.getItem('outlineTransparent') === 'true';
         edtSvc.selectedFilter = localStorage.getItem('filterScanTypeStart') as ScanType ?? 'all';
-        this.edtSvc.scanTypeRadio.set(edtSvc.selectedFilter);
+        edtSvc.scanTypeRadio.set(edtSvc.selectedFilter);
         edtSvc.selectedPageNumberFilter.set(localStorage.getItem('filterPageNumberStart') as PageNumberType ?? null);
-        this.edtSvc.pageNumberRadio.set(edtSvc.selectedPageNumberFilter() ?? 'all');
+        edtSvc.pageNumberRadio.set(edtSvc.selectedPageNumberFilter() ?? 'all');
         edtSvc.setDisplayedImages();
         
         const imageList = edtSvc.displayedImagesFinal();

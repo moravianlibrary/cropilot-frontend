@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, inject, NgZone, viewChild } from '@angular/core';
 import { EditorService } from '../../services/editor.service';
 import { clamp, degreeToRadian, radianToDegree } from '../../utils/utils';
 import { CornerName, EdgeLocalOrientation, EdgeSide, HitInfo, Page } from '../../app.types';
@@ -34,8 +34,79 @@ export class MainComponent {
   private rotateHandleOffset = 14;
   private rotateHitTolerance = 24;
 
+  private ngZone = inject(NgZone);
+  private mainContainer = viewChild<ElementRef<HTMLDivElement>>('mainContainer');
+  private resizeObserver?: ResizeObserver;
+  private rafId: number | null = null;
+
   ngAfterViewInit(): void {
     const edtSvc = this.edtSvc;
+
+    // On resize
+    {
+      const container = this.mainContainer()?.nativeElement;
+
+      this.ngZone.runOutsideAngular(() => {
+        this.resizeObserver = new ResizeObserver(() => {
+          if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+
+          this.rafId = requestAnimationFrame(() => {
+            this.ngZone.run(() => {
+              const { c, mainImage: img } = edtSvc;
+
+              const appMain = document.querySelector('app-main-editor') as HTMLElement;
+              const appStyle = getComputedStyle(appMain);
+              const appRect = appMain.getBoundingClientRect();
+
+              const widthAvail =
+                appRect.width -
+                (parseFloat(appStyle.paddingLeft) +
+                  parseFloat(appStyle.paddingRight) +
+                  parseFloat(appStyle.borderLeftWidth) +
+                  parseFloat(appStyle.borderRightWidth));
+
+              const heightAvail =
+                appRect.height -
+                (parseFloat(appStyle.paddingTop) +
+                  parseFloat(appStyle.paddingBottom) +
+                  parseFloat(appStyle.borderTopWidth) +
+                  parseFloat(appStyle.borderBottomWidth));
+
+              c.width = widthAvail;
+              c.height = heightAvail;
+
+              if (img) {
+                const imgRatio = img.width / img.height;
+                const canvasRatio = c.width / c.height;
+
+                let drawWidth: number = c.width;
+                let drawHeight: number = c.height;
+
+                imgRatio > canvasRatio
+                  ? drawHeight = c.width / imgRatio
+                  : drawWidth = c.height * imgRatio;
+
+                const offsetX = (c.width - drawWidth) / 2;
+                const offsetY = (c.height - drawHeight) / 2;
+
+                // Store rect for pages / hit-testing:
+                edtSvc.imageRect = {
+                  x: offsetX,
+                  y: offsetY,
+                  width: drawWidth,
+                  height: drawHeight,
+                };
+
+                edtSvc.redrawImageOnCanvas();
+                edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
+              }
+            });
+          });
+        });
+
+        if (container) this.resizeObserver.observe(container);
+      });
+    }
     
     // Set canvas
     edtSvc.c = document.getElementById('main-canvas') as HTMLCanvasElement;
@@ -55,6 +126,11 @@ export class MainComponent {
       if (tagName !== 'HTML') return;
       this.stopDragRotateResize();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
+    if (this.rafId !== null) cancelAnimationFrame(this.rafId);
   }
 
   private attachEventsRest(el: HTMLElement | null): void {

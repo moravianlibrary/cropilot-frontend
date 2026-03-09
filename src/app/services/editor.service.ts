@@ -1098,7 +1098,6 @@ export class EditorService {
     if (!this.mainImage) return;
 
     this.applyViewportTransform(ctx);
-    // ctx.drawImage(this.mainImage, 0, 0, c.width, c.height);
     const { x, y, width, height } = this.imageRect;
     ctx.drawImage(this.mainImage, x, y, width, height);
 
