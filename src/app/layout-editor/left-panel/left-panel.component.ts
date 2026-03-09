@@ -23,15 +23,10 @@ export class LeftPanelComponent {
   thumbnailsScroll = viewChild<ElementRef<HTMLDivElement>>('thumbnailsScroll');
   private osInstance?: ReturnType<typeof OverlayScrollbars>;
 
-  pageImagesNumber(number: number): number {
-    return this.edtSvc.displayedImages().filter(img => img.pages.length === number).length;
-  }
-
 
   /* ------------------------------
     LAZY IMAGES LOADING
   ------------------------------ */
-  // @ViewChildren('lazyImg') images!: QueryList<ElementRef<HTMLImageElement>>;
   images = viewChildren<ElementRef<HTMLImageElement>>('lazyImg');
 
   private observer = new IntersectionObserver(entries => {
@@ -86,25 +81,6 @@ export class LeftPanelComponent {
     });
     thumbnailsScroll.classList.remove('os-pending');
   });
-
-  // ngAfterViewInit(): void {
-  //   this.images()?.changes.subscribe(() => {
-  //     this.observeNewImages();
-
-  //     const thumbnailsScroll = this.thumbnailsScroll()?.nativeElement as HTMLDivElement;
-  //     this.osInstance = OverlayScrollbars(thumbnailsScroll, {
-  //       overflow: { x: 'hidden', y: 'scroll' },
-  //       scrollbars: {
-  //         theme: 'os-theme-orezy',
-  //         autoHide: 'leave',
-  //         autoHideDelay: 250,
-  //         dragScroll: true,
-  //         clickScroll: true,
-  //       },
-  //     });
-  //     thumbnailsScroll.classList.remove('os-pending');
-  //   });
-  // }
 
   ngOnDestroy(): void {
     this.observer.disconnect();

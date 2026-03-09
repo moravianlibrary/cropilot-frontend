@@ -301,6 +301,10 @@ export class EditorService {
     this.clickedPageNumberFilter = false;
   }
 
+  pageImagesNumber(number: number): number {
+    return this.displayedImages().filter(img => img.pages.length === number).length;
+  }
+
 
   /* ------------------------------
     MAIN IMAGE LOGIC & DRAWING
@@ -1350,6 +1354,7 @@ export class EditorService {
     // Select left / right page OR Filters number of pages
     if ((key === '+' || key === 'ě' || key === 'Ě' || key === '1' || key === '2') && !event.ctrlKey && !dialogOpen) {
       if (event.altKey || event.metaKey) {
+        if ((['+', '1'].includes(key) && this.pageImagesNumber(1) === 0) || ['ě', 'Ě', '2'].includes(key) && this.pageImagesNumber(2) === 0) return;
         this.togglePageNumberFilter(['+', '1'].includes(key) ? 'single' : 'double');
         return;
       }
@@ -1770,14 +1775,6 @@ export class EditorService {
       this.redrawImageOnCanvas();
       this.currentPages.forEach(p => this.drawPage(p));
     }
-    // if ( // Is rotating ON (to show grid if when-rotating)
-    //   (((event.ctrlKey || event.metaKey) && key === 'Alt') || (['Control', 'Meta'].includes(key) && event.altKey))
-    //   && this.selectedPage && !dialogOpen
-    // ) {
-    //   this.isRotating = true;
-    //   this.redrawImage();
-    //   this.currentPages.forEach(p => this.drawPage(p));
-    // }
 
     // Zooming
     if (['q', 'Q', 'w', 'W', 'e', 'E', 'r', 'R'].includes(key) && !dialogOpen) {

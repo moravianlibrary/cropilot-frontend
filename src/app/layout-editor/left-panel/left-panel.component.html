@@ -65,29 +65,18 @@
 
     <!-- Number of pages filters -->
     <div class="number-filters-wrapper">
-      <!-- <h2>Počet výřezů</h2> -->
       <h2>Strany</h2>
       <div class="filters">
-        <!-- <span
-          class="filter"
-          [class.selected-filter]="edtSvc.selectedPageNumberFilter() === 'single'"
-          (click)="edtSvc.togglePageNumberFilter('single')"
-        >Jeden <span class="filter-number">({{ pageImagesNumber(1) }})</span></span>
-        <span
-          class="filter"
-          [class.selected-filter]="edtSvc.selectedPageNumberFilter() === 'double'"
-          (click)="edtSvc.togglePageNumberFilter('double')"
-        >Dva <span class="filter-number">({{ pageImagesNumber(2) }})</span></span> -->
         <span
           class="filter"
           [class.selected-filter]="edtSvc.selectedPageNumberFilter() === 'single'"
-          [class.disabled-filter]="pageImagesNumber(1) === 0"
+          [class.disabled-filter]="edtSvc.pageImagesNumber(1) === 0"
           (click)="edtSvc.togglePageNumberFilter('single')"
         >Jednostrany</span>
         <span
           class="filter"
           [class.selected-filter]="edtSvc.selectedPageNumberFilter() === 'double'"
-          [class.disabled-filter]="pageImagesNumber(2) === 0"
+          [class.disabled-filter]="edtSvc.pageImagesNumber(2) === 0"
           (click)="edtSvc.togglePageNumberFilter('double')"
         >Dvoustrany</span>
       </div>
