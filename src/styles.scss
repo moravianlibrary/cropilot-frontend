@@ -153,8 +153,9 @@ html, body {
     fill: var(--icon-white);
   }
 
-  &:hover {
+  &:hover, &:focus {
     background-color: var(--primary-hover);
+    outline: none;
   }
 }
 
