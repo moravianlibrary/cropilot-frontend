@@ -33,7 +33,6 @@ export class DashboardService {
   selectedUserId = signal<string>('');
   selectedUserUsed = signal<boolean>(false);
   groupNameError = signal<string>('');
-  // groupDescriptionError = signal<string>('');
   selectedUserError = signal<string>('');
   userPermissionsError: Record<string, string> = {};
   groupChanged = computed<boolean>(() => {

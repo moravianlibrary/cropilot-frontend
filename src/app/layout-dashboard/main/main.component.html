@@ -351,7 +351,7 @@
                 @for (title of titles; track title._id) {
                   @let isClickable = authSvc.canReadTitle() && shouldHaveLink(title.state);
                   <tr
-                    tabindex="0"
+                    [tabindex]="isClickable ? 0 : -1"
                     class="row"
                     [class.active]="dashSvc.selectedTitle() === title"
                     [class.clickable]="isClickable"

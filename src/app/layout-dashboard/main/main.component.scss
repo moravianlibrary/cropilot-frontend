@@ -203,7 +203,7 @@
             }
           }
 
-          &.active, &:focus {
+          &.active {
             outline: 1px solid var(--primary);
             outline-offset: -1px;
             border-radius: var(--spacing-x2);
@@ -373,6 +373,12 @@
         }
       }
 
+      .clickable:focus {
+        outline: 1px solid var(--primary);
+        outline-offset: -1px;
+        border-radius: var(--spacing-x2);
+      }
+
       .clickable:hover:not(:has(.action-wrapper:hover)) {
         cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
         background-color: #F9FAFB;
@@ -401,12 +407,14 @@
         }
       }
 
-      &:not(.clickable):hover {
-        .icon-btn {
-          background: var(--bg-base);
+      &:not(.clickable) {
+        &:hover {
+          .icon-btn {
+            background: var(--bg-base);
 
-          &:hover {
-            background: var(--bg-main-light);
+            &:hover {
+              background: var(--bg-main-light);
+            }
           }
         }
       }
