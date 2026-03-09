@@ -44,7 +44,8 @@ export class EditorService {
   currentIndex = computed<number>(() => this.displayedImagesFinal().findIndex(img => img._id === this.mainImageItem()._id));
   mainImage: HTMLImageElement | null = null;
   loadingLeft: boolean = false;
-  loadingMain: boolean = false;
+  loadingMain = signal<boolean>(false);
+  loadingFirstCurrentPage = signal<boolean>(false);
 
   // Interactions
   pageWasEdited: boolean = false;
@@ -305,7 +306,8 @@ export class EditorService {
     MAIN IMAGE LOGIC & DRAWING
   ------------------------------ */
   setMainImage(img: ImageItem): void {
-    this.loadingMain = true;
+    this.loadingMain.set(true);
+    this.loadingFirstCurrentPage.set(true);
 
     this.c.style.visibility = 'hidden';
 
@@ -318,7 +320,7 @@ export class EditorService {
       this.selectedPage = null;
       this.resetZoom();
       this.renderCanvas(updated);
-      this.loadingMain = false;
+      this.loadingMain.set(false);
 
       if (this.imgWasEdited()) {
         await this.uiSvc.waitForFalse(this.imgWasEdited);
@@ -333,7 +335,7 @@ export class EditorService {
     }
 
     if (!img._id) {
-      this.loadingMain = false;
+      this.loadingMain.set(false);
       return;
     }
 
@@ -393,13 +395,6 @@ export class EditorService {
     c.width = widthAvail;
     c.height = heightAvail;
 
-    // const imgRatio = img.width / img.height;
-    // const appRectRatio = appRect.width / appRect.height;
-
-    // imgRatio > appRectRatio
-    //   ? c.height = (img.height / img.width) * c.width
-    //   : c.width = imgRatio * c.height;
-
     const imgRatio = img.width / img.height;
     const canvasRatio = c.width / c.height;
 
@@ -426,7 +421,6 @@ export class EditorService {
     ctx.clearRect(0, 0, c.width, c.height);
     
     this.applyViewportTransform(ctx);
-    // ctx.drawImage(img, 0, 0, c.width, c.height);
     ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 
     // Pages
@@ -446,6 +440,7 @@ export class EditorService {
         
         this.currentPages.push(updatedPage);
         this.drawPageInitial(updatedPage);
+        this.loadingFirstCurrentPage.set(false);
       });
     
     const lastMainImageItemName = this.mainImageItem()._id;
@@ -463,15 +458,12 @@ export class EditorService {
   private dimOutside(p: Page) {
     const { c, ctx } = this;
     
-    // const [centerX, centerY] = [c.width * p.xc, c.height * p.yc];
-    // const [width, height] = [c.width * p.width, c.height * p.height];
     const angle = degreeToRadian(p.angle);
 
     ctx.save();
 
     // Outside rect
     ctx.beginPath();
-    // ctx.rect(0, 0, c.width, c.height);
     const { x, y, width: iw, height: ih } = this.imageRect;
     ctx.rect(x, y, iw, ih);
 
@@ -493,10 +485,7 @@ export class EditorService {
   }
 
   private drawPageInitial(p: Page): void {
-    const { /* c,  */ctx } = this;
-    
-    // const [centerX, centerY] = [c.width * p.xc, c.height * p.yc];
-    // const [width, height] = [c.width * p.width, c.height * p.height];
+    const { ctx } = this;
 
     const { centerX, centerY, width, height } = this.getPageRectPx(p);
     
@@ -1172,7 +1161,7 @@ export class EditorService {
   openSettingsDialog(): void {
     const uiSvc = this.uiSvc;
     
-    uiSvc.dialogWidth.set(593);
+    uiSvc.dialogWidth.set(680);
     uiSvc.dialogTitle.set('Nastavení');
     uiSvc.dialogContent.set(true);
     uiSvc.dialogContentType.set('settings');
@@ -1234,7 +1223,7 @@ export class EditorService {
   openShortcutsDialog(): void {
     const uiSvc = this.uiSvc;
 
-    uiSvc.dialogWidth.set(593);
+    uiSvc.dialogWidth.set(680);
     uiSvc.dialogTitle.set('Klávesové zkratky');
     uiSvc.dialogContent.set(true);
     uiSvc.dialogContentType.set('shortcuts');
@@ -1248,7 +1237,7 @@ export class EditorService {
     if (!this.authSvc.canWriteTitle()) return;
     const uiSvc = this.uiSvc;
     
-    uiSvc.dialogWidth.set(593);
+    uiSvc.dialogWidth.set(680);
     uiSvc.dialogTitle.set('Opravdu chcete resetovat změny dokumentu?');
     uiSvc.dialogContent.set(false);
     uiSvc.dialogContentType.set(null);
@@ -1273,7 +1262,7 @@ export class EditorService {
     if (!this.authSvc.canWriteTitle()) return;
     const uiSvc = this.uiSvc;
 
-    uiSvc.dialogWidth.set(593);
+    uiSvc.dialogWidth.set(680);
     uiSvc.dialogTitle.set('Opravdu chcete resetovat změny skenu?');
     uiSvc.dialogContent.set(false);
     uiSvc.dialogContentType.set(null);
@@ -1298,7 +1287,7 @@ export class EditorService {
     if (!this.authSvc.canWriteTitle()) return;
     const uiSvc = this.uiSvc;
     
-    uiSvc.dialogWidth.set(593);
+    uiSvc.dialogWidth.set(680);
     uiSvc.dialogTitle.set('Opravdu chcete uložit změny?');
     uiSvc.dialogContent.set(false);
     uiSvc.dialogContentType.set(null);
@@ -1345,7 +1334,7 @@ export class EditorService {
     ].includes(key);
   }
 
-  onKeyDown(event: KeyboardEvent): void {
+  async onKeyDown(event: KeyboardEvent): Promise<void> {
     const key = event.key;
     if (!this.isHandledKey(key) || (event.target as HTMLElement).tagName === 'INPUT') return;
     event.preventDefault();
@@ -1831,13 +1820,12 @@ export class EditorService {
         )
       ) {
         this.showNextImage();
-        // defer(() => {
-          this.selectedPage = this.currentPages[0];
-          this.lastPageCursorIsInside = this.selectedPage;
-          this.redrawImageOnCanvas();
-          this.currentPages.forEach(p => this.drawPage(p));
-          this.updateMainImageItem();
-        // }, 200);
+        await this.uiSvc.waitForFalse(this.loadingFirstCurrentPage);
+        this.selectedPage = this.currentPages.reduce((min, page) => page.xc < min.xc ? page : min);
+        this.lastPageCursorIsInside = this.selectedPage;
+        this.redrawImageOnCanvas();
+        this.currentPages.forEach(p => this.drawPage(p));
+        this.updateMainImageItem();
       }
     }
 

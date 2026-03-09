@@ -255,17 +255,17 @@
               @include styles.font(400, var(--font-size-x2), var(--spacing-x4), var(--text-base));
             }
 
-            .user {
-              padding-block: var(--spacing-x0-5);
-              background-color: var(--bg-bright);
-              @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
-            }
+            // .user {
+            //   padding-block: var(--spacing-x0-5);
+            //   background-color: var(--bg-bright);
+            //   @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+            // }
 
-            .count {
-              padding-block: var(--spacing-x0-7-5);
-              border: 1px solid var(--border-color);
-              @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
-            }
+            // .count {
+            //   padding-block: var(--spacing-x0-7-5);
+            //   border: 1px solid var(--border-color);
+            //   @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
+            // }
 
             .permission {
               padding-block: var(--spacing-x1);

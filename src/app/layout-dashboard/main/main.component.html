@@ -117,16 +117,17 @@
                     <td><span class="tag title-count">{{ group.title_count }}</span></td>
                     @if (isAdmin) {
                       <td>
-                        <div class="tags">
+                        <app-tags-overflow [tags]="getTags(group)" />
+                        <!-- <div class="tags group" #tags>
                           @let usersShort = getUsersShort(group);
                           @let usersLong = getUsersLong(group);
-                          @for (user of usersShort; track user._id) {
+                          @for (user of usersShort; track $index) {
                             <span class="tag user">{{ user.full_name }}</span>
                           }
                           @if (usersShort.length !== usersLong.length) {
                             <span class="tag count">{{ `+${usersLong.length - usersShort.length}` }}</span>
                           }
-                        </div>
+                        </div> -->
                       </td>
                     }
                     <td>

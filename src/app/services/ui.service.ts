@@ -11,7 +11,7 @@ export class UiService {
 
 
   /* ------------------------------
-    IMG WAS EDITED
+    WAIT FOR SIGNAL
   ------------------------------ */
   private injector = inject(Injector);
 

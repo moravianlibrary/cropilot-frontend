@@ -1,5 +1,5 @@
-import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
-import { Component, ElementRef, inject, input, ViewChild } from '@angular/core';
+import { CdkConnectedOverlay, CdkOverlayOrigin } from '@angular/cdk/overlay';
+import { Component, ElementRef, inject, input, viewChild } from '@angular/core';
 import { NgClass } from '../../../../node_modules/@angular/common';
 import { EditorService } from '../../services/editor.service';
 import { AuthService } from '../../services/auth.service';
@@ -19,7 +19,7 @@ export class MenuComponent {
   /* ------------------------------
     TOGGLE BEHAVIOR
   ------------------------------ */
-  @ViewChild('menu', { static: true }) menu!: ElementRef;
+  menu = viewChild<ElementRef<HTMLElement>>('menu');
   show = false;
 
   toggleMenu(): void {

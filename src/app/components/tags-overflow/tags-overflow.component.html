@@ -1,0 +1,11 @@
+<div #container class="tag-row">
+  @for (tag of visibleTags(); track tag) {
+    <span class="tag">{{ tag }}</span>
+  }
+
+  @if (hiddenCount() > 0) {
+    <span class="tag tag--more">+{{ hiddenCount() }}</span>
+  }
+</div>
+
+<div #measure class="measure-container"></div>

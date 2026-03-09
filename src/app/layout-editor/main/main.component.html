@@ -1,5 +1,5 @@
 <div id="main-container">
-  @if (edtSvc.loadingMain) { <app-loader /> }
+  @if (edtSvc.loadingMain()) { <app-loader /> }
   <canvas id="main-canvas"></canvas>
   <app-toast-container />
 </div>

@@ -1,0 +1,38 @@
+@use '../../../styles' as styles;
+
+.tag-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-x2);
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  min-width: 0;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-x1);
+  border-radius: var(--spacing-x1);
+  padding: var(--spacing-x0-5) var(--spacing-x2);
+  background-color: var(--bg-bright);
+  @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.tag--more {
+  padding-block: var(--spacing-x0-7-5);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-color);
+  @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
+}
+
+.measure-container {
+  position: fixed;
+  left: -9999px;
+  top: -9999px;
+  visibility: hidden;
+  pointer-events: none;
+}

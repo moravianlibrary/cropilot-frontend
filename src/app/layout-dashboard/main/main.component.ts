@@ -1,9 +1,9 @@
-import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { permissionDict, titleStateDict, titleStateFilterDict } from '../../app.config';
-import { Group, GroupPage, Permission, PermissionType, Position, User, UserInGroup } from '../../app.types';
+import { Group, GroupPage, Permission, PermissionType, User, UserInGroup } from '../../app.types';
 import { focusElement, getDate, waitForElement } from '../../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,10 +13,11 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { Title } from '@angular/platform-browser';
 import { ToastComponent } from '../../components/toast/toast.component';
 import { UiService } from '../../services/ui.service';
+import { TagsOverflowComponent } from '../../components/tags-overflow/tags-overflow.component';
 
 @Component({
   selector: 'app-main-dashboard',
-  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent],
+  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent, TagsOverflowComponent],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
 })
@@ -34,8 +35,8 @@ export class MainComponent {
   maxGroups: number = 2;
   tableHasScrollbar = signal<boolean>(false);
 
-  @ViewChild('searchLabel', { static: false }) searchLabel!: ElementRef<HTMLElement>;
-  @ViewChild('bodyScroll', { static: false }) bodyScroll!: ElementRef<HTMLDivElement>;
+  searchLabel = viewChild<ElementRef<HTMLLabelElement>>('searchLabel');
+  bodyScroll = viewChild<ElementRef<HTMLDivElement>>('bodyScroll');
   private osInstance?: ReturnType<typeof OverlayScrollbars>;
 
 
@@ -113,7 +114,7 @@ export class MainComponent {
           }
         })).subscribe(async () => {      
           const someResults = await waitForElement('tbody tr:not(.no-results)');
-          const tableScroll = this.bodyScroll.nativeElement;
+          const tableScroll = this.bodyScroll()?.nativeElement as HTMLDivElement;
           this.osInstance = OverlayScrollbars(tableScroll, {
             overflow: { x: 'hidden', y: 'scroll' },
             scrollbars: {
@@ -128,7 +129,7 @@ export class MainComponent {
           this.tableHasScrollbar.set(this.osInstance.state().hasOverflow.y);
 
           // Focus input
-          const searchInput = await waitForElement('input', this.searchLabel.nativeElement);
+          const searchInput = await waitForElement('input', this.searchLabel()?.nativeElement);
           focusElement(searchInput);
         });
   }
@@ -150,12 +151,16 @@ export class MainComponent {
     return `Celkem ${length} skupin${length === 1 ? 'a' : [2, 3, 4].includes(length) ? 'y' : '' }`;
   }
 
-  getUsersShort(group: Group): UserInGroup[] {
-    return group.users?.slice(0, this.maxUsers) ?? [];
-  }
+  // getUsersShort(group: Group): UserInGroup[] {
+  //   return group.users?.slice(0, this.maxUsers) ?? [];
+  // }
 
-  getUsersLong(group: Group): UserInGroup[] {
-    return group.users ?? [];
+  // getUsersLong(group: Group): UserInGroup[] {
+  //   return group.users ?? [];
+  // }
+
+  getTags(group: Group): string[] {
+    return group.users.map(u => u.full_name);
   }
 
   getGroupPermissionsCounts(users: UserInGroup[]): Partial<Record<PermissionType, number>> {

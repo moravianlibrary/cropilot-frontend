@@ -1,12 +1,12 @@
-import { Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, viewChild } from '@angular/core';
 import { EditorService } from '../../services/editor.service';
 import { MainComponent } from '../../layout-editor/main/main.component';
 import { BottomPanelComponent } from '../../layout-editor/bottom-panel/bottom-panel.component';
 import { LeftPanelComponent } from '../../layout-editor/left-panel/left-panel.component';
 import { RightPanelComponent } from '../../layout-editor/right-panel/right-panel.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, map, of, Subscription, switchMap, tap } from 'rxjs';
-import { GridMode, ImageItem, Page, PageNumberType, ScanType, TitleDetail } from '../../app.types';
+import { catchError, map, Subscription, switchMap, tap } from 'rxjs';
+import { GridMode, ImageItem, PageNumberType, ScanType, TitleDetail } from '../../app.types';
 import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
 import { UiService } from '../../services/ui.service';
@@ -25,7 +25,7 @@ export class EditorComponent {
   private activatedRoute = inject(ActivatedRoute);
   private paramsOnBookId = new Subscription();
 
-  @ViewChild('mainWrapper', { static: true }) mainWrapper!: ElementRef<HTMLElement>;
+  mainWrapper = viewChild<ElementRef<HTMLDivElement>>('mainWrapper');
 
   ngOnInit() {
     const edtSvc = this.edtSvc;
@@ -42,7 +42,7 @@ export class EditorComponent {
 
           edtSvc.book.set(book_id);
           edtSvc.loadingLeft = true;
-          edtSvc.loadingMain = true;
+          edtSvc.loadingMain.set(true);
         }),
         switchMap(() => edtSvc.fetchScans(edtSvc.book())),
         catchError(err => {
@@ -69,14 +69,14 @@ export class EditorComponent {
         edtSvc.setDisplayedImages();
         
         const imageList = edtSvc.displayedImagesFinal();
-        if (!imageList.length) edtSvc.loadingMain = false;;
+        if (!imageList.length) edtSvc.loadingMain.set(false);
         const newImage = imageList.find(img => img._id === edtSvc.mainImageItem()._id) || imageList[0] || { url: '' };
         edtSvc.setMainImage(newImage);
       });
   }
 
   ngAfterViewInit(): void {
-    queueMicrotask(() => this.mainWrapper.nativeElement.focus());
+    queueMicrotask(() => this.mainWrapper()?.nativeElement.focus());
   }
 
   ngOnDestroy(): void {

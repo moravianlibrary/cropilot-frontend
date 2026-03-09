@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, effect, ElementRef, inject, viewChild, viewChildren } from '@angular/core';
 import { EditorService } from '../../services/editor.service';
 import { ImageItem } from '../../app.types';
 import { LoaderComponent } from '../../components/loader/loader.component';
@@ -20,7 +20,7 @@ export class LeftPanelComponent {
   dashSvc = inject(DashboardService);
   authSvc = inject(AuthService);
 
-  @ViewChild('thumbnailsScroll', { static: false }) thumbnailsScroll!: ElementRef<HTMLDivElement>;
+  thumbnailsScroll = viewChild<ElementRef<HTMLDivElement>>('thumbnailsScroll');
   private osInstance?: ReturnType<typeof OverlayScrollbars>;
 
   pageImagesNumber(number: number): number {
@@ -31,9 +31,9 @@ export class LeftPanelComponent {
   /* ------------------------------
     LAZY IMAGES LOADING
   ------------------------------ */
-  @ViewChildren('lazyImg') images!: QueryList<ElementRef<HTMLImageElement>>;
+  // @ViewChildren('lazyImg') images!: QueryList<ElementRef<HTMLImageElement>>;
+  images = viewChildren<ElementRef<HTMLImageElement>>('lazyImg');
 
-  // private imagesSub?: Subscription;
   private observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
@@ -69,33 +69,49 @@ export class LeftPanelComponent {
     });
   });
 
-  ngAfterViewInit(): void {
-    // this.observeNewImages();
-    /* this.imagesSub =  */this.images.changes.subscribe(() => {
-      this.observeNewImages();
+  imagesChange = effect(() => {
+    this.observeNewImages();
 
-      const thumbnailsScroll = this.thumbnailsScroll?.nativeElement;
-      this.osInstance = OverlayScrollbars(thumbnailsScroll, {
-        overflow: { x: 'hidden', y: 'scroll' },
-        scrollbars: {
-          theme: 'os-theme-orezy',
-          autoHide: 'leave',
-          autoHideDelay: 250,
-          dragScroll: true,
-          clickScroll: true,
-        },
-      });
-      thumbnailsScroll.classList.remove('os-pending');
+    const thumbnailsScroll = this.thumbnailsScroll()?.nativeElement as HTMLDivElement;
+    if (!thumbnailsScroll) return;
+    this.osInstance = OverlayScrollbars(thumbnailsScroll, {
+      overflow: { x: 'hidden', y: 'scroll' },
+      scrollbars: {
+        theme: 'os-theme-orezy',
+        autoHide: 'leave',
+        autoHideDelay: 250,
+        dragScroll: true,
+        clickScroll: true,
+      },
     });
-  }
+    thumbnailsScroll.classList.remove('os-pending');
+  });
+
+  // ngAfterViewInit(): void {
+  //   this.images()?.changes.subscribe(() => {
+  //     this.observeNewImages();
+
+  //     const thumbnailsScroll = this.thumbnailsScroll()?.nativeElement as HTMLDivElement;
+  //     this.osInstance = OverlayScrollbars(thumbnailsScroll, {
+  //       overflow: { x: 'hidden', y: 'scroll' },
+  //       scrollbars: {
+  //         theme: 'os-theme-orezy',
+  //         autoHide: 'leave',
+  //         autoHideDelay: 250,
+  //         dragScroll: true,
+  //         clickScroll: true,
+  //       },
+  //     });
+  //     thumbnailsScroll.classList.remove('os-pending');
+  //   });
+  // }
 
   ngOnDestroy(): void {
-    // this.imagesSub?.unsubscribe();
     this.observer.disconnect();
   }
 
   private observeNewImages(): void {
-    this.images.forEach(img => this.observer.observe(img.nativeElement));
+    this.images().forEach(img => this.observer.observe(img.nativeElement));
   }
 
 

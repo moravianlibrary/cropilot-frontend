@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, forwardRef, input, computed, signal, inject, output } from '@angular/core';
+import { Component, ElementRef, forwardRef, input, computed, signal, inject, output, viewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { SelectOption } from '../../app.types';
 import { DashboardService } from '../../services/dashboard.service';
@@ -28,8 +28,8 @@ export class SelectComponent implements ControlValueAccessor {
   usedIn = input<boolean>(false);
   usedOut = output<boolean>();
 
-  @ViewChild('selectWrapper', { static: false }) selectWrapper!: ElementRef<HTMLDivElement>;
-  @ViewChild('comboInput', { static: true }) comboInput!: ElementRef<HTMLInputElement>;
+  selectWrapper = viewChild<ElementRef<HTMLDivElement>>('selectWrapper');
+  comboInput = viewChild<ElementRef<HTMLInputElement>>('comboInput');
   private osInstance?: ReturnType<typeof OverlayScrollbars>;
 
   paddingRight = signal<number>(16);
@@ -74,7 +74,7 @@ export class SelectComponent implements ControlValueAccessor {
     this.isOpen.set(true);
     this.label.set('');
 
-    const items = await waitForElement('.items', this.selectWrapper.nativeElement);
+    const items = await waitForElement('.items', this.selectWrapper()?.nativeElement);
       
     this.osInstance = OverlayScrollbars(items, {
       overflow: { x: 'hidden', y: 'scroll' },
@@ -106,11 +106,11 @@ export class SelectComponent implements ControlValueAccessor {
   }
 
   focus(): void {
-    this.comboInput.nativeElement.focus();
+    this.comboInput()?.nativeElement.focus();
   }
 
   blur(): void {
-    this.comboInput.nativeElement.blur();
+    this.comboInput()?.nativeElement.blur();
   }
 
   onInput(e: Event): void {
