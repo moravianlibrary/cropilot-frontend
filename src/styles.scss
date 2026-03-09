@@ -11,6 +11,7 @@
 
 :root {
   --primary: #0080A8;
+  --primary-hover: #1E657B;
   --primary-disabled: #D6EEF5;
   --bg-base: #FFFFFF;
   --bg-bright: #EFF2F5;
@@ -146,9 +147,14 @@ html, body {
 .primary {
   background-color: var(--primary);
   @include font(400, var(--font-size-x2), var(--spacing-x6), var(--text-white));
+  transition: background-color .2s ease;
 
   svg {
     fill: var(--icon-white);
+  }
+
+  &:hover {
+    background-color: var(--primary-hover);
   }
 }
 
