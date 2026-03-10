@@ -11,6 +11,7 @@
           <span
             class="button real-button with-icon primary"
             (click)="dashSvc.createGroupDialog()"
+            (keydown.space)="dashSvc.createGroupDialog()"
             (keydown.enter)="dashSvc.createGroupDialog()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           >
@@ -98,6 +99,7 @@
                     class="clickable"
                     [class.active]="dashSvc.selectedGroupDetail() === group"
                     (click)="dashSvc.openGroupsTitles(group._id)"
+                    (keydown.space)="dashSvc.openGroupsTitles(group._id)"
                     (keydown.enter)="dashSvc.openGroupsTitles(group._id)"
                   >
                     @if (isAdmin) {
@@ -105,6 +107,7 @@
                         <div class="actions">
                           <span
                             class="action-wrapper"
+                            (keydown.space)="$event.stopPropagation(); dashSvc.openGroupDetail(group)"
                             (keydown.enter)="$event.stopPropagation(); dashSvc.openGroupDetail(group)"
                             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                           >
@@ -227,6 +230,7 @@
           <span
             class="button real-button with-icon primary"
             (click)="dashSvc.createTitleDialog()"
+            (keydown.space)="dashSvc.createTitleDialog()"
             (keydown.enter)="dashSvc.createTitleDialog()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           >
@@ -362,6 +366,7 @@
                     [class.active]="dashSvc.selectedTitle() === title"
                     [class.clickable]="isClickable"
                     (click)="isClickable ? dashSvc.openTitle(title._id) : null"
+                    (keydown.space)="isClickable ? dashSvc.openTitle(title._id) : null"
                     (keydown.enter)="isClickable ? dashSvc.openTitle(title._id) : null"
                   >
                     @if (isAdmin) {
@@ -370,6 +375,7 @@
                           <span
                             class="action-wrapper"
                             (click)="$event.stopPropagation()"
+                            (keydown.space)="$event.stopPropagation()"
                             (keydown.enter)="$event.stopPropagation()"
                             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                           >
@@ -384,6 +390,7 @@
                           <span
                             class="action-wrapper"
                             (click)="$event.stopPropagation(); dashSvc.deleteTitleDialog(title)"
+                            (keydown.space)="$event.stopPropagation(); dashSvc.deleteTitleDialog(title)"
                             (keydown.enter)="$event.stopPropagation(); dashSvc.deleteTitleDialog(title)"
                             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                           >
@@ -446,6 +453,7 @@
         <span
           class="button real-button with-icon primary"
           (click)="dashSvc.createUserDialog()"
+          (keydown.space)="dashSvc.createUserDialog()"
           (keydown.enter)="dashSvc.createUserDialog()"
           [tabindex]="dialogOrDrawerOpen ? -1 : 0"
         >
@@ -523,17 +531,19 @@
                     class="clickable"
                     [class.active]="dashSvc.selectedUser() === user"
                     (click)="dashSvc.openUserDetail(user)"
+                    (keydown.space)="dashSvc.openUserDetail(user)"
                     (keydown.enter)="dashSvc.openUserDetail(user)"
                   >
                     <td class="actions-cell">
                       <div class="actions">
-                        <span class="action-wrapper">
-                          <span
-                            class="button secondary action"
-                            (click)="$event.stopPropagation(); dashSvc.openUserDetail(user)"
-                            (keydown.enter)="$event.stopPropagation(); dashSvc.openUserDetail(user)"
-                            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-                          >
+                        <span
+                          class="action-wrapper"
+                          (click)="$event.stopPropagation(); dashSvc.openUserDetail(user)"
+                          (keydown.space)="$event.stopPropagation(); dashSvc.openUserDetail(user)"
+                          (keydown.enter)="$event.stopPropagation(); dashSvc.openUserDetail(user)"
+                          [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+                        >
+                          <span class="button secondary action">
                             <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                               <path fill-rule="evenodd" clip-rule="evenodd" d="M3.16666 7.99992C3.16666 7.90787 3.24128 7.83325 3.33332 7.83325C3.42537 7.83325 3.49999 7.90787 3.49999 7.99992C3.49999 8.09197 3.42537 8.16659 3.33332 8.16659C3.24128 8.16659 3.16666 8.09197 3.16666 7.99992ZM3.33332 6.83325C2.68899 6.83325 2.16666 7.35559 2.16666 7.99992C2.16666 8.64425 2.68899 9.16659 3.33332 9.16659C3.97766 9.16659 4.49999 8.64425 4.49999 7.99992C4.49999 7.35559 3.97766 6.83325 3.33332 6.83325ZM7.83332 7.99992C7.83332 7.90787 7.90794 7.83325 7.99999 7.83325C8.09204 7.83325 8.16666 7.90787 8.16666 7.99992C8.16666 8.09197 8.09204 8.16659 7.99999 8.16659C7.90794 8.16659 7.83332 8.09197 7.83332 7.99992ZM7.99999 6.83325C7.35566 6.83325 6.83332 7.35559 6.83332 7.99992C6.83332 8.64425 7.35566 9.16659 7.99999 9.16659C8.64432 9.16659 9.16666 8.64425 9.16666 7.99992C9.16666 7.35559 8.64432 6.83325 7.99999 6.83325ZM12.5 7.99992C12.5 7.90787 12.5746 7.83325 12.6667 7.83325C12.7587 7.83325 12.8333 7.90787 12.8333 7.99992C12.8333 8.09197 12.7587 8.16659 12.6667 8.16659C12.5746 8.16659 12.5 8.09197 12.5 7.99992ZM12.6667 6.83325C12.0223 6.83325 11.5 7.35559 11.5 7.99992C11.5 8.64425 12.0223 9.16659 12.6667 9.16659C13.311 9.16659 13.8333 8.64425 13.8333 7.99992C13.8333 7.35559 13.311 6.83325 12.6667 6.83325Z" />
                               <path fill-rule="evenodd" clip-rule="evenodd" d="M3.16666 7.99992C3.16666 7.90787 3.24128 7.83325 3.33332 7.83325C3.42537 7.83325 3.49999 7.90787 3.49999 7.99992C3.49999 8.09197 3.42537 8.16659 3.33332 8.16659C3.24128 8.16659 3.16666 8.09197 3.16666 7.99992ZM3.33332 6.83325C2.68899 6.83325 2.16666 7.35559 2.16666 7.99992C2.16666 8.64425 2.68899 9.16659 3.33332 9.16659C3.97766 9.16659 4.49999 8.64425 4.49999 7.99992C4.49999 7.35559 3.97766 6.83325 3.33332 6.83325ZM7.83332 7.99992C7.83332 7.90787 7.90794 7.83325 7.99999 7.83325C8.09204 7.83325 8.16666 7.90787 8.16666 7.99992C8.16666 8.09197 8.09204 8.16659 7.99999 8.16659C7.90794 8.16659 7.83332 8.09197 7.83332 7.99992ZM7.99999 6.83325C7.35566 6.83325 6.83332 7.35559 6.83332 7.99992C6.83332 8.64425 7.35566 9.16659 7.99999 9.16659C8.64432 9.16659 9.16666 8.64425 9.16666 7.99992C9.16666 7.35559 8.64432 6.83325 7.99999 6.83325ZM12.5 7.99992C12.5 7.90787 12.5746 7.83325 12.6667 7.83325C12.7587 7.83325 12.8333 7.90787 12.8333 7.99992C12.8333 8.09197 12.7587 8.16659 12.6667 8.16659C12.5746 8.16659 12.5 8.09197 12.5 7.99992ZM12.6667 6.83325C12.0223 6.83325 11.5 7.35559 11.5 7.99992C11.5 8.64425 12.0223 9.16659 12.6667 9.16659C13.311 9.16659 13.8333 8.64425 13.8333 7.99992C13.8333 7.35559 13.311 6.83325 12.6667 6.83325Z" />

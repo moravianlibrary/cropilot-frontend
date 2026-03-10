@@ -65,6 +65,11 @@
 
 .dialog-close {
   cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+
+  &:focus-visible {
+    outline: 1px solid var(--primary);
+    border-radius: var(--spacing-x2);
+  }
 }
 
 .dialog-footer {
@@ -263,13 +268,15 @@
         max-width: 561px;
         min-height: 72px;
         max-height: 144px;
-        // scrollbar-width: thin;
-        // resize: none;
         overflow: auto;
         scrollbar-width: none;
 
         &::-webkit-scrollbar {
           display: none;
+        }
+
+        &.edit-group {
+          resize: vertical;
         }
       }
     }
@@ -464,6 +471,11 @@
 
         &:hover {
           cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--primary);
+          border-color: var(--primary);
         }
         
         svg {

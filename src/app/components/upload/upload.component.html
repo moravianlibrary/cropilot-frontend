@@ -6,6 +6,7 @@
   (drop)="onDrop($event)"
 >
   <input
+    #fileInput
     type="file"
     accept="image/png,image/jpeg"
     multiple
@@ -25,6 +26,11 @@
     <h3>{{ h3() }}</h3>
     <p>{{ formatsAndSizeText() }}</p>
 
-    <span class="button real-button tertiary">{{ btnLabel() }}</span>
+    <span
+      class="button real-button tertiary"
+      (keydown.space)="fileInput.click()"
+      (keydown.enter)="fileInput.click()"
+      tabindex="0"
+    >{{ btnLabel() }}</span>
   </div>
 </label>

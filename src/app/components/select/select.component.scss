@@ -30,6 +30,7 @@
   svg {
     fill: var(--icon-dark);
     margin-right: var(--spacing-x4);
+    outline: none;
   }
 }
 
@@ -97,11 +98,7 @@
   cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
   text-align: left;
 
-  &:hover {
-    background: var(--bg-main-light);
-  }
-
-  &.selected {
+  &:hover, &.browsing, &.selected {
     background: var(--bg-main-light);
   }
 

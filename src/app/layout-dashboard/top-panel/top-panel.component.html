@@ -9,6 +9,7 @@
     id="logo"
     class="clickable"
     (click)="dashSvc.navigateToGroups()"
+    (keydown.space)="dashSvc.navigateToGroups()"
     (keydown.enter)="dashSvc.navigateToGroups()"
     [tabindex]="dialogOrDrawerOpen ? -1 : 0"
   >
@@ -22,6 +23,7 @@
       class="breadcrumb-item"
       [class.inactive]="onTitlesPage"
       (click)="dashSvc.navigateToGroups()"
+      (keydown.space)="dashSvc.navigateToGroups()"
       (keydown.enter)="dashSvc.navigateToGroups()"
       [tabindex]="dialogOrDrawerOpen || !onTitlesPage ? -1 : 0"
     >
@@ -50,6 +52,7 @@
         class="tab"
         [class.active]="['groups', 'titles'].includes(dashboardPage)"
         (click)="dashSvc.navigateToGroups()"
+        (keydown.space)="dashSvc.navigateToGroups()"
         (keydown.enter)="dashSvc.navigateToGroups()"
         [tabindex]="dialogOrDrawerOpen ? -1 : 0"
       >
@@ -64,6 +67,7 @@
         class="tab"
         [class.active]="dashboardPage === 'users'"
         (click)="dashSvc.navigateToUsers()"
+        (keydown.space)="dashSvc.navigateToUsers()"
         (keydown.enter)="dashSvc.navigateToUsers()"
         [tabindex]="dialogOrDrawerOpen ? -1 : 0"
       >
@@ -80,6 +84,7 @@
   <span
     class="logout button real-button secondary"
     (click)="authSvc.logout()"
+    (keydown.space)="authSvc.logout()"
     (keydown.enter)="authSvc.logout()"
     [tabindex]="dialogOrDrawerOpen ? -1 : 0"
   >

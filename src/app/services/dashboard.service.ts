@@ -492,7 +492,7 @@ export class DashboardService {
       })
     ).subscribe((res: Models) => {
       this.availableModels.set(res.available_models.map(m => ({ value: m, label: m })));
-      this.selectedModel.set(res.available_models[0]);
+      this.selectedModel.set(group.default_model);
       this.selectedModelUsed.set(false);
       uiSvc.openDialog();
     });

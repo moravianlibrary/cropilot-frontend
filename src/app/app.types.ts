@@ -145,7 +145,7 @@ export type PageNumberType = 'all' | 'single' | 'double';
 export type InputType = 'left' | 'top' | 'width' | 'height' | 'angle';
 export type Role = 'admin' | 'user';
 export type GridMode = 'always' | 'never' | 'when-rotating';
-export type DimColor = 'Černá' | 'Červená';
+export type DimColor = 'Černá' | 'Červená' | 'Bílá';
 export type TitleState = 'new' | 'scheduled' | 'in_progress' | 'failed' | 'ready' | 'user_approved' | 'completed';
 
 // Cursors

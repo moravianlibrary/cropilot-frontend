@@ -1,4 +1,4 @@
-import { Component, effect, ElementRef, inject, input, output, ViewChild } from '@angular/core';
+import { Component, effect, inject, input, output } from '@angular/core';
 import { DimColor, GridMode, PageNumberType, ScanType } from '../../app.types';
 import { EditorService } from '../../services/editor.service';
 import { dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridModeDict } from '../../app.config';
@@ -8,7 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { SelectComponent } from '../select/select.component';
 import { UploadComponent } from '../upload/upload.component';
 import { UiService } from '../../services/ui.service';
-import { defer, focusElement, waitForElement } from '../../utils/utils';
+import { focusElement, waitForElement } from '../../utils/utils';
 
 @Component({
   selector: 'app-dialog',
@@ -68,14 +68,4 @@ export class DialogComponent {
     const edtSvc = this.edtSvc;
     if (this.uiSvc.dialogTitle() === 'Nastavení') this.edtSvc.gridRadio.set(edtSvc.gridMode());
   }
-
-  // onGroupDescriptionInput(): void {
-  //   const groupDescription = this.dashSvc.groupDescription();
-  //   if (groupDescription.length > 40) {
-  //     this.dashSvc.groupDescriptionError.set('Popis nesmí být delší než 40 znaků.');
-  //     this.dashSvc.groupDescription.set('groupDescription.slice(0,40)');
-  //   } else {
-  //     this.dashSvc.groupDescriptionError.set('');
-  //   }
-  // }
 }

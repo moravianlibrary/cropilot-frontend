@@ -16,10 +16,12 @@
   --bg-base: #FFFFFF;
   --bg-bright: #EFF2F5;
   --bg-selected: #EAF6FA;
+  --bg-selected-hover: #DDF0F6;
   --bg-main-light: #F6F7F9;
   --bg-main-bright: #DFE5EC;
   --bg-contrast: #BFCCD9;
   --bg-destructive: #FF3A30;
+  --bg-destructive-hover: #D92C23;
   --border-color: #DFE5EC;
   --border-light: #EFF2F5;
   --border-tertiary-pressed: #8099B3;
@@ -184,6 +186,11 @@ html, body {
   svg {
     fill: var(--text-tertiary);
   }
+
+  &:focus-visible {
+    border-color: var(--primary);
+    outline: 2px solid var(--primary);
+  }
 }
 
 .quaternary {
@@ -205,6 +212,11 @@ html, body {
   background-color: var(--bg-destructive);
   border: none;
   color: var(--text-white);
+
+  &:hover, &:focus-visible {
+    background-color: var(--bg-destructive-hover);
+    outline: none;
+  }
 }
 
 .hidden {
@@ -218,6 +230,11 @@ html, body {
 
   svg {
     fill: var(--primary);
+  }
+
+  &:hover, &:focus-visible {
+    background-color: var(--bg-selected-hover);
+    outline: none;
   }
 }
 

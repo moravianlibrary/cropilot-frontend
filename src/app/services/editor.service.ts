@@ -106,8 +106,9 @@ export class EditorService {
   // Other
   dimColor = signal<DimColor>('Černá');
   outlineTransparent: boolean = false;
-  pageOutlineWidth: number = 3;
-  cornerOutlineWidth: number = this.pageOutlineWidth - 1;
+  pageOutlineWidthPrimary: number = 3;
+  pageOutlineWidthSecondary: number = 1;
+  cornerOutlineWidth: number = this.pageOutlineWidthPrimary - 1;
   cornerSize: number = 6;
   maxPages: number = 2;
 
@@ -539,12 +540,12 @@ export class EditorService {
 
     // Outline
     ctx.strokeStyle = getColor(p) + 'B2';
-    ctx.lineWidth = this.pageOutlineWidth;
+    ctx.lineWidth = this.pageOutlineWidthPrimary;
     ctx.strokeRect(
-      -width / 2 - this.pageOutlineWidth / 2,
-      -height / 2 - this.pageOutlineWidth / 2,
-      width + this.pageOutlineWidth,
-      height + this.pageOutlineWidth
+      -width / 2 - this.pageOutlineWidthPrimary / 2,
+      -height / 2 - this.pageOutlineWidthPrimary / 2,
+      width + this.pageOutlineWidthPrimary,
+      height + this.pageOutlineWidthPrimary
     );
 
     ctx.restore();
@@ -901,9 +902,6 @@ export class EditorService {
   }
 
   isPointInPage(x: number, y: number, p: Page): boolean {
-    // const c = this.c;
-    // const [centerX, centerY] = [c.width * p.xc, c.height * p.yc];
-    // const [width, height] = [c.width * p.width, c.height * p.height];
     const { centerX, centerY, width, height } = this.getPageRectPx(p);
     const angle = degreeToRadian(p.angle);
     const [halfW, halfH] = [width / 2, height / 2];
@@ -940,10 +938,6 @@ export class EditorService {
   } {
     const rad = degreeToRadian(angle);
     const { x: ix, y: iy, width: iw, height: ih } = this.imageRect;
-    // const cw = this.c.width;
-    // const ch = this.c.height;
-    // const hw = (width * cw) / 2;
-    // const hh = (height * ch) / 2;
     const hw = (width * iw) / 2;
     const hh = (height * ih) / 2;
     const corners = [
@@ -957,8 +951,6 @@ export class EditorService {
     const centerX = ix + xc * iw;
     const centerY = iy + yc * ih;
     const rotated = corners.map(pt => ({
-      // x: xc * cw + pt.x * cos - pt.y * sin,
-      // y: yc * ch + pt.x * sin + pt.y * cos,
       x: centerX + pt.x * cos - pt.y * sin,
       y: centerY + pt.x * sin + pt.y * cos,
     }));
@@ -966,10 +958,6 @@ export class EditorService {
     const ys = rotated.map(p => p.y);
 
     return {
-      // left: Math.min(...xs) / cw,
-      // right: Math.max(...xs) / cw,
-      // top: Math.min(...ys) / ch,
-      // bottom: Math.max(...ys) / ch
       left:  (Math.min(...xs) - ix) / iw,
       right: (Math.max(...xs) - ix) / iw,
       top:   (Math.min(...ys) - iy) / ih,
@@ -978,12 +966,12 @@ export class EditorService {
   }
   
   drawPage(p: Page, hoveredId?: string): void {
-    const { /* c,  */ctx } = this;
-    
-    // const [centerX, centerY] = [c.width * p.xc, c.height * p.yc];
-    // const [width, height] = [c.width * p.width, c.height * p.height];
+    const { ctx } = this;
+
     const { centerX, centerY, width, height } = this.getPageRectPx(p);
     const color = getColor(p);
+    const isPageSelected = p === this.selectedPage;
+    const pageOutlineWidth = isPageSelected ? this.pageOutlineWidthPrimary : this.pageOutlineWidthSecondary;
     
     ctx.save();
 
@@ -995,12 +983,13 @@ export class EditorService {
       ctx.strokeStyle = p._id === this.selectedPage?._id && this.outlineTransparent
         ? transparentColor
         : color + 'B2';
-      ctx.lineWidth = this.pageOutlineWidth;
+        // : color + '77';
+      ctx.lineWidth = pageOutlineWidth;
       ctx.strokeRect(
-        -width / 2 - this.pageOutlineWidth / 2,
-        -height / 2 - this.pageOutlineWidth / 2,
-        width + this.pageOutlineWidth,
-        height + this.pageOutlineWidth
+        -width / 2 - pageOutlineWidth / 2,
+        -height / 2 - pageOutlineWidth / 2,
+        width + pageOutlineWidth,
+        height + pageOutlineWidth
       );
     }
 

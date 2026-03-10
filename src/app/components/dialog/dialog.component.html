@@ -18,6 +18,9 @@
       width="24" height="24" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg"
       class="dialog-close"
       (click)="close()"
+      (keydown.space)="close()"
+      (keydown.enter)="close()"
+      tabindex="0"
     >
       <path fill-rule="evenodd" clip-rule="evenodd" d="M5.46967 5.46967C5.76256 5.17678 6.23744 5.17678 6.53033 5.46967L12 10.9393L17.4697 5.46967C17.7626 5.17678 18.2374 5.17678 18.5303 5.46967C18.8232 5.76256 18.8232 6.23744 18.5303 6.53033L13.0607 12L18.5303 17.4697C18.8232 17.7626 18.8232 18.2374 18.5303 18.5303C18.2374 18.8232 17.7626 18.8232 17.4697 18.5303L12 13.0607L6.53033 18.5303C6.23744 18.8232 5.76256 18.8232 5.46967 18.5303C5.17678 18.2374 5.17678 17.7626 5.46967 17.4697L10.9393 12L5.46967 6.53033C5.17678 6.23744 5.17678 5.76256 5.46967 5.46967Z" fill="#263340"/>
       <path fill-rule="evenodd" clip-rule="evenodd" d="M5.46967 5.46967C5.76256 5.17678 6.23744 5.17678 6.53033 5.46967L12 10.9393L17.4697 5.46967C17.7626 5.17678 18.2374 5.17678 18.5303 5.46967C18.8232 5.76256 18.8232 6.23744 18.5303 6.53033L13.0607 12L18.5303 17.4697C18.8232 17.7626 18.8232 18.2374 18.5303 18.5303C18.2374 18.8232 17.7626 18.8232 17.4697 18.5303L12 13.0607L6.53033 18.5303C6.23744 18.8232 5.76256 18.8232 5.46967 18.5303C5.17678 18.2374 5.17678 17.7626 5.46967 17.4697L10.9393 12L5.46967 6.53033C5.17678 6.23744 5.17678 5.76256 5.46967 5.46967Z" fill="#263340"/>
@@ -189,14 +192,9 @@
                   <textarea
                     id="group-description"
                     name="group-description"
+                    [class.edit-group]="dialogContentType === 'edit-group'"
                     [(ngModel)]="dashSvc.groupDescription"
                   ></textarea>
-                  <!-- (keydown.enter)="$event.preventDefault()"
-                    (input)="onGroupDescriptionInput()" -->
-                  <!-- @let groupDescriptionError = dashSvc.groupDescriptionError();
-                  @if (groupDescriptionError) {
-                    <span class="error">{{ groupDescriptionError }}</span>
-                  } -->
                 </label>
               </div>
             </div>
@@ -207,7 +205,7 @@
                 <app-select
                   [(ngModel)]="dashSvc.selectedModel"
                   [inputName]="'group-model'"
-                  [maxDropdownHeight]="190"
+                  [maxDropdownHeight]="192"
                   [options]="dashSvc.availableModels()"
                   [usedIn]="dashSvc.selectedModelUsed()"
                   (usedOut)="dashSvc.onSelectModelUsed($event)"
@@ -225,7 +223,7 @@
                       <app-select
                         [(ngModel)]="dashSvc.selectedUserId"
                         [inputName]="'add-user-to-group'"
-                        [maxDropdownHeight]="190"
+                        [maxDropdownHeight]="192"
                         [options]="dashSvc.availableUsers()"
                         [placeholder]="'Napište jméno'"
                         [usedIn]="dashSvc.selectedUserUsed()"
@@ -235,6 +233,9 @@
                         class="add-perm button real-button primary"
                         [class.disabled]="!dashSvc.availableUsers().length"
                         (click)="dashSvc.addUserToGroup(dashSvc.selectedUserId())"
+                        (keydown.space)="dashSvc.addUserToGroup(dashSvc.selectedUserId())"
+                        (keydown.enter)="dashSvc.addUserToGroup(dashSvc.selectedUserId())"
+                        tabindex="0"
                       >
                         <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                           <path fill-rule="evenodd" clip-rule="evenodd" d="M8 3.5C8.27614 3.5 8.5 3.72386 8.5 4V7.5H12C12.2761 7.5 12.5 7.72386 12.5 8C12.5 8.27614 12.2761 8.5 12 8.5H8.5V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V8.5H4C3.72386 8.5 3.5 8.27614 3.5 8C3.5 7.72386 3.72386 7.5 4 7.5H7.5V4C7.5 3.72386 7.72386 3.5 8 3.5Z" />
@@ -279,6 +280,8 @@
                             [name]="`${user._id}-upload`"
                             [checked]="isUploadTitle"
                             (change)="dashSvc.toggleUserPermission(user._id, 'upload')"
+                            (keydown.space)="dashSvc.toggleUserPermission(user._id, 'upload')"
+                            (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'upload')"
                           />
                           <svg
                             width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -301,6 +304,8 @@
                             [name]="`${user._id}-write`"
                             [checked]="isWriteTitle"
                             (change)="dashSvc.toggleUserPermission(user._id, 'write')"
+                            (keydown.space)="dashSvc.toggleUserPermission(user._id, 'write')"
+                            (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'write')"
                           />
                           <svg
                             width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -322,6 +327,8 @@
                             [name]="`${user._id}-read-title`"
                             [checked]="isReadTitle"
                             (change)="dashSvc.toggleUserPermission(user._id, 'read_title')"
+                            (keydown.space)="dashSvc.toggleUserPermission(user._id, 'read_title')"
+                            (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_title')"
                           />
                           <svg
                             width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -344,6 +351,8 @@
                             [name]="`${user._id}-read-group`"
                             [checked]="isReadGroup"
                             (change)="dashSvc.toggleUserPermission(user._id, 'read_group')"
+                            (keydown.space)="dashSvc.toggleUserPermission(user._id, 'read_group')"
+                            (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_group')"
                           />
                           <svg
                             width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -362,6 +371,9 @@
                       <span
                         class="remove"
                         (click)="dashSvc.removeFromGroup(user._id)"
+                        (keydown.space)="dashSvc.removeFromGroup(user._id)"
+                        (keydown.enter)="dashSvc.removeFromGroup(user._id)"
+                        tabindex="0"
                       >
                         <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                           <path fill-rule="evenodd" clip-rule="evenodd" d="M3.31052 3.35611C4.64689 3.22115 5.98341 3.15366 7.32004 3.15366C9.56362 3.15366 11.8134 3.26785 14.0493 3.48943C14.3241 3.51666 14.5248 3.7615 14.4976 4.0363C14.4704 4.31109 14.2255 4.51178 13.9507 4.48455C11.7467 4.26613 9.52978 4.15366 7.32004 4.15366C6.0169 4.15366 4.71367 4.21947 3.41029 4.35112L3.40882 4.35127L2.04882 4.4846C1.774 4.51155 1.52937 4.3106 1.50242 4.03577C1.47548 3.76095 1.67643 3.51632 1.95125 3.48938L3.31052 3.35611Z" />
@@ -491,6 +503,9 @@
                   <span
                     class="button primary soft reset-password"
                     (click)="dashSvc.resetPasswordDialog(dashSvc.selectedUser()?._id ?? '')"
+                    (keydown.space)="dashSvc.resetPasswordDialog(dashSvc.selectedUser()?._id ?? '')"
+                    (keydown.enter)="dashSvc.resetPasswordDialog(dashSvc.selectedUser()?._id ?? '')"
+                    tabindex="0"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                       <path fill-rule="evenodd" clip-rule="evenodd" d="M8.00022 3.6003C7.34816 3.6003 6.75652 3.70471 6.21672 3.86603C5.95214 3.9451 5.67355 3.79472 5.59448 3.53014C5.51541 3.26556 5.6658 2.98697 5.93038 2.9079C6.55057 2.72256 7.23893 2.6003 8.00022 2.6003C11.4697 2.6003 14.2802 5.41083 14.2802 8.8803C14.2802 12.3498 11.4697 15.1603 8.00022 15.1603C4.53074 15.1603 1.72021 12.3498 1.72021 8.8803C1.72021 7.59122 2.11153 6.38861 2.77752 5.38962C2.9307 5.15985 3.24113 5.09777 3.4709 5.25094C3.70066 5.40412 3.76275 5.71455 3.60957 5.94432C3.0489 6.78532 2.72021 7.79605 2.72021 8.8803C2.72021 11.7975 5.08302 14.1603 8.00022 14.1603C10.9174 14.1603 13.2802 11.7975 13.2802 8.8803C13.2802 5.96311 10.9174 3.6003 8.00022 3.6003Z" />
@@ -514,7 +529,7 @@
                         <app-select
                           [(ngModel)]="dashSvc.selectedGroupId"
                           [inputName]="'assign-group-to-user'"
-                          [maxDropdownHeight]="190"
+                          [maxDropdownHeight]="192"
                           [options]="dashSvc.availableGroups()"
                           [placeholder]="'Napište název'"
                           [usedIn]="dashSvc.selectedGroupUsed()"
@@ -524,6 +539,9 @@
                           class="add-perm button real-button primary"
                           [class.disabled]="!dashSvc.availableGroups().length"
                           (click)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
+                          (keydown.space)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
+                          (keydown.enter)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
+                          tabindex="0"
                         >
                           <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M8 3.5C8.27614 3.5 8.5 3.72386 8.5 4V7.5H12C12.2761 7.5 12.5 7.72386 12.5 8C12.5 8.27614 12.2761 8.5 12 8.5H8.5V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V8.5H4C3.72386 8.5 3.5 8.27614 3.5 8C3.5 7.72386 3.72386 7.5 4 7.5H7.5V4C7.5 3.72386 7.72386 3.5 8 3.5Z" />
@@ -562,27 +580,6 @@
                         @let isUploadTitle = group.permission.includes('upload');
                         @let isWriteTitle = group.permission.includes('write');
                         @let isReadTitle = group.permission.includes('read_title');
-                        <label [for]="`${group.group_id}-read-group`" class="permission">
-                          <input
-                            type="checkbox"
-                            [id]="`${group.group_id}-read-group`"
-                            [name]="`${group.group_id}-read-group`"
-                            [checked]="isReadGroup"
-                            (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
-                          />
-                          <svg
-                            width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
-                            class="check-mark"
-                          >
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M9.62335 0.195262C9.8837 0.455612 9.8837 0.877722 9.62335 1.13807L3.49509 7.26633L0.195262 3.9665C-0.0650874 3.70615 -0.0650874 3.28404 0.195262 3.02369C0.455612 2.76334 0.877722 2.76334 1.13807 3.02369L3.49509 5.38071L8.68054 0.195262C8.94089 -0.0650874 9.363 -0.0650874 9.62335 0.195262Z" />
-                          </svg>
-                          Zobrazení skupiny
-                          <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M3.54019 7.83333C3.07465 7.83333 2.66142 8.04253 2.38665 8.37725L2.37109 8.39621L2.36174 8.40555C2.13502 8.70019 2.01193 9.07781 2.05121 9.48536L2.05199 9.49346L2.31824 12.8223C2.37237 13.3735 2.41712 13.6535 2.56376 13.8366C2.67831 13.9796 2.95446 14.1667 3.80685 14.1667H12.1935C13.0459 14.1667 13.3221 13.9796 13.4366 13.8366C13.5833 13.6535 13.628 13.3735 13.6821 12.8223L13.949 9.48676L13.9497 9.48007C13.9943 9.06386 13.8622 8.68307 13.6155 8.38612L13.5454 8.30163C13.2776 8.01505 12.894 7.83333 12.4602 7.83333H3.54019ZM13.6333 8.40022C13.6372 8.40415 13.6358 8.4029 13.6311 8.39803L13.6333 8.40022ZM1.63026 7.72282C2.08887 7.17581 2.77498 6.83333 3.54019 6.83333H12.4602C13.228 6.83333 13.9083 7.17799 14.3596 7.71306C14.3682 7.72234 14.3816 7.73738 14.396 7.75667C14.4011 7.76341 14.4086 7.77366 14.4174 7.78719C14.8023 8.27015 15.0159 8.89745 14.9448 9.57952L14.6779 12.9155C14.6759 12.9353 14.6739 12.9553 14.672 12.9757C14.6277 13.4337 14.571 14.0199 14.2171 14.4618C13.815 14.9637 13.1478 15.1667 12.1935 15.1667H3.80685C2.85258 15.1667 2.18539 14.9637 1.78328 14.4618C1.42936 14.0199 1.37269 13.4337 1.32842 12.9757C1.32646 12.9553 1.32451 12.9353 1.32257 12.9155L1.3217 12.9065L1.05542 9.57704C0.990261 8.88915 1.20693 8.24991 1.59577 7.76179L1.61335 7.73973L1.63026 7.72282Z" />
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M3.25388 2.27374C2.98788 2.53973 2.83366 3.04994 2.83366 4.18685V7.62018C2.83366 7.89633 2.6098 8.12018 2.33366 8.12018C2.05752 8.12018 1.83366 7.89633 1.83366 7.62018V4.18685C1.83366 3.05709 1.96277 2.15063 2.54677 1.56663C3.13078 0.982625 4.03723 0.853516 5.16699 0.853516H6.01366C6.48193 0.853516 6.84513 0.922543 7.14868 1.10493C7.42928 1.27353 7.60988 1.51476 7.75598 1.70991C7.76193 1.71786 7.76782 1.72573 7.77366 1.73352L7.77422 1.73427L8.61946 2.86568C8.73824 3.02152 8.76728 3.05088 8.80043 3.07099C8.82041 3.08311 8.89033 3.12018 9.12699 3.12018H10.827C11.9568 3.12018 12.8632 3.24929 13.4472 3.8333C14.0312 4.4173 14.1603 5.32376 14.1603 6.45352V7.64685C14.1603 7.92299 13.9365 8.14685 13.6603 8.14685C13.3842 8.14685 13.1603 7.92299 13.1603 7.64685V6.45352C13.1603 5.31661 13.0061 4.8064 12.7401 4.5404C12.4741 4.27441 11.9639 4.12018 10.827 4.12018H9.12699C8.79699 4.12018 8.52024 4.07059 8.28189 3.92604C8.07138 3.79838 7.93453 3.61764 7.84132 3.49453C7.83488 3.48602 7.82864 3.47779 7.82261 3.46987L7.81974 3.46611L6.97366 2.33352C6.97357 2.33339 6.97375 2.33364 6.97366 2.33352C6.8031 2.10612 6.7299 2.01994 6.63364 1.9621C6.54885 1.91116 6.39205 1.85352 6.01366 1.85352H5.16699C4.03009 1.85352 3.51988 2.00774 3.25388 2.27374Z" />
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M5.78678 11.3333C5.78678 11.0572 6.01064 10.8333 6.28678 10.8333H9.71345C9.98959 10.8333 10.2135 11.0572 10.2135 11.3333C10.2135 11.6095 9.98959 11.8333 9.71345 11.8333H6.28678C6.01064 11.8333 5.78678 11.6095 5.78678 11.3333Z" />
-                          </svg>
-                        </label>
                         <label [for]="`${group.group_id}-upload`" class="permission">
                           <input
                             type="checkbox"
@@ -590,6 +587,8 @@
                             [name]="`${group.group_id}-upload`"
                             [checked]="isUploadTitle"
                             (change)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
+                            (keydown.space)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
+                            (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
                           />
                           <svg
                             width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -612,6 +611,8 @@
                             [name]="`${group.group_id}-write`"
                             [checked]="isWriteTitle"
                             (change)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
+                            (keydown.space)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
+                            (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
                           />
                           <svg
                             width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -633,6 +634,8 @@
                             [name]="`${group.group_id}-read-title`"
                             [checked]="isReadTitle"
                             (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
+                            (keydown.space)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
+                            (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
                           />
                           <svg
                             width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -655,6 +658,8 @@
                             [name]="`${group.group_id}-read-group`"
                             [checked]="isReadGroup"
                             (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
+                            (keydown.space)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
+                            (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
                           />
                           <svg
                             width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -673,6 +678,9 @@
                       <span
                         class="remove"
                         (click)="dashSvc.unassignGroupFromUser(group.group_id)"
+                        (keydown.space)="dashSvc.unassignGroupFromUser(group.group_id)"
+                        (keydown.enter)="dashSvc.unassignGroupFromUser(group.group_id)"
+                        tabindex="0"
                       >
                         <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                           <path fill-rule="evenodd" clip-rule="evenodd" d="M3.31052 3.35611C4.64689 3.22115 5.98341 3.15366 7.32004 3.15366C9.56362 3.15366 11.8134 3.26785 14.0493 3.48943C14.3241 3.51666 14.5248 3.7615 14.4976 4.0363C14.4704 4.31109 14.2255 4.51178 13.9507 4.48455C11.7467 4.26613 9.52978 4.15366 7.32004 4.15366C6.0169 4.15366 4.71367 4.21947 3.41029 4.35112L3.40882 4.35127L2.04882 4.4846C1.774 4.51155 1.52937 4.3106 1.50242 4.03577C1.47548 3.76095 1.67643 3.51632 1.95125 3.48938L3.31052 3.35611Z" />
@@ -752,12 +760,15 @@
     <footer class="dialog-footer">
       @for (btn of dialogButtons; track btn.label + '|' + (btn.primary ? 'P' : 'S') + '|' + (btn.destructive ? 'D' : 'N')) {
         <span
-          (click)="btn.action ? btn.action() : close()"
           class="button real-button"
           [class.tertiary]="!btn.primary"
           [class.primary]="btn.primary"
           [class.destructive]="btn.destructive"
           [class.disabled]="uiSvc.confirmBtnDisabled()"
+          (click)="btn.action ? btn.action() : close()"
+          (keydown.space)="btn.action ? btn.action() : close()"
+          (keydown.enter)="btn.action ? btn.action() : close()"
+          tabindex="0"
         >
           {{ btn.label }}
         </span>

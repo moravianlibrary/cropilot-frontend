@@ -32,10 +32,13 @@
         @for (opt of filteredOptions(); track opt.value) {
           @let isSelected = opt.value === value();
           <button
+            #item
             class="item"
+            [class.browsing]="opt.value === browsingOption()?.value"
             [class.selected]="isSelected"
             [style]="`padding-right:${paddingRight()}px`"
             (mousedown)="select(opt)"
+            tabindex="0"
           >
             <span class="label">{{ opt.label }}</span>
             @if (isSelected) {

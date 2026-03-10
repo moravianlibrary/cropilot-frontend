@@ -1,9 +1,9 @@
-import { Component, ElementRef, forwardRef, input, computed, signal, inject, output, viewChild } from '@angular/core';
+import { Component, ElementRef, forwardRef, input, computed, signal, inject, output, viewChild, viewChildren } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { SelectOption } from '../../app.types';
 import { DashboardService } from '../../services/dashboard.service';
 import { OverlayScrollbars } from 'overlayscrollbars';
-import { waitForElement } from '../../utils/utils';
+import { scrollToElement, waitForElement } from '../../utils/utils';
 
 @Component({
   selector: 'app-select',
@@ -30,12 +30,13 @@ export class SelectComponent implements ControlValueAccessor {
 
   selectWrapper = viewChild<ElementRef<HTMLDivElement>>('selectWrapper');
   comboInput = viewChild<ElementRef<HTMLInputElement>>('comboInput');
+  selectOptionsButtons = viewChildren<ElementRef<HTMLButtonElement>>('item');
   private osInstance?: ReturnType<typeof OverlayScrollbars>;
 
   paddingRight = signal<number>(16);
   isOpen = signal<boolean>(false);
   value = signal<number | string>(0);
-  label = signal<string>('');
+  private label = signal<string>('');
 
   displayedLabel = computed<string>(() => {
     const label = this.label();
@@ -57,6 +58,9 @@ export class SelectComponent implements ControlValueAccessor {
     return opts.filter(o => o.label.toLowerCase().includes(label));
   });
 
+  private browsingIndex = signal<number | null>(null);
+  browsingOption = computed<SelectOption | null>(() => this.filteredOptions()[this.browsingIndex() ?? 0]);
+
   private onChange: (v: number | string | null) => void = () => {};
   private onTouched: () => void = () => {};
 
@@ -73,6 +77,7 @@ export class SelectComponent implements ControlValueAccessor {
   async open(): Promise<void> {
     this.isOpen.set(true);
     this.label.set('');
+    this.browsingIndex.set(0);
 
     const items = await waitForElement('.items', this.selectWrapper()?.nativeElement);
       
@@ -119,10 +124,42 @@ export class SelectComponent implements ControlValueAccessor {
     if (!this.usedIn()) this.usedOut.emit(true);
   }
 
+  private isHandledKey(key: string): boolean {
+    return [
+      'Escape',
+      'ArrowUp', 'ArrowDown',
+      'Enter'
+    ].includes(key);
+  }
+
   onKeyDown(e: KeyboardEvent): void {
+    if (!this.isHandledKey(e.key)) return;
+    e.preventDefault();
+    
     if (e.key === 'Escape') {
-      e.preventDefault();
       this.blur();
+      return;
+    }
+
+    if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
+      const filteredOptions = this.filteredOptions();
+
+      if (e.key === 'ArrowDown') {
+        this.browsingIndex.update(prev => prev === null || prev === filteredOptions.length - 1 ? 0 : prev + 1);
+      }
+
+      if (e.key === 'ArrowUp') {
+        this.browsingIndex.update(prev => !prev ? filteredOptions.length - 1 : prev - 1);
+      }
+
+      scrollToElement(this.selectOptionsButtons()[this.browsingIndex() ?? 0].nativeElement);
+
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      const browsingOption = this.browsingOption();
+      if (browsingOption) this.select(browsingOption);
       return;
     }
   }
