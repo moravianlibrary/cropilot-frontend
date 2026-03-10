@@ -205,7 +205,6 @@
     @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
     background-color: var(--bg-base);
     padding-inline: var(--spacing-x1);
-    // width: var(--spacing-x4);
     height: var(--spacing-x4);
     border-radius: var(--spacing-x1);
     display: flex;
