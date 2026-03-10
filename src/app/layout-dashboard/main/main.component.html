@@ -1,4 +1,5 @@
 @let isAdmin = authSvc.isAdmin();
+@let dialogOrDrawerOpen = uiSvc.dialogOpen() || uiSvc.drawerOpen();
 
 @if (dashSvc.dashboardPage() === 'groups') {
 
@@ -11,7 +12,7 @@
             class="button real-button with-icon primary"
             (click)="dashSvc.createGroupDialog()"
             (keydown.enter)="dashSvc.createGroupDialog()"
-            tabindex="0"
+            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           >
             <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
               <path fill-rule="evenodd" clip-rule="evenodd" d="M8.04037 7.16658C8.31652 7.16658 8.54037 7.39044 8.54037 7.66658V10.9999C8.54037 11.2761 8.31652 11.4999 8.04037 11.4999C7.76423 11.4999 7.54037 11.2761 7.54037 10.9999V7.66658C7.54037 7.39044 7.76423 7.16658 8.04037 7.16658Z" />
@@ -35,6 +36,7 @@
             placeholder="Hledat skupinu"
             [(ngModel)]="dashSvc.searchGroups"
             (input)="dashSvc.filterGroups()"
+            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           />
         </label>
       </span>
@@ -92,7 +94,7 @@
               @if (groups.length) {
                 @for (group of groups; track group._id) {
                   <tr
-                    tabindex="0"
+                    [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                     class="clickable"
                     [class.active]="dashSvc.selectedGroupDetail() === group"
                     (click)="dashSvc.openGroupsTitles(group._id)"
@@ -101,7 +103,11 @@
                     @if (isAdmin) {
                       <td class="actions-cell">
                         <div class="actions">
-                          <span class="action-wrapper">
+                          <span
+                            class="action-wrapper"
+                            (keydown.enter)="$event.stopPropagation(); dashSvc.openGroupDetail(group)"
+                            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+                          >
                             <span
                               class="button secondary action"
                               (click)="$event.stopPropagation(); dashSvc.openGroupDetail(group)"
@@ -222,7 +228,7 @@
             class="button real-button with-icon primary"
             (click)="dashSvc.createTitleDialog()"
             (keydown.enter)="dashSvc.createTitleDialog()"
-            tabIndex="0"
+            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           >
             <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
               <path fill-rule="evenodd" clip-rule="evenodd" d="M4.8335 7.99992C4.8335 7.72378 5.05735 7.49992 5.3335 7.49992H10.6668C10.943 7.49992 11.1668 7.72378 11.1668 7.99992C11.1668 8.27606 10.943 8.49992 10.6668 8.49992H5.3335C5.05735 8.49992 4.8335 8.27606 4.8335 7.99992Z" />
@@ -351,7 +357,7 @@
                 @for (title of titles; track title._id) {
                   @let isClickable = authSvc.canReadTitle() && shouldHaveLink(title.state);
                   <tr
-                    [tabindex]="isClickable ? 0 : -1"
+                    [tabindex]="isClickable && !dialogOrDrawerOpen ? 0 : -1"
                     class="row"
                     [class.active]="dashSvc.selectedTitle() === title"
                     [class.clickable]="isClickable"
@@ -437,7 +443,7 @@
           class="button real-button with-icon primary"
           (click)="dashSvc.createUserDialog()"
           (keydown.enter)="dashSvc.createUserDialog()"
-          tabindex="0"
+          [tabindex]="dialogOrDrawerOpen ? -1 : 0"
         >
           <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" clip-rule="evenodd" d="M9.16667 13C9.16667 12.7239 9.39052 12.5 9.66667 12.5H12.3333C12.6095 12.5 12.8333 12.7239 12.8333 13C12.8333 13.2761 12.6095 13.5 12.3333 13.5H9.66667C9.39052 13.5 9.16667 13.2761 9.16667 13Z" />
@@ -509,7 +515,7 @@
               @if (users.length) {
                 @for (user of users; track user._id) {
                   <tr
-                    tabindex="0"
+                    [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                     class="clickable"
                     [class.active]="dashSvc.selectedUser() === user"
                     (click)="dashSvc.openUserDetail(user)"

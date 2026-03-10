@@ -92,21 +92,6 @@ export class UiService {
     });
     dialogBody.classList.remove('os-pending');
     if (document.activeElement?.className !== 'main-wrapper') focusMainWrapper();
-
-    // if (this.dialogContentType()?.includes('group')) {
-      // const groupDescription = await waitForElement('.group-description-wrap');
-      // this.osInstance2 = OverlayScrollbars(groupDescription, {
-      //   overflow: { x: 'hidden', y: 'scroll' },
-      //   scrollbars: {
-      //     theme: 'os-theme-orezy',
-      //     autoHide: 'leave',
-      //     autoHideDelay: 250,
-      //     dragScroll: true,
-      //     clickScroll: true,
-      //   },
-      // });
-      // groupDescription.classList.remove('os-pending');
-    // }
   }
 
   closeDialog(): void {

@@ -108,8 +108,8 @@ html, body {
     cursor: url('/assets/pointer-cursor.png') 6.5 0, pointer;
   }
 
-  &:focus {
-    outline: 1px solid var(--primary);
+  &:focus-visible {
+    outline: 3px solid var(--primary);
     border: none;
     border-radius: var(--spacing-x2);
   }
@@ -159,7 +159,7 @@ html, body {
     fill: var(--icon-white);
   }
 
-  &:hover, &:focus {
+  &:hover, &:focus-visible {
     background-color: var(--primary-hover);
     outline: none;
   }

@@ -26,6 +26,11 @@
     svg {
       fill: var(--icon-dark);
     }
+
+    &:focus-visible {
+      outline: 3px solid var(--primary);
+      border-radius: var(--spacing-x2);
+    }
   }
 
   .inactive {
@@ -67,6 +72,11 @@
       }
     }
 
+    &:focus-visible {
+      outline: 3px solid var(--primary);
+      border-radius: var(--spacing-x2);
+    }
+
     svg {
       fill: var(--icon-gray);
     }
@@ -84,6 +94,12 @@
 
 .logout {
   gap: var(--spacing-x3);
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    border-color: var(--primary);
+    border-radius: var(--spacing-x2);
+  }
 
   .user-name {
     @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-secondary));

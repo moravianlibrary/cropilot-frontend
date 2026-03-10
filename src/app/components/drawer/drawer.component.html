@@ -1,4 +1,5 @@
 @let isAdmin = authSvc.isAdmin();
+@let dialogOpen = uiSvc.dialogOpen();
 
 <header class="drawer-header">
   <h2>{{ uiSvc.drawerTitle() }}</h2>
@@ -43,7 +44,11 @@
 </header>
 
 @if (uiSvc.drawerContent()) {
-  <section id="drawer-body" class="drawer-body os-pending" tabindex="0">
+  <section
+    id="drawer-body"
+    class="drawer-body os-pending"
+    [tabindex]="dialogOpen ? -1 : 0"
+  >
     <div class="content-wrapper">
 
       <!-- Groups -->
@@ -414,7 +419,7 @@
                   class="add-perm button real-button primary"
                   [class.disabled]="!dashSvc.availableGroups().length"
                   (click)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
-                  tabindex="0"
+                  [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M8 3.5C8.27614 3.5 8.5 3.72386 8.5 4V7.5H12C12.2761 7.5 12.5 7.72386 12.5 8C12.5 8.27614 12.2761 8.5 12 8.5H8.5V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V8.5H4C3.72386 8.5 3.5 8.27614 3.5 8C3.5 7.72386 3.72386 7.5 4 7.5H7.5V4C7.5 3.72386 7.72386 3.5 8 3.5Z" />
@@ -426,7 +431,7 @@
                   class="add-perm button quaternary primary remove-all"
                   [class.hidden]="dashSvc.userPermissions().length < 2"
                   (click)="dashSvc.removeFromAllGroups()"
-                  tabindex="0"
+                  [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M3.31052 3.35611C4.64689 3.22115 5.98341 3.15366 7.32004 3.15366C9.56362 3.15366 11.8134 3.26785 14.0493 3.48943C14.3241 3.51666 14.5248 3.7615 14.4976 4.0363C14.4704 4.31109 14.2255 4.51178 13.9507 4.48455C11.7467 4.26613 9.52978 4.15366 7.32004 4.15366C6.0169 4.15366 4.71367 4.21947 3.41029 4.35112L3.40882 4.35127L2.04882 4.4846C1.774 4.51155 1.52937 4.3106 1.50242 4.03577C1.47548 3.76095 1.67643 3.51632 1.95125 3.48938L3.31052 3.35611Z" />

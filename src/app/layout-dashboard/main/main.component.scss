@@ -351,8 +351,9 @@
           .action-wrapper {
             padding: var(--spacing-x2) var(--spacing-x1);
 
-            &:hover {
+            &:hover, &:focus-visible {
               cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+              outline: none;
 
               .action {
                 border-color: var(--border-tertiary-hover);
