@@ -58,6 +58,7 @@ export class AuthService {
 
       return this.verifyToken(titleId).pipe(
         catchError((err) => {
+          this.router.navigate(['/login']);
           console.error('Token verification failed: ', err);
           throw err;
         })
