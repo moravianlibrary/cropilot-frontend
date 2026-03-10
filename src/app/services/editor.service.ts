@@ -1449,7 +1449,7 @@ export class EditorService {
 
     // Dimming color
     if (canWriteTitle && ['c', 'C'].includes(key) && this.selectedPage && !dialogOpen) {
-      this.dimColor.update(prev => prev === 'Černá' ? 'Červená' : 'Černá');
+      this.dimColor.update(prev => prev === 'Černá' ? 'Červená' : (prev === 'Červená' ? 'Bílá' : 'Černá'));
       this.dimRadio.set(this.dimColor());
       localStorage.setItem('dimColor', this.dimColor());
       this.redrawImageOnCanvas();
