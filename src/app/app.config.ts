@@ -45,9 +45,8 @@ export const filterPageNumberStartDict: Record<PageNumberType, string> = {
   'double': 'Dva'
 };
 
-export const userRolesDict: Record<Role/*  | 'manage' */, string> = {
+export const userRolesDict: Record<Role, string> = {
   'admin': 'Admin',
-  // 'manage': 'Uživatel',
   'user': 'Uživatel'
 };
 

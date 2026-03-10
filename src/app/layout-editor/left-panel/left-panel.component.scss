@@ -197,6 +197,21 @@
   .edited { background-color: var(--status-icon-edited); }
 
   .error { background-color: var(--status-icon-error); }
+
+  .number {
+    position: absolute;
+    bottom: var(--spacing-x2);
+    left: var(--spacing-x2);
+    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+    background-color: var(--bg-base);
+    padding-inline: var(--spacing-x1);
+    // width: var(--spacing-x4);
+    height: var(--spacing-x4);
+    border-radius: var(--spacing-x1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .selected { border-color: var(--primary); }
