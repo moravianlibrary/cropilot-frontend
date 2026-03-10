@@ -28,7 +28,7 @@ export const gridModeDict: Record<GridMode, string> = {
 
 export const dimColorDict: Record<DimColor, string> = {
   'Černá': '0,0,0,0.45',
-  'Červená': '255,255,255,0.2',
+  'Červená': '255,0,0,0.2',
   'Bílá': '255,255,255,0.2'
 };
 

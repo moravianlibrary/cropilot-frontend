@@ -970,8 +970,8 @@ export class EditorService {
 
     const { centerX, centerY, width, height } = this.getPageRectPx(p);
     const color = getColor(p);
-    const isPageSelected = p === this.selectedPage;
-    const pageOutlineWidth = isPageSelected ? this.pageOutlineWidthPrimary : this.pageOutlineWidthSecondary;
+    const isPageNotSelectedWhileOtherIs = this.currentPages.length > 1 && this.selectedPage && p !== this.selectedPage;
+    const pageOutlineWidth = isPageNotSelectedWhileOtherIs ? this.pageOutlineWidthSecondary : this.pageOutlineWidthPrimary;
     
     ctx.save();
 
@@ -982,8 +982,7 @@ export class EditorService {
     {
       ctx.strokeStyle = p._id === this.selectedPage?._id && this.outlineTransparent
         ? transparentColor
-        : color + 'B2';
-        // : color + '77';
+        : color + (isPageNotSelectedWhileOtherIs ? '77' : 'B2');
       ctx.lineWidth = pageOutlineWidth;
       ctx.strokeRect(
         -width / 2 - pageOutlineWidth / 2,
