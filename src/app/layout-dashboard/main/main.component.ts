@@ -1,9 +1,9 @@
-import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, inject, signal, viewChild, WritableSignal } from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { permissionDict, titleStateDict, titleStateFilterDict } from '../../app.config';
-import { Group, GroupPage, Permission, PermissionType, User, UserInGroup } from '../../app.types';
+import { Group, GroupPage, Permission, PermissionType, SortField, SortState, User, UserInGroup } from '../../app.types';
 import { focusElement, getDate, waitForElement } from '../../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,10 +14,11 @@ import { Title } from '@angular/platform-browser';
 import { ToastComponent } from '../../components/toast/toast.component';
 import { UiService } from '../../services/ui.service';
 import { TagsOverflowComponent } from '../../components/tags-overflow/tags-overflow.component';
+import { ThTooltipDirective } from '../../th-tooltip.directive';
 
 @Component({
   selector: 'app-main-dashboard',
-  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent, TagsOverflowComponent],
+  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent, TagsOverflowComponent, ThTooltipDirective],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
 })
@@ -31,8 +32,6 @@ export class MainComponent {
   private paramsOnGroupId = new Subscription();
 
   getDate = getDate;
-  maxUsers: number = 2;
-  maxGroups: number = 2;
   tableHasScrollbar = signal<boolean>(false);
 
   searchLabel = viewChild<ElementRef<HTMLLabelElement>>('searchLabel');
@@ -142,6 +141,47 @@ export class MainComponent {
 
 
   /* ------------------------------
+    SORT
+  ------------------------------ */
+  sortState: SortState = {
+    field: null,
+    direction: null,
+  };
+
+  sortDate(field: SortField): void {
+    if (!field) return;
+    let table: WritableSignal<any[]> | undefined;
+
+    switch (this.dashSvc.dashboardPage()) {
+      case 'groups':
+        table = this.dashSvc.displayedGroups;
+        break;
+      case 'titles':
+        table = this.dashSvc.displayedTitles;
+        break;
+      case 'users':
+        table = this.dashSvc.displayedUsers;
+        break;
+    }
+
+    if (!table) return;
+
+    const isSameField = this.sortState.field === field;
+    const direction = !isSameField || this.sortState.direction === 'asc' ? 'desc' : 'asc';
+
+    this.sortState = { field, direction };
+
+    table.update(items =>
+      [...items].sort((a, b) => {
+        const aTime = new Date(a[field]).getTime();
+        const bTime = new Date(b[field]).getTime();
+        return direction === 'asc' ? aTime - bTime : bTime - aTime;
+      })
+    );
+  }
+
+
+  /* ------------------------------
     GROUPS
   ------------------------------ */
   permissionDict = permissionDict;
@@ -151,13 +191,14 @@ export class MainComponent {
     return `Celkem ${length} skupin${length === 1 ? 'a' : [2, 3, 4].includes(length) ? 'y' : '' }`;
   }
 
-  // getUsersShort(group: Group): UserInGroup[] {
-  //   return group.users?.slice(0, this.maxUsers) ?? [];
-  // }
-
-  // getUsersLong(group: Group): UserInGroup[] {
-  //   return group.users ?? [];
-  // }
+  filterGroups(): void {
+    const searchGroups = this.dashSvc.searchGroups();
+    this.dashSvc.displayedGroups.set(this.dashSvc.groups().filter(g => 
+      g.name.toLowerCase().includes(searchGroups)
+      || g.description.toLowerCase().includes(searchGroups)
+      || g._id.toLowerCase().includes(searchGroups)
+    ));
+  }
 
   getTags(group: Group): string[] {
     return group.users.map(u => u.full_name);

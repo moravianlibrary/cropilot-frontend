@@ -294,19 +294,6 @@ export class DashboardService {
 
 
   /* ------------------------------
-    SEARCH INPUT
-  ------------------------------ */
-  filterGroups(): void {
-    const searchGroups = this.searchGroups();
-    this.displayedGroups.set(this.groups().filter(g => 
-      g.name.toLowerCase().includes(searchGroups)
-      || g.description.toLowerCase().includes(searchGroups)
-      || g._id.toLowerCase().includes(searchGroups)
-    ));
-  }
-
-
-  /* ------------------------------
     DIALOGS
   ------------------------------ */
   // Group
@@ -1394,8 +1381,7 @@ export class DashboardService {
           table = this.displayedUsers;
           selectedItem = this.selectedUser;
           break;
-      }
-      
+      }      
 
       if (table().length <= 1) return;
 

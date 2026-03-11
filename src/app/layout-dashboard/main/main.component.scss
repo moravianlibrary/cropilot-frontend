@@ -171,6 +171,47 @@
               background-color: var(--status-icon-success);
             }
           }
+
+          .date-sort-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-x1);
+            @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
+            width: fit-content;
+            position: relative;
+
+            &:hover {
+              cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+
+              .icon {
+                background-color: #8099B31A;
+
+                svg {
+                  fill: var(--primary-hover) !important;
+                }
+              }
+            }
+
+            .icon {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              border-radius: var(--spacing-x2);
+
+              svg {
+                fill: var(--icon-inactive);
+                transition: transform .2s ease, fill .2s ease;
+
+                &.active {
+                  fill: var(--primary);
+                }
+
+                &.oldest {
+                  transform: rotate(180deg);
+                }
+              }
+            }
+          }
         }
       }
 

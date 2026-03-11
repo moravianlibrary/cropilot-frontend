@@ -104,6 +104,14 @@ export interface Position {
   y: number;
 }
 
+// Sort
+export type SortField = 'created_at' | 'modified_at' | null;
+export type SortDirection = 'asc' | 'desc' | null;
+export interface SortState {
+  field: SortField;
+  direction: SortDirection;
+}
+
 
 
 /* ------------------------------

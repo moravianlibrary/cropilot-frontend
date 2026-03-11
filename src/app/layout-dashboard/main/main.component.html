@@ -1,7 +1,8 @@
+@let dashboardPage = dashSvc.dashboardPage();
 @let isAdmin = authSvc.isAdmin();
 @let dialogOrDrawerOpen = uiSvc.dialogOpen() || uiSvc.drawerOpen();
 
-@if (dashSvc.dashboardPage() === 'groups') {
+@if (dashboardPage === 'groups') {
 
   <!-- Groups -->
   <div class="content-wrapper">
@@ -36,7 +37,7 @@
             type="text"
             placeholder="Hledat skupinu"
             [(ngModel)]="dashSvc.searchGroups"
-            (input)="dashSvc.filterGroups()"
+            (input)="filterGroups()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           />
         </label>
@@ -70,8 +71,48 @@
               <th>Počet titulů</th>
               @if (isAdmin) { <th>Uživatelé</th> }
               <th>{{ `Práv${isAdmin ? 'a' : 'o'}` }}</th>
-              <th>Vytvořeno</th>
-              <th>Upraveno</th>
+              <th>
+                <span
+                  class="date-sort-wrapper"
+                  (click)="sortDate('created_at')"
+                  thTooltip
+                  [direction]="sortState.direction"
+                  [isActiveField]="sortState.field === 'created_at'"
+                >
+                  Vytvořeno
+                  <span class="icon">
+                    <svg 
+                      width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      [class.active]="sortState.field === 'created_at' && sortState.direction"
+                      [class.oldest]="sortState.field === 'created_at' && sortState.direction === 'asc'"
+                    >
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M3.59957 9.26616C3.79483 9.0709 4.11142 9.0709 4.30668 9.26616L7.99979 12.9593L11.6929 9.26616C11.8882 9.0709 12.2048 9.0709 12.4 9.26616C12.5953 9.46142 12.5953 9.778 12.4 9.97326L8.35335 14.0199C8.25958 14.1137 8.1324 14.1664 7.99979 14.1664C7.86718 14.1664 7.74001 14.1137 7.64624 14.0199L3.59957 9.97326C3.40431 9.778 3.40431 9.46142 3.59957 9.26616Z" />
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.83325C8.27614 1.83325 8.5 2.05711 8.5 2.33325V13.5533C8.5 13.8294 8.27614 14.0533 8 14.0533C7.72386 14.0533 7.5 13.8294 7.5 13.5533V2.33325C7.5 2.05711 7.72386 1.83325 8 1.83325Z" />
+                    </svg>
+                  </span>
+                </span>
+              </th>
+              <th>
+                <span
+                  class="date-sort-wrapper"
+                  (click)="sortDate('modified_at')"
+                  thTooltip
+                  [direction]="sortState.direction"
+                  [isActiveField]="sortState.field === 'modified_at'"
+                >
+                  Upraveno
+                  <span class="icon">
+                    <svg 
+                      width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      [class.active]="sortState.field === 'modified_at' && sortState.direction"
+                      [class.oldest]="sortState.field === 'modified_at' && sortState.direction === 'asc'"
+                    >
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M3.59957 9.26616C3.79483 9.0709 4.11142 9.0709 4.30668 9.26616L7.99979 12.9593L11.6929 9.26616C11.8882 9.0709 12.2048 9.0709 12.4 9.26616C12.5953 9.46142 12.5953 9.778 12.4 9.97326L8.35335 14.0199C8.25958 14.1137 8.1324 14.1664 7.99979 14.1664C7.86718 14.1664 7.74001 14.1137 7.64624 14.0199L3.59957 9.97326C3.40431 9.778 3.40431 9.46142 3.59957 9.26616Z" />
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.83325C8.27614 1.83325 8.5 2.05711 8.5 2.33325V13.5533C8.5 13.8294 8.27614 14.0533 8 14.0533C7.72386 14.0533 7.5 13.8294 7.5 13.5533V2.33325C7.5 2.05711 7.72386 1.83325 8 1.83325Z" />
+                    </svg>
+                  </span>
+                </span>
+              </th>
               @if (tableHasScrollbar()) { <th style="padding:0"></th> }
             </tr>
           </thead>
@@ -128,19 +169,7 @@
                     <td>{{ group.default_model }}</td>
                     <td><span class="tag title-count">{{ group.title_count }}</span></td>
                     @if (isAdmin) {
-                      <td>
-                        <app-tags-overflow [tags]="getTags(group)" />
-                        <!-- <div class="tags group" #tags>
-                          @let usersShort = getUsersShort(group);
-                          @let usersLong = getUsersLong(group);
-                          @for (user of usersShort; track $index) {
-                            <span class="tag user">{{ user.full_name }}</span>
-                          }
-                          @if (usersShort.length !== usersLong.length) {
-                            <span class="tag count">{{ `+${usersLong.length - usersShort.length}` }}</span>
-                          }
-                        </div> -->
-                      </td>
+                      <td><app-tags-overflow [tags]="getTags(group)" /></td>
                     }
                     <td>
                       <div class="tags">
@@ -331,13 +360,47 @@
                 </ng-template>
               </th>
               <th>
-                Vytvořeno
-                <!-- <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8.35335 1.9797C8.25958 1.88593 8.1324 1.83325 7.99979 1.83325C7.86718 1.83325 7.74001 1.88593 7.64624 1.9797L3.59957 6.02637C3.40431 6.22163 3.40431 6.53821 3.59957 6.73347C3.79483 6.92873 4.11142 6.92873 4.30668 6.73347L7.49984 3.54031V13.6666C7.49984 13.9427 7.72369 14.1666 7.99984 14.1666C8.27598 14.1666 8.49984 13.9427 8.49984 13.6666V3.5404L11.6929 6.73347C11.8882 6.92873 12.2047 6.92873 12.4 6.73347C12.5953 6.53821 12.5953 6.22163 12.4 6.02637L8.35335 1.9797Z" />
-                  <path d="M8.35335 1.9797C8.25958 1.88593 8.1324 1.83325 7.99979 1.83325C7.86718 1.83325 7.74001 1.88593 7.64624 1.9797L3.59957 6.02637C3.40431 6.22163 3.40431 6.53821 3.59957 6.73347C3.79483 6.92873 4.11142 6.92873 4.30668 6.73347L7.49984 3.54031V13.6666C7.49984 13.9427 7.72369 14.1666 7.99984 14.1666C8.27598 14.1666 8.49984 13.9427 8.49984 13.6666V3.5404L11.6929 6.73347C11.8882 6.92873 12.2047 6.92873 12.4 6.73347C12.5953 6.53821 12.5953 6.22163 12.4 6.02637L8.35335 1.9797Z" />
-                </svg> -->
+                <span
+                  class="date-sort-wrapper"
+                  (click)="sortDate('created_at')"
+                  thTooltip
+                  [direction]="sortState.direction"
+                  [isActiveField]="sortState.field === 'created_at'"
+                >
+                  Vytvořeno
+                  <span class="icon">
+                    <svg 
+                      width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      [class.active]="sortState.field === 'created_at' && sortState.direction"
+                      [class.oldest]="sortState.field === 'created_at' && sortState.direction === 'asc'"
+                    >
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M3.59957 9.26616C3.79483 9.0709 4.11142 9.0709 4.30668 9.26616L7.99979 12.9593L11.6929 9.26616C11.8882 9.0709 12.2048 9.0709 12.4 9.26616C12.5953 9.46142 12.5953 9.778 12.4 9.97326L8.35335 14.0199C8.25958 14.1137 8.1324 14.1664 7.99979 14.1664C7.86718 14.1664 7.74001 14.1137 7.64624 14.0199L3.59957 9.97326C3.40431 9.778 3.40431 9.46142 3.59957 9.26616Z" />
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.83325C8.27614 1.83325 8.5 2.05711 8.5 2.33325V13.5533C8.5 13.8294 8.27614 14.0533 8 14.0533C7.72386 14.0533 7.5 13.8294 7.5 13.5533V2.33325C7.5 2.05711 7.72386 1.83325 8 1.83325Z" />
+                    </svg>
+                  </span>
+                </span>
               </th>
-              <th>Upraveno</th>
+              <th>
+                <span
+                  class="date-sort-wrapper"
+                  (click)="sortDate('modified_at')"
+                  thTooltip
+                  [direction]="sortState.direction"
+                  [isActiveField]="sortState.field === 'modified_at'"
+                >
+                  Upraveno
+                  <span class="icon">
+                    <svg 
+                      width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      [class.active]="sortState.field === 'modified_at' && sortState.direction"
+                      [class.oldest]="sortState.field === 'modified_at' && sortState.direction === 'asc'"
+                    >
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M3.59957 9.26616C3.79483 9.0709 4.11142 9.0709 4.30668 9.26616L7.99979 12.9593L11.6929 9.26616C11.8882 9.0709 12.2048 9.0709 12.4 9.26616C12.5953 9.46142 12.5953 9.778 12.4 9.97326L8.35335 14.0199C8.25958 14.1137 8.1324 14.1664 7.99979 14.1664C7.86718 14.1664 7.74001 14.1137 7.64624 14.0199L3.59957 9.97326C3.40431 9.778 3.40431 9.46142 3.59957 9.26616Z" />
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.83325C8.27614 1.83325 8.5 2.05711 8.5 2.33325V13.5533C8.5 13.8294 8.27614 14.0533 8 14.0533C7.72386 14.0533 7.5 13.8294 7.5 13.5533V2.33325C7.5 2.05711 7.72386 1.83325 8 1.83325Z" />
+                    </svg>
+                  </span>
+                </span>
+              </th>
               @if (tableHasScrollbar()) { <th style="padding:0"></th> }
             </tr>
           </thead>
@@ -506,7 +569,27 @@
               <th>Jméno</th>
               <th>E-mail</th>
               <th>Práva</th>
-              <th>Naposledy změněno</th>
+              <th>
+                <span
+                  class="date-sort-wrapper"
+                  (click)="sortDate('modified_at')"
+                  thTooltip
+                  [direction]="sortState.direction"
+                  [isActiveField]="sortState.field === 'modified_at'"
+                >
+                  Naposledny změněno
+                  <span class="icon">
+                    <svg 
+                      width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      [class.active]="sortState.field === 'modified_at' && sortState.direction"
+                      [class.oldest]="sortState.field === 'modified_at' && sortState.direction === 'asc'"
+                    >
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M3.59957 9.26616C3.79483 9.0709 4.11142 9.0709 4.30668 9.26616L7.99979 12.9593L11.6929 9.26616C11.8882 9.0709 12.2048 9.0709 12.4 9.26616C12.5953 9.46142 12.5953 9.778 12.4 9.97326L8.35335 14.0199C8.25958 14.1137 8.1324 14.1664 7.99979 14.1664C7.86718 14.1664 7.74001 14.1137 7.64624 14.0199L3.59957 9.97326C3.40431 9.778 3.40431 9.46142 3.59957 9.26616Z" />
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.83325C8.27614 1.83325 8.5 2.05711 8.5 2.33325V13.5533C8.5 13.8294 8.27614 14.0533 8 14.0533C7.72386 14.0533 7.5 13.8294 7.5 13.5533V2.33325C7.5 2.05711 7.72386 1.83325 8 1.83325Z" />
+                    </svg>
+                  </span>
+                </span>
+              </th>
               @if (tableHasScrollbar()) { <th style="padding:0"></th> }
             </tr>
           </thead>

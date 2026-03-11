@@ -42,6 +42,7 @@
   --icon-white: #FFFFFF;
   --icon-gray: #4C6580;
   --icon-disabled: #BFCCD9;
+  --icon-inactive: #9FB2C6;
   --icon-destructive: #FF3A30;
   --status-icon-success: #2AA248;
   --status-icon-warning: #FF9500;
@@ -448,4 +449,36 @@ html, body {
   width: 0;
   height: 0;
   display: none;
+}
+
+
+/* ------------------------------
+  TH TOOLTIP DIRECTIVE
+------------------------------ */
+.th-tooltip {
+  position: absolute;
+  z-index: 512;
+  background: var(--bg-base);
+  @include font(400, var(--font-size-x1), var(--spacing-x4), var(--text-base));
+  font-family: 'Karla', sans-serif;
+  padding: var(--spacing-x2) var(--spacing-x3);
+  border-radius: var(--spacing-x1);
+  display: inline-block;
+  width: max-content;
+  white-space: normal;
+  overflow-wrap: break-word;
+  pointer-events: none;
+  box-shadow: 0 2px 16px 2px rgba(0, 0, 0, 0.08);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid var(--bg-base);
+  }
 }
