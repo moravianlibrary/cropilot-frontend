@@ -9,6 +9,8 @@ import { OverlayScrollbars } from 'overlayscrollbars';
 export class UiService {
   private osInstance?: ReturnType<typeof OverlayScrollbars>;
 
+  lastFocusedElement!: Element | null;
+
 
   /* ------------------------------
     WAIT FOR SIGNAL
@@ -76,6 +78,7 @@ export class UiService {
   confirmBtnDisabledTimer!: number; 
   
   async openDialog(): Promise<void> {
+    this.lastFocusedElement = document.activeElement ? document.activeElement : null;
     this.dialogOpen.set(true);
     this.dialogOpened = true;
 
@@ -96,6 +99,7 @@ export class UiService {
   closeDialog(): void {
     this.dialogOpen.set(false);
     this.dialogOpened = false;
+    focusElement(this.lastFocusedElement as HTMLElement);
   }
 
 
@@ -110,6 +114,7 @@ export class UiService {
   drawerButtons = signal<DrawerButton[]>([]);
   
   async openDrawer(): Promise<void> {
+    this.lastFocusedElement = document.activeElement ? document.activeElement : null;
     this.drawerOpen.set(true);
 
     const drawerBody = await waitForElement('#drawer-body');
@@ -124,10 +129,10 @@ export class UiService {
       },
     });
     drawerBody.classList.remove('os-pending');
-    // focusElement(drawerBody);
   }
 
   closeDrawer(): void {
     this.drawerOpen.set(false);
+    focusElement(this.lastFocusedElement as HTMLElement);
   }
 }

@@ -1343,7 +1343,6 @@ export class DashboardService {
 
       if (drawerOpen) {
         this.closeDrawer();
-        focusMainWrapper();
         return;
       }
     }
