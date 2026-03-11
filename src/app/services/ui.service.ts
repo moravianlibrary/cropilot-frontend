@@ -125,7 +125,7 @@ export class UiService {
       },
     });
     drawerBody.classList.remove('os-pending');
-    focusElement(drawerBody);
+    // focusElement(drawerBody);
   }
 
   closeDrawer(): void {

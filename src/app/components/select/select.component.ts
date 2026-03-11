@@ -4,6 +4,7 @@ import { SelectOption } from '../../app.types';
 import { DashboardService } from '../../services/dashboard.service';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { scrollToElement, waitForElement } from '../../utils/utils';
+import { UiService } from '../../services/ui.service';
 
 @Component({
   selector: 'app-select',
@@ -20,9 +21,11 @@ import { scrollToElement, waitForElement } from '../../utils/utils';
 })
 export class SelectComponent implements ControlValueAccessor {
   dashSvc = inject(DashboardService);
+  uiSvc = inject(UiService);
   
   maxDropdownHeight = input<number>(240);
   inputName = input<string>('');
+  location = input<string>('');
   options = input<SelectOption[]>([]);
   placeholder = input<string>('');
   usedIn = input<boolean>(false);

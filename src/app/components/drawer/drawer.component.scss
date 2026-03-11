@@ -44,6 +44,12 @@
       svg {
         fill: var(--icon-gray);
       }
+
+      &:focus-visible {
+        outline: 2px solid var(--primary);
+        border-color: var(--primary) !important;
+        border-radius: var(--spacing-x2);
+      }
     }
 
     .icon-button-actions {
@@ -443,6 +449,10 @@
                 background-color: var(--primary);
                 border-color: var(--primary);
               }
+
+              &:checked:focus-visible {
+                background-color: var(--primary-hover);
+              }
             }
 
             .check-mark {
@@ -501,6 +511,12 @@
 
           &:hover {
             cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+          }
+
+          &:focus-visible {
+            outline: 2px solid var(--primary);
+            border-color: var(--primary) !important;
+            border-radius: var(--spacing-x2);
           }
           
           svg {

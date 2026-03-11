@@ -10,6 +10,9 @@
         <span
           class="drawer-edit action icon-button"
           (click)="drawerEditAction()"
+          (keydown.space)="drawerEditAction()"
+          (keydown.enter)="drawerEditAction()"
+          [tabindex]="dialogOpen ? -1 : 0"
         >
           <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" clip-rule="evenodd" d="M10.3451 0.958538C11.1229 0.859074 11.9098 1.17715 12.7094 1.92952L12.7104 1.93039C13.5127 2.68911 13.8779 3.45878 13.8231 4.2427C13.7701 5.0002 13.331 5.64134 12.8303 6.17037M12.8303 6.17037L7.35964 11.9608C7.20542 12.1288 6.99776 12.271 6.80089 12.3763C6.6015 12.4829 6.37086 12.5741 6.15433 12.6126L6.151 12.6132L4.0051 12.9797C3.48472 13.0694 2.98572 12.9394 2.63025 12.6023C2.27528 12.2657 2.11843 11.7748 2.17654 11.2518L2.17671 11.2503L2.42444 9.08091C2.45322 8.86511 2.53336 8.63159 2.62783 8.42901C2.72196 8.22716 2.8504 8.01312 3.00239 7.85133L3.00336 7.85029L8.4767 2.05696C8.97772 1.52771 9.59341 1.05465 10.3451 0.958538M9.20325 2.74407L3.73124 8.536C3.67659 8.59431 3.60152 8.70714 3.53413 8.85166C3.46795 8.99355 3.42821 9.12483 3.41629 9.20921L3.17042 11.3622L3.17034 11.3629C3.14201 11.6195 3.22176 11.7851 3.31837 11.8767C3.41457 11.9679 3.58223 12.0379 3.83519 11.9943L3.83596 11.9941L5.9807 11.6278C6.06422 11.6127 6.19289 11.5674 6.3294 11.4944C6.46779 11.4204 6.57189 11.3406 6.624 11.2835L6.62997 11.2769L12.1034 5.48363C12.5491 5.01273 12.7968 4.58363 12.8255 4.17297C12.8524 3.78866 12.6944 3.29182 12.0238 2.65746C11.3569 2.03013 10.854 1.9016 10.4719 1.95046C10.0636 2.00267 9.6488 2.27348 9.20325 2.74407Z" />
@@ -20,6 +23,9 @@
         <span
           class="drawer-delete action icon-button"
           (click)="drawerDeleteAction()"
+          (keydown.space)="drawerDeleteAction()"
+          (keydown.enter)="drawerDeleteAction()"
+          [tabindex]="dialogOpen ? -1 : 0"
         >
           <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" clip-rule="evenodd" d="M3.31052 3.35614C4.64689 3.22118 5.98341 3.15369 7.32004 3.15369C9.56362 3.15369 11.8134 3.26788 14.0493 3.48946C14.3241 3.51669 14.5248 3.76153 14.4976 4.03633C14.4704 4.31112 14.2255 4.51181 13.9507 4.48458C11.7467 4.26616 9.52979 4.15369 7.32004 4.15369C6.0169 4.15369 4.71367 4.2195 3.41029 4.35116L3.40882 4.3513L2.04882 4.48463C1.774 4.51158 1.52937 4.31063 1.50242 4.03581C1.47548 3.76098 1.67643 3.51635 1.95125 3.48941L3.31052 3.35614Z" />
@@ -34,6 +40,9 @@
     <span
       class="drawer-close action"
       (click)="dashSvc.closeDrawer()"
+      (keydown.space)="dashSvc.closeDrawer()"
+      (keydown.enter)="dashSvc.closeDrawer()"
+      [tabindex]="dialogOpen ? -1 : 0"
     >
       <svg width="24" height="24" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg">
         <path fill-rule="evenodd" clip-rule="evenodd" d="M5.46967 5.46967C5.76256 5.17678 6.23744 5.17678 6.53033 5.46967L12 10.9393L17.4697 5.46967C17.7626 5.17678 18.2374 5.17678 18.5303 5.46967C18.8232 5.76256 18.8232 6.23744 18.5303 6.53033L13.0607 12L18.5303 17.4697C18.8232 17.7626 18.8232 18.2374 18.5303 18.5303C18.2374 18.8232 17.7626 18.8232 17.4697 18.5303L12 13.0607L6.53033 18.5303C6.23744 18.8232 5.76256 18.8232 5.46967 18.5303C5.17678 18.2374 5.17678 17.7626 5.46967 17.4697L10.9393 12L5.46967 6.53033C5.17678 6.23744 5.17678 5.76256 5.46967 5.46967Z" />
@@ -47,8 +56,8 @@
   <section
     id="drawer-body"
     class="drawer-body os-pending"
-    [tabindex]="dialogOpen ? -1 : 0"
   >
+    <!-- [tabindex]="dialogOpen ? -1 : 0" for drawerBody to be focused after opening it? -->
     <div class="content-wrapper">
 
       <!-- Groups -->
@@ -136,6 +145,7 @@
                 <app-select
                   [(ngModel)]="dashSvc.selectedUserId"
                   [inputName]="'add-user-to-group'"
+                  location="drawer"
                   [options]="dashSvc.availableUsers()"x
                   [placeholder]="'Napište jméno'"
                   [usedIn]="dashSvc.selectedUserUsed()"
@@ -145,6 +155,7 @@
                   class="add-perm button real-button primary"
                   [class.disabled]="!dashSvc.availableUsers().length"
                   (click)="dashSvc.addUserToGroup(dashSvc.selectedUserId())"
+                  [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M8 3.5C8.27614 3.5 8.5 3.72386 8.5 4V7.5H12C12.2761 7.5 12.5 7.72386 12.5 8C12.5 8.27614 12.2761 8.5 12 8.5H8.5V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V8.5H4C3.72386 8.5 3.5 8.27614 3.5 8C3.5 7.72386 3.72386 7.5 4 7.5H7.5V4C7.5 3.72386 7.72386 3.5 8 3.5Z" />
@@ -156,6 +167,7 @@
                   class="button quaternary primary remove-all"
                   [class.hidden]="dashSvc.groupPermissions().length < 2"
                   (click)="dashSvc.removeAllUsers()"
+                  [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M3.31052 3.35611C4.64689 3.22115 5.98341 3.15366 7.32004 3.15366C9.56362 3.15366 11.8134 3.26785 14.0493 3.48943C14.3241 3.51666 14.5248 3.7615 14.4976 4.0363C14.4704 4.31109 14.2255 4.51178 13.9507 4.48455C11.7467 4.26613 9.52978 4.15366 7.32004 4.15366C6.0169 4.15366 4.71367 4.21947 3.41029 4.35112L3.40882 4.35127L2.04882 4.4846C1.774 4.51155 1.52937 4.3106 1.50242 4.03577C1.47548 3.76095 1.67643 3.51632 1.95125 3.48938L3.31052 3.35611Z" />
@@ -189,6 +201,8 @@
                       [name]="`${user._id}-upload`"
                       [checked]="isUploadTitle"
                       (change)="dashSvc.toggleUserPermission(user._id, 'upload')"
+                      (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'upload')"
+                      [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <svg
                       width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -211,6 +225,8 @@
                       [name]="`${user._id}-write`"
                       [checked]="isWriteTitle"
                       (change)="dashSvc.toggleUserPermission(user._id, 'write')"
+                      (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'write')"
+                      [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <svg
                       width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -232,6 +248,8 @@
                       [name]="`${user._id}-read-title`"
                       [checked]="isReadTitle"
                       (change)="dashSvc.toggleUserPermission(user._id, 'read_title')"
+                      (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_title')"
+                      [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <svg
                       width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -254,6 +272,8 @@
                       [name]="`${user._id}-read-group`"
                       [checked]="isReadGroup"
                       (change)="dashSvc.toggleUserPermission(user._id, 'read_group')"
+                      (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_group')"
+                      [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <svg
                       width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -272,6 +292,9 @@
                 <span
                   class="remove"
                   (click)="dashSvc.removeFromGroup(user._id)"
+                  (keydown.space)="dashSvc.removeFromGroup(user._id)"
+                  (keydown.enter)="dashSvc.removeFromGroup(user._id)"
+                  [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M3.31052 3.35611C4.64689 3.22115 5.98341 3.15366 7.32004 3.15366C9.56362 3.15366 11.8134 3.26785 14.0493 3.48943C14.3241 3.51666 14.5248 3.7615 14.4976 4.0363C14.4704 4.31109 14.2255 4.51178 13.9507 4.48455C11.7467 4.26613 9.52978 4.15366 7.32004 4.15366C6.0169 4.15366 4.71367 4.21947 3.41029 4.35112L3.40882 4.35127L2.04882 4.4846C1.774 4.51155 1.52937 4.3106 1.50242 4.03577C1.47548 3.76095 1.67643 3.51632 1.95125 3.48938L3.31052 3.35611Z" />
@@ -410,6 +433,7 @@
                 <app-select
                   [(ngModel)]="dashSvc.selectedGroupId"
                   [inputName]="'assign-group-to-user'"
+                  location="drawer"
                   [options]="dashSvc.availableGroups()"
                   [placeholder]="'Napište název'"
                   [usedIn]="dashSvc.selectedGroupUsed()"
@@ -419,6 +443,8 @@
                   class="add-perm button real-button primary"
                   [class.disabled]="!dashSvc.availableGroups().length"
                   (click)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
+                  (keydown.space)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
+                  (keydown.enter)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
                   [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
@@ -431,6 +457,8 @@
                   class="add-perm button quaternary primary remove-all"
                   [class.hidden]="dashSvc.userPermissions().length < 2"
                   (click)="dashSvc.removeFromAllGroups()"
+                  (keydown.space)="dashSvc.removeFromAllGroups()"
+                  (keydown.enter)="dashSvc.removeFromAllGroups()"
                   [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
@@ -465,6 +493,8 @@
                       [name]="`${group.group_id}-upload`"
                       [checked]="isUploadTitle"
                       (change)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
+                      (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
+                      [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <svg
                       width="10" height="8" viewBox="0 0 10 8" xmlns="http://www.w3.org/2000/svg"
@@ -487,6 +517,8 @@
                       [name]="`${group.group_id}-write`"
                       [checked]="isWriteTitle"
                       (change)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
+                      (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
+                      [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <svg
                       width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -508,6 +540,8 @@
                       [name]="`${group.group_id}-read-title`"
                       [checked]="isReadTitle"
                       (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
+                      (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
+                      [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <svg
                       width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -530,6 +564,8 @@
                       [name]="`${group.group_id}-read-group`"
                       [checked]="isReadGroup"
                       (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
+                      (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
+                      [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <svg
                       width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
@@ -548,6 +584,9 @@
                 <span
                   class="remove"
                   (click)="dashSvc.unassignGroupFromUser(group.group_id)"
+                  (keydown.space)="dashSvc.unassignGroupFromUser(group.group_id)"
+                  (keydown.enter)="dashSvc.unassignGroupFromUser(group.group_id)"
+                  [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M3.31052 3.35611C4.64689 3.22115 5.98341 3.15366 7.32004 3.15366C9.56362 3.15366 11.8134 3.26785 14.0493 3.48943C14.3241 3.51666 14.5248 3.7615 14.4976 4.0363C14.4704 4.31109 14.2255 4.51178 13.9507 4.48455C11.7467 4.26613 9.52978 4.15366 7.32004 4.15366C6.0169 4.15366 4.71367 4.21947 3.41029 4.35112L3.40882 4.35127L2.04882 4.4846C1.774 4.51155 1.52937 4.3106 1.50242 4.03577C1.47548 3.76095 1.67643 3.51632 1.95125 3.48938L3.31052 3.35611Z" />
@@ -575,7 +614,6 @@
   <footer class="drawer-footer">
     @for (btn of drawerButtons; track $index) {
       <span
-        (click)="btn.action ? btn.action() : dashSvc.closeDrawer()"
         class="button real-button"
         [class.tertiary]="!btn.primary"
         [class.primary]="btn.primary"
@@ -585,6 +623,10 @@
           || (dashSvc.dashboardPage() === 'groups' && !dashSvc.groupChanged())
           || (dashSvc.dashboardPage() === 'users' && !dashSvc.userChanged())
         )"
+        (click)="btn.action ? btn.action() : dashSvc.closeDrawer()"
+        (keydown.space)="btn.action ? btn.action() : dashSvc.closeDrawer()"
+        (keydown.enter)="btn.action ? btn.action() : dashSvc.closeDrawer()"
+        [tabindex]="dialogOpen ? -1 : 0"
       >
         {{ btn.label }}
       </span>

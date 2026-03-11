@@ -189,7 +189,7 @@ html, body {
   }
 
   &:focus-visible {
-    border-color: var(--primary);
+    border-color: var(--primary) !important;
     outline: 2px solid var(--primary);
   }
 }
@@ -245,6 +245,10 @@ html, body {
 
   &:hover {
     cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--primary);
   }
 
   svg {

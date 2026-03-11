@@ -285,6 +285,7 @@
             placeholder="Hledat titul"
             [(ngModel)]="dashSvc.searchTitles"
             (input)="filterTitles()"
+            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           />
         </label>
       </span>
@@ -542,6 +543,7 @@
             placeholder="Hledat uživatele"
             [(ngModel)]="dashSvc.searchUsers"
             (input)="filterUsers()"
+            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           />
         </label>
       </span>

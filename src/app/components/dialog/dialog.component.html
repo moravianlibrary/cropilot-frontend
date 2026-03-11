@@ -205,6 +205,7 @@
                 <app-select
                   [(ngModel)]="dashSvc.selectedModel"
                   [inputName]="'group-model'"
+                  location="dialog"
                   [maxDropdownHeight]="192"
                   [options]="dashSvc.availableModels()"
                   [usedIn]="dashSvc.selectedModelUsed()"
@@ -223,6 +224,7 @@
                       <app-select
                         [(ngModel)]="dashSvc.selectedUserId"
                         [inputName]="'add-user-to-group'"
+                        location="dialog"
                         [maxDropdownHeight]="192"
                         [options]="dashSvc.availableUsers()"
                         [placeholder]="'Napište jméno'"
@@ -420,6 +422,7 @@
                 <app-select
                   [(ngModel)]="dashSvc.selectedModel"
                   [inputName]="'title-model'"
+                  location="dialog"
                   [options]="dashSvc.availableModels()"
                   [usedIn]="dashSvc.selectedModelUsed()"
                   (usedOut)="dashSvc.onSelectModelUsed($event)"
@@ -529,6 +532,7 @@
                         <app-select
                           [(ngModel)]="dashSvc.selectedGroupId"
                           [inputName]="'assign-group-to-user'"
+                          location="dialog"
                           [maxDropdownHeight]="192"
                           [options]="dashSvc.availableGroups()"
                           [placeholder]="'Napište název'"
