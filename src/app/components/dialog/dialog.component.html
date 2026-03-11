@@ -280,7 +280,6 @@
                           [name]="`${user._id}-upload`"
                           [checked]="isUploadTitle"
                           (change)="dashSvc.toggleUserPermission(user._id, 'upload')"
-                          (keydown.space)="dashSvc.toggleUserPermission(user._id, 'upload')"
                           (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'upload')"
                         />
                         <svg
@@ -304,7 +303,6 @@
                           [name]="`${user._id}-write`"
                           [checked]="isWriteTitle"
                           (change)="dashSvc.toggleUserPermission(user._id, 'write')"
-                          (keydown.space)="dashSvc.toggleUserPermission(user._id, 'write')"
                           (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'write')"
                         />
                         <svg
@@ -327,7 +325,6 @@
                           [name]="`${user._id}-read-title`"
                           [checked]="isReadTitle"
                           (change)="dashSvc.toggleUserPermission(user._id, 'read_title')"
-                          (keydown.space)="dashSvc.toggleUserPermission(user._id, 'read_title')"
                           (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_title')"
                         />
                         <svg
@@ -351,7 +348,6 @@
                           [name]="`${user._id}-read-group`"
                           [checked]="isReadGroup"
                           (change)="dashSvc.toggleUserPermission(user._id, 'read_group')"
-                          (keydown.space)="dashSvc.toggleUserPermission(user._id, 'read_group')"
                           (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_group')"
                         />
                         <svg
@@ -592,7 +588,6 @@
                           [name]="`${group.group_id}-upload`"
                           [checked]="isUploadTitle"
                           (change)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
-                          (keydown.space)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
                           (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
                         />
                         <svg
@@ -616,7 +611,6 @@
                           [name]="`${group.group_id}-write`"
                           [checked]="isWriteTitle"
                           (change)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
-                          (keydown.space)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
                           (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
                         />
                         <svg
@@ -639,7 +633,6 @@
                           [name]="`${group.group_id}-read-title`"
                           [checked]="isReadTitle"
                           (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
-                          (keydown.space)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
                           (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
                         />
                         <svg
@@ -663,7 +656,6 @@
                           [name]="`${group.group_id}-read-group`"
                           [checked]="isReadGroup"
                           (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
-                          (keydown.space)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
                           (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
                         />
                         <svg
