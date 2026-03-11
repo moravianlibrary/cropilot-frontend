@@ -406,6 +406,10 @@
           &:hover {
             input {
               border-color: var(--primary);
+
+              &:checked {
+                background-color: var(--primary-hover);
+              }
             }
           }
 
@@ -431,6 +435,10 @@
             &:checked {
               background-color: var(--primary);
               border-color: var(--primary);
+
+              &:focus-visible {
+                background-color: var(--primary-hover);
+              }
             }
           }
 

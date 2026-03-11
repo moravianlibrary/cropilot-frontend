@@ -450,8 +450,10 @@
                 border-color: var(--primary);
               }
 
-              &:checked:focus-visible {
-                background-color: var(--primary-hover);
+              &:checked {
+                &:hover, &:focus-visible {
+                  background-color: var(--primary-hover);
+                }
               }
             }
 
