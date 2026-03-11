@@ -14,7 +14,7 @@ import { Title } from '@angular/platform-browser';
 import { ToastComponent } from '../../components/toast/toast.component';
 import { UiService } from '../../services/ui.service';
 import { TagsOverflowComponent } from '../../components/tags-overflow/tags-overflow.component';
-import { ThTooltipDirective } from '../../th-tooltip.directive';
+import { ThTooltipDirective } from '../../directives/th-tooltip.directive';
 
 @Component({
   selector: 'app-main-dashboard',

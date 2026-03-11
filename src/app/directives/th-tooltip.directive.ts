@@ -1,5 +1,5 @@
 import { computed, Directive, ElementRef, inject, input, signal } from '@angular/core';
-import { SortDirection } from './app.types';
+import { SortDirection } from '../app.types';
 
 @Directive({
   selector: '[thTooltip]',
