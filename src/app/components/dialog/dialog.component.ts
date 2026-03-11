@@ -8,7 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { SelectComponent } from '../select/select.component';
 import { UploadComponent } from '../upload/upload.component';
 import { UiService } from '../../services/ui.service';
-import { focusElement, waitForElement } from '../../utils/utils';
+import { defer, focusElement, waitForElement } from '../../utils/utils';
 
 @Component({
   selector: 'app-dialog',
@@ -26,11 +26,18 @@ export class DialogComponent {
   closed = output<void>();
   backdropClick = output<void>();
 
-  autoFocus = effect(async () => {
+  focusTimer!: ReturnType<typeof setTimeout>;
+
+  autoFocus = effect(() => {
     const open = this.open();
-    if (open && this.uiSvc.dialogContent() && !['shortcuts', 'settings', 'new-password', 'edit-password'].includes(this.uiSvc.dialogContentType() ?? '')) {
-      const el = await waitForElement('input:first-of-type', document.querySelector('app-dialog') as HTMLElement); 
-      focusElement(el, 100);
+    const dialogContent = this.uiSvc.dialogContent();
+    const dialogContentType = this.uiSvc.dialogContentType();
+    if (open && dialogContent && !['shortcuts', 'settings'].includes(dialogContentType ?? '')) {
+      if (this.focusTimer) clearTimeout(this.focusTimer);
+      this.focusTimer = setTimeout(async () => {
+        const el = await waitForElement('input:first-of-type', document.querySelector('app-dialog') as HTMLElement);
+        focusElement(el);
+      }, 100);
     }
   });
 

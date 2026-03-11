@@ -91,7 +91,8 @@ export class UiService {
       },
     });
     dialogBody.classList.remove('os-pending');
-    if (document.activeElement?.className !== 'main-wrapper') focusMainWrapper();
+    // if (document.activeElement?.className !== 'dialog-body') focusElement(dialogBody);
+    // console.log(document.activeElement?.className);
   }
 
   closeDialog(): void {

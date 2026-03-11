@@ -512,6 +512,7 @@
 .new-edit-content-wrapper.user-password {
   .warning {
     display: flex;
+    align-items: center;
     gap: var(--spacing-x1);
     flex-wrap: wrap;
     @include styles.font(450, var(--font-size-x2), var(--spacing-x6), var(--text-destructive));
