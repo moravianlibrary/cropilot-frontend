@@ -1834,13 +1834,24 @@ export class EditorService {
         this.showNextImage();
         return;
       }
+
+      const mostRightPage = this.currentPages.reduce((max, page) => page.xc > max.xc ? page : max);
+
+      if (this.selectedPage && this.selectedPage !== mostRightPage && this.currentPages.length > 1) {
+        if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
+        
+        const potentialNewIndex = this.currentPages.findIndex(p => p._id === this.selectedPage?._id) + 1;
+        const newIndex = potentialNewIndex === this.currentPages.length ? 0 : potentialNewIndex;
+        this.selectedPage = this.currentPages[newIndex];
+        this.lastPageCursorIsInside = this.selectedPage;
+        this.redrawImageOnCanvas();
+        this.currentPages.forEach(p => this.drawPage(p));
+        return;
+      }
       
       if (
         this.currentPages.length < 2
-        || (
-          this.currentPages.length === this.maxPages
-          && this.selectedPage === this.currentPages.reduce((max, page) => page.xc > max.xc ? page : max)
-        )
+        || (this.currentPages.length === this.maxPages && this.selectedPage === mostRightPage)
       ) {
         this.showNextImage();
         await this.uiSvc.waitForFalse(this.loadingFirstCurrentPage);
