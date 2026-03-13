@@ -41,8 +41,8 @@ export const filterScanTypeStartDict: Record<ScanType, string> = {
 
 export const filterPageNumberStartDict: Record<PageNumberType, string> = {
   'all': 'Vše',
-  'single': 'Jeden',
-  'double': 'Dva'
+  'single': 'Jednostrany',
+  'double': 'Dvoustrany'
 };
 
 export const userRolesDict: Record<Role, string> = {

@@ -83,7 +83,7 @@ export class SelectComponent implements ControlValueAccessor {
     this.browsingIndex.set(0);
 
     const items = await waitForElement('.items', this.selectWrapper()?.nativeElement);
-      
+    
     this.osInstance = OverlayScrollbars(items, {
       overflow: { x: 'hidden', y: 'scroll' },
       scrollbars: {
