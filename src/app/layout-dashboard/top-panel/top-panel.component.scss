@@ -92,7 +92,7 @@
   }
 }
 
-.logout {
+.logout, .login {
   gap: var(--spacing-x3);
 
   &:focus-visible {

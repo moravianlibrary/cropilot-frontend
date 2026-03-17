@@ -30,10 +30,11 @@ export class AuthService {
   get apiUrl(): string { return this.envSvc.get('serverBaseUrl') };
   authHeaders(type: string = 'json', contentType: boolean = false): HttpHeaders {
     const authType = 'Bearer';
+    const accessToken = localStorage.getItem('access_token');
 
     return new HttpHeaders({
       accept: type === 'json' ? 'application/json' : '*/*',
-      Authorization: `${authType} ${localStorage.getItem('access_token')}`,
+      ...(accessToken && { 'Authorization': `${authType} ${accessToken}` }),
       ...(contentType && { 'Content-Type': 'application/json' })
     });
   }
@@ -47,46 +48,37 @@ export class AuthService {
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
     const url = state.url;
     localStorage.setItem('redirectUri', url);
-    const accessToken = localStorage.getItem('access_token');
 
-    // Possible výjimka z loginu
-    // if (condition) return true;
+    let titleId: string | undefined = '';
+    if (url.includes('book')) titleId = url.split('/').pop();
 
-    if (accessToken) {
-      let titleId: string | undefined = '';
-      if (url.includes('book')) titleId = url.split('/').pop();
-
-      return this.verifyToken(titleId).pipe(
-        catchError((err) => {
-          this.router.navigate(['/login']);
-          console.error('Token verification failed: ', err);
-          throw err;
-        })
-      ).subscribe((res: User) => {
-        const user = res;
-        this.user.set(user);
-        
-        const permissions = user.permissions;
-        const permission = permissions[0].permission;
-        this.canWriteTitle.set(false);
-        this.canReadGroup.set('');
-        this.canUpload.set(!!permissions.filter(p => p.permission.includes('upload')).length);
-        if (titleId) {
-          if (permission.includes('write')) this.canWriteTitle.set(true);
-          if (permission.includes('read_group')) this.canReadGroup.set(permissions[0].group_id);
-        }
-      });
-    }
-
-    this.redirectToLogin();
-    return false;
+    return this.verifyToken(titleId).pipe(
+      catchError((err) => {
+        // this.redirectToLogin();
+        console.error('Token verification failed: ', err);
+        throw err;
+      })
+    ).subscribe((res: User) => {
+      const user = res;
+      this.user.set(user);
+      
+      const permissions = user.permissions;
+      const permission = permissions[0].permission;
+      this.canWriteTitle.set(false);
+      this.canReadGroup.set('');
+      this.canUpload.set(!!permissions.filter(p => p.permission.includes('upload')).length);
+      if (titleId) {
+        if (permission.includes('write')) this.canWriteTitle.set(true);
+        if (permission.includes('read_group')) this.canReadGroup.set(permissions[0].group_id);
+      }
+    });
   }
 
   private verifyToken(titleId?: string): any {
     return this.http.get(`${this.apiUrl}/users/current-user${titleId ? `?title_id=${titleId}` : ''}`, { headers: this.authHeaders('json', true) })
   }
 
-  private redirectToLogin(): void {
+  redirectToLogin(): void {
     this.router.navigate(['/login']);
   }
 

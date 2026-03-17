@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-forbidden',
@@ -8,9 +8,9 @@ import { Router } from '@angular/router';
   styleUrl: './forbidden.component.scss'
 })
 export class ForbiddenComponent {
-  private router = inject(Router);
+  private authSvc = inject(AuthService);
   
   goToLogin(): void {
-    this.router.navigate(['/login']);
+    this.authSvc.redirectToLogin();
   }
 }
