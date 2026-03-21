@@ -102,7 +102,7 @@ export class MainComponent {
                 catchError(err => {
                   err.status === 403
                     ? this.router.navigate(['/forbidden'])
-                    : this.uiSvc.showToast('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });;
+                    : this.uiSvc.showToast('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
                   console.error('Fetching users failed:', err);
                   throw err;
                 })

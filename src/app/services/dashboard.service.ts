@@ -363,7 +363,7 @@ export class DashboardService {
 
               this.searchGroups.set('');
               this.groups.update(prev => [ ...prev, newGroup ]);
-              this.displayedGroups.set(this.groups());;
+              this.displayedGroups.set(this.groups());
               this.selectedGroupDetail.set(newGroup);
               this.groupName.set('');
               this.groupDescription.set('');
@@ -1329,7 +1329,7 @@ export class DashboardService {
     if ((key === '+' || key === 'ě' || key === 'Ě' || key === '1' || key === '2') && !dialogOpen) {
       const isGroupKey = key === '+' || key === '1';
       const page = isGroupKey ? 'groups' : 'users';
-      this.dashboardPage.set(page);;
+      this.dashboardPage.set(page);
       this.router.navigate([`/${page}`]);
       focusMainWrapper();
     }
