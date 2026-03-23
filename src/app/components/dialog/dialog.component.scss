@@ -517,89 +517,102 @@
   }
 }
 
-.new-edit-content-wrapper.user-password {
+.new-edit-content-wrapper {
+&.title {
   .warning {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-x1);
-    flex-wrap: wrap;
-    @include styles.font(450, var(--font-size-x2), var(--spacing-x6), var(--text-destructive));
-    margin-bottom: var(--spacing-x2);
-
-    svg {
-      fill: var(--icon-destructive);
-      flex: 0 0 auto;
-    }
-    
-    .text {
-      flex: 1 1 auto;
-    }
+    margin-top: var(--spacing-x1);
   }
+}
 
-  .label {
-    position: relative;
+&.user-password {
+  .warning {
+    margin-bottom: var(--spacing-x2);
+  }
+}
 
-    .front {
-      top: var(--spacing-x2-5) !important;
-      left: var(--spacing-x4);
-      cursor: initial !important;
-    }
-    
-    input {
-      margin-top: 0 !important;
-      padding-left: 52px !important;
-      width: 100% !important;
+  &.title, &.user-password {
+    .warning {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-x1);
+      flex-wrap: wrap;
+      @include styles.font(450, var(--font-size-x2), var(--spacing-x6), var(--text-destructive));
 
-      &:focus {
-        border-color: var(--border-tertiary-color) !important;
-        outline: none;
+      svg {
+        fill: var(--icon-destructive);
+        flex: 0 0 auto;
+      }
+      
+      .text {
+        flex: 1 1 auto;
       }
     }
-    
-    .copy-wrap {
-      position: absolute;
-      top: 13px !important;
-      right: var(--spacing-x4) !important;
-      display: inline-flex;
-      align-items: center;
 
-      .copy-password {
-        top: 0 !important;
-        right: 0 !important;
-        left: auto !important;
-        fill: var(--primary);
-        &:hover { 
-          cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+    .label {
+      position: relative;
+
+      .front {
+        top: var(--spacing-x2-5) !important;
+        left: var(--spacing-x4);
+        cursor: initial !important;
+      }
+      
+      input {
+        margin-top: 0 !important;
+        padding-left: 52px !important;
+        width: 100% !important;
+
+        &:focus {
+          border-color: var(--border-tertiary-color) !important;
+          outline: none;
         }
       }
-
-      .tooltip {
+      
+      .copy-wrap {
         position: absolute;
-        top: -42px;
-        left: -18px;
-        transform: translateX(-50%);
-        padding: var(--spacing-x2) var(--spacing-x3);
-        border-radius: var(--spacing-x1);
-        border: 1px solid var(--border-light);
-        background-color: var(--bg-base);
-        box-shadow: 0 2px var(--spacing-x4) 2px #00000014;
-        @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-base));
-        white-space: nowrap;
+        top: 13px !important;
+        right: var(--spacing-x4) !important;
+        display: inline-flex;
+        align-items: center;
 
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity .12s ease;
-      }
+        .copy-password {
+          top: 0 !important;
+          right: 0 !important;
+          left: auto !important;
+          fill: var(--primary);
+          &:hover { 
+            cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+          }
+        }
 
-      .tooltip.show {
-        opacity: 1;
+        .tooltip {
+          position: absolute;
+          top: -42px;
+          left: -18px;
+          transform: translateX(-50%);
+          padding: var(--spacing-x2) var(--spacing-x3);
+          border-radius: var(--spacing-x1);
+          border: 1px solid var(--border-light);
+          background-color: var(--bg-base);
+          box-shadow: 0 2px var(--spacing-x4) 2px #00000014;
+          @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-base));
+          white-space: nowrap;
+
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity .12s ease;
+        }
+
+        .tooltip.show {
+          opacity: 1;
+        }
       }
     }
-  }
 
-  .description {
-    @include styles.font(350, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
-    margin-top: var(--spacing-x1);
+    .description {
+      @include styles.font(350, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+      margin-top: var(--spacing-x1);
+    }
   }
 }
 

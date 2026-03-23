@@ -286,7 +286,7 @@ export class MainComponent {
   }
 
   filterUsers(): void {
-    this.dashSvc.displayedUsers.set(this.dashSvc.users().filter(u => u.full_name.toLowerCase().includes(this.dashSvc.searchUsers())));
+    // this.dashSvc.displayedUsers.set(this.dashSvc.users().filter(u => u.full_name.toLowerCase().includes(this.dashSvc.searchUsers())));
 
     const searchUsers = this.dashSvc.searchUsers();
     this.dashSvc.displayedUsers.set(this.dashSvc.users().filter(u => 

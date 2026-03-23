@@ -1,7 +1,6 @@
 import { Component, ElementRef, forwardRef, input, computed, signal, inject, output, viewChild, viewChildren } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { SelectOption } from '../../app.types';
-import { DashboardService } from '../../services/dashboard.service';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { scrollToElement, waitForElement } from '../../utils/utils';
 import { UiService } from '../../services/ui.service';
@@ -20,7 +19,6 @@ import { UiService } from '../../services/ui.service';
   ],
 })
 export class SelectComponent implements ControlValueAccessor {
-  dashSvc = inject(DashboardService);
   uiSvc = inject(UiService);
   
   maxDropdownHeight = input<number>(240);

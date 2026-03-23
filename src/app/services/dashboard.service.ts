@@ -107,6 +107,16 @@ export class DashboardService {
   selectedModelUsed = signal<boolean>(false);
   files = signal<File[]>([]);
   uploadFilesError = signal<string>('');
+  modelChanged = computed<boolean>(() => this.selectedTitle()?.model !== this.selectedModel());
+  titleChanged = computed<boolean>(() => {
+    const title = this.selectedTitle();
+    if (!title) return false;
+    
+    const titleNameChanged = title.external_id !== this.titleName();
+    const modelChanged = this.modelChanged();
+    
+    return titleNameChanged || modelChanged;
+  });
 
   // Users
   users = signal<User[]>([]);
@@ -226,6 +236,14 @@ export class DashboardService {
 
   processTitle(titleId: string): Observable<void> {
     return this.http.post<void>(`${this.authSvc.apiUrl}/${titleId}/process`, {}, { headers: this.authSvc.authHeaders() });
+  }
+
+  updateTitle(titleId: string): Observable<Title> {
+    const payload = {
+      external_id: this.titleName(),
+      ...(this.modelChanged() && { model: this.selectedModel() })
+    };
+    return this.http.patch<Title>(`${this.authSvc.apiUrl}/${titleId}`, payload, { headers: this.authSvc.authHeaders('json', true) });
   }
 
   deleteTitle(titleId: string): Observable<void> {
@@ -608,6 +626,75 @@ export class DashboardService {
     this.files.update(prev => [ ...prev, ...Array.from(files) ]);
   }
 
+  editTitleDialog(title: Title): void {
+    const uiSvc = this.uiSvc;
+    
+    uiSvc.dialogWidth.set(360);
+    uiSvc.dialogTitle.set('Úprava titulu');
+    uiSvc.dialogContent.set(true);
+    uiSvc.dialogContentType.set('edit-title');
+    uiSvc.dialogButtons.set([
+      { label: 'Zrušit' },
+      {
+        label: 'Změnit',
+        primary: true,
+        action: () => {
+          if (!this.titleChanged()) return;
+          
+          const titleName = this.titleName();
+
+          if (!titleName) {
+            this.titleNameError.set(this.errors['titleNameEmpty']);
+            const el = document.getElementById('new-title-name') as HTMLElement;
+            scrollToAndFocusElement(el);
+            return;
+          }
+          
+          return this.updateTitle(title._id).pipe(
+            catchError(err => {
+              this.uiSvc.showToast(`Při ukládání změn se něco pokazilo. Zkuste to znovu.`, { type: 'error' });
+              console.error(err);
+              throw err;
+            })
+          ).subscribe((res: Title) => {
+            const now = Date();
+            const editedTitle: Title = {
+              _id: res._id,
+              external_id: titleName,
+              model: this.selectedModel(),
+              created_at: now,
+              modified_at: now,
+              state: res.state
+            };
+
+            this.searchTitles.set('');
+            this.titles.update(prev => prev.map(t => t._id === title._id ? editedTitle : t));
+            this.displayedTitles.set(this.titles());
+            
+            uiSvc.closeDialog();
+          });
+        }
+      }
+    ]);
+
+    this.fetchModels().pipe(
+      catchError(err => {
+        this.uiSvc.showToast('Nepodařilo se načíst dostupné AI modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        console.error(err);
+        throw err;
+      })
+    ).subscribe((res: Models) => {
+      this.selectedTitle.set(title);
+      this.titleName.set(title.external_id ?? '');
+      this.titleNameError.set('');
+      this.availableModels.set(res.available_models.map(m => ({ value: m, label: m })));
+      this.selectedModel.set(title.model ?? res.available_models[0]);
+      this.selectedModelUsed.set(false);
+      this.closeDrawer();
+      uiSvc.openDialog();
+    });
+  }
+
   deleteTitleDialog(title: Title): void {
     const uiSvc = this.uiSvc;
     
@@ -918,7 +1005,6 @@ export class DashboardService {
     defer(() => {
       if (this.uiSvc.drawerOpen()) return;
       this.selectedGroupDetail.set(null);
-      this.selectedTitle.set(null);
       this.selectedUser.set(null);
     }, 300);
   }
@@ -1057,43 +1143,6 @@ export class DashboardService {
       }
       : u));
     this.userPermissionsError[userId] = '';
-  }
-
-  // Title
-  openTitleDetail(title: Title | null): void {
-    if (!title) return;
-    const uiSvc = this.uiSvc;
-    
-    this.selectedTitle.set(title);
-    this.files.set([]);
-    uiSvc.drawerTitle.set(title?.external_id ?? 'Bez názvu');
-    uiSvc.drawerContent.set(true);
-    uiSvc.drawerContentType.set('titles');
-    uiSvc.drawerButtons.set([]);
-
-    uiSvc.openDrawer();
-  }
-
-  applyAiModel(title: Title | null): void {
-    this.processTitle(title?._id ?? '').pipe(
-      catchError(err => {
-        this.uiSvc.showToast('Něco se pokazilo při aplikaci AI modelu. Zkuste to znovu.', { type: 'error' })
-        console.error(err);
-        throw err;
-      })
-    ).subscribe(() => {
-      const selectedTitle = this.selectedTitle();
-      if (!selectedTitle) return;
-
-      const updatedTitle: Title = {
-        ...selectedTitle,
-        state: 'ready'
-      };
-      this.titles.update( prev => prev.map(t => t._id === selectedTitle?._id ? updatedTitle : t));
-      this.displayedTitles.set(this.titles());
-      this.selectedTitle.set(updatedTitle);
-      this.uiSvc.showToast(`AI model byl úspěšně aplikován na titul ${selectedTitle.external_id}!`, { type: 'success' });
-    });
   }
 
   // User

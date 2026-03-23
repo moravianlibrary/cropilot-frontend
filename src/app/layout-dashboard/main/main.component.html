@@ -438,9 +438,9 @@
                         <div class="actions">
                           <span
                             class="action-wrapper"
-                            (click)="$event.stopPropagation()"
-                            (keydown.space)="$event.stopPropagation()"
-                            (keydown.enter)="$event.stopPropagation()"
+                            (click)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
+                            (keydown.space)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
+                            (keydown.enter)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
                             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                           >
                             <span class="button secondary action">
