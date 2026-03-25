@@ -101,7 +101,6 @@ export class LeftPanelComponent {
 
   backToHomepage(): void {
     this.dashSvc.dashboardPage.set('groups');
-    window.location.href = this.authSvc.baseUri;
   }
 
   clickThumbnail(image: ImageItem): void {

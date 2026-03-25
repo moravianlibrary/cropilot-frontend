@@ -92,6 +92,7 @@ html, body {
 
 #logo {
   @include font(400, 19.33px, 29px, var(--text-base), 7%);
+  text-decoration: none;
   display: flex;
   justify-content: center;
   align-items: center;
