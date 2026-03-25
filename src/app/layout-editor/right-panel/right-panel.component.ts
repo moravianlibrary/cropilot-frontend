@@ -335,6 +335,7 @@ export class RightPanelComponent {
     }
 
     edtSvc.pageWasEdited = true;
+    edtSvc.sthWasEdited = true;
     this.updateAndRedraw(page);
   }
 

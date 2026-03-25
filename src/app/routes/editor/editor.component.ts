@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, viewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, viewChild } from '@angular/core';
 import { EditorService } from '../../services/editor.service';
 import { MainComponent } from '../../layout-editor/main/main.component';
 import { BottomPanelComponent } from '../../layout-editor/bottom-panel/bottom-panel.component';
@@ -26,6 +26,15 @@ export class EditorComponent {
   private paramsOnBookId = new Subscription();
 
   mainWrapper = viewChild<ElementRef<HTMLDivElement>>('mainWrapper');
+
+  // Changes not saved alert
+  @HostListener('window:beforeunload', ['$event'])
+  handleBeforeUnload(event: BeforeUnloadEvent) {
+    if (this.edtSvc.sthWasEdited) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  }
 
   ngOnInit() {
     const edtSvc = this.edtSvc;

@@ -686,6 +686,7 @@ export class MainComponent {
 
     edtSvc.pageWasEdited = true;
     edtSvc.imgWasEdited.set(true);
+    edtSvc.sthWasEdited = true;
     edtSvc.redrawImageOnCanvas();
     edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
   }
@@ -772,6 +773,7 @@ export class MainComponent {
 
     edtSvc.pageWasEdited = true;
     edtSvc.imgWasEdited.set(true);
+    edtSvc.sthWasEdited = true;
     edtSvc.redrawImageOnCanvas();
     edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
   }
@@ -796,6 +798,7 @@ export class MainComponent {
 
     edtSvc.pageWasEdited = true;
     edtSvc.imgWasEdited.set(true);
+    edtSvc.sthWasEdited = true;
   }
 
   // TO DO: REFACTOR!

@@ -32,6 +32,7 @@ export class EditorService {
   originalImages = signal<ImageItem[]>([]);
   displayedImages = signal<ImageItem[]>([]);
   displayedImagesPages = signal<ImageItem[]>([]);
+  sthWasEdited: boolean = false;
 
   mainImageItem = signal<ImageItem>({ _id: '', url: '', thumbnailUrl: '', edited: false, flags: [], pages: [] });
   emptyImageItem: ImageItem = { _id: '', url: '', edited: false, flags: [], pages: [] };
@@ -171,18 +172,17 @@ export class EditorService {
         ...i,
         pages: pages.map(({ xc, yc, width, height, angle }) => ({ xc, yc, width, height, angle }))
       }));
-    this.updatePages(this.book(), editedImages)
-      .subscribe({
-        next: () => {
-          this.setDisplayedImages();
-          this.uiSvc.showToast('Změny byly úspěšně uloženy!', { type: 'success' });
-        },
-        error: (err: Error) => {
-          this.uiSvc.showToast('Při ukládání změn se něco pokazilo. Zkuste změny uložit znovu.', { type: 'error' });
-          console.error(err);
-          return throwError(() => err);
-        }
-      });
+    this.updatePages(this.book(), editedImages).pipe(
+      catchError(err => {
+        this.uiSvc.showToast('Při ukládání změn se něco pokazilo. Zkuste změny uložit znovu.', { type: 'error' });
+        console.error(err);
+        return throwError(() => err);
+      })
+    ).subscribe(() => {
+      this.sthWasEdited = false;
+      this.setDisplayedImages();
+      this.uiSvc.showToast('Změny byly úspěšně uloženy!', { type: 'success' });
+    });
   }
 
   resetScan(): void {
@@ -1118,6 +1118,7 @@ export class EditorService {
     this.updateMainImageItem();
     this.pageWasEdited = true;
     this.imgWasEdited.set(true);
+    this.sthWasEdited = true;
   }
 
   redrawImageOnCanvas(): void {
@@ -1313,30 +1314,6 @@ export class EditorService {
     uiSvc.openDialog();
   }
 
-  openSaveChangesDialog(): void {
-    if (!this.authSvc.canWriteTitle()) return;
-    const uiSvc = this.uiSvc;
-    
-    uiSvc.dialogWidth.set(680);
-    uiSvc.dialogTitle.set('Opravdu chcete uložit změny?');
-    uiSvc.dialogContent.set(false);
-    uiSvc.dialogContentType.set(null);
-    uiSvc.dialogDescription.set(null);
-    uiSvc.dialogButtons.set([
-      { label: 'Ne, zrušit' },
-      {
-        label: 'Ano, uložit změny',
-        primary: true,
-        action: () => {
-          uiSvc.closeDialog();
-          this.saveChanges();
-        }
-      }
-    ]);
-
-    uiSvc.openDialog();
-  }
-
 
   // TO DO: REFACTOR!
   /* ------------------------------
@@ -1505,6 +1482,7 @@ export class EditorService {
 
       this.pageWasEdited = true;
       this.imgWasEdited.set(true);
+      this.sthWasEdited = true;
       this.selectedPage = updatedPage;
       this.lastSelectedPage = updatedPage;
       this.currentPages = this.currentPages.map(p =>p._id === updatedPage._id ? updatedPage : p);
@@ -1756,6 +1734,7 @@ export class EditorService {
 
       this.pageWasEdited = true;
       this.imgWasEdited.set(true);
+      this.sthWasEdited = true;
       this.redrawImageOnCanvas();
       this.currentPages.forEach(p => this.drawPage(p));
     }
@@ -1799,6 +1778,7 @@ export class EditorService {
 
       this.pageWasEdited = true;
       this.imgWasEdited.set(true);
+      this.sthWasEdited = true;
       this.redrawImageOnCanvas();
       this.currentPages.forEach(p => this.drawPage(p));
     }
@@ -1866,7 +1846,6 @@ export class EditorService {
     // Uložit změny
     if (canWriteTitle && key === 'Enter' && (event.ctrlKey || event.metaKey)) {
       if (!dialogOpen) {
-        // this.openFinishDialog();
         this.saveChanges();
         return;
       }
@@ -1880,9 +1859,6 @@ export class EditorService {
           break;
         case 'Opravdu chcete resetovat změny skenu?':
           this.resetScan();
-          break;
-        case 'Opravdu chcete uložit změny?':
-          this.saveChanges();
           break;
       }
 
