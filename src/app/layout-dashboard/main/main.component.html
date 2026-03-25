@@ -299,8 +299,10 @@
           class="table-header"
           cellspacing="0" cellpadding="0"
         >
+          @let canUpload = authSvc.canUpload();
+          @let seeActions = isAdmin || canUpload;
           <colgroup>
-            @if (isAdmin) { <col style="width:110px"> }
+            @if (seeActions) { <col [style]="`width:${isAdmin ? 110 : 70}px`"> }
             <col style="min-width:230px">
             <col style="min-width:230px">
             <col style="min-width:124px">
@@ -311,7 +313,7 @@
           </colgroup>
           <thead>
             <tr>
-              @if (isAdmin) { <th>Akce</th> }
+              @if (seeActions) { <th>Akce</th> }
               <th>Název titulu</th>
               <th>ID titulu</th>
               <th>AI model</th>
@@ -410,7 +412,7 @@
         <div class="table-body-y-scroll os-pending" #bodyScroll>
           <table class="table-body">
             <colgroup>
-              @if (isAdmin) { <col style="width:110px"> }
+              @if (seeActions) { <col [style]="`width:${isAdmin ? 110 : 70}px`"> }
               <col style="min-width:230px">
               <col style="min-width:230px">
               <col style="min-width:124px">
@@ -433,24 +435,26 @@
                     (keydown.space)="isClickable ? dashSvc.openTitle(title._id) : null"
                     (keydown.enter)="isClickable ? dashSvc.openTitle(title._id) : null"
                   >
-                    @if (isAdmin) {
+                    @if (seeActions) {
                       <td class="actions-cell">
                         <div class="actions">
-                          <span
-                            class="action-wrapper"
-                            (click)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
-                            (keydown.space)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
-                            (keydown.enter)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
-                            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-                          >
-                            <span class="button secondary action">
-                              <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M10.3451 0.958416C11.1229 0.858952 11.9098 1.17703 12.7094 1.9294L12.7104 1.93026C13.5127 2.68899 13.8779 3.45865 13.8231 4.24258C13.7701 5.00008 13.331 5.64121 12.8303 6.17025M12.8303 6.17025L7.35964 11.9607C7.20542 12.1286 6.99776 12.2709 6.80089 12.3761C6.6015 12.4828 6.37086 12.574 6.15433 12.6125L6.151 12.6131L4.0051 12.9796C3.48472 13.0693 2.98572 12.9393 2.63025 12.6022C2.27528 12.2655 2.11843 11.7746 2.17654 11.2517L2.17671 11.2501L2.42444 9.08078C2.45322 8.86499 2.53336 8.63147 2.62783 8.42889C2.72196 8.22704 2.8504 8.013 3.00239 7.85121L3.00336 7.85017L8.4767 2.05684C8.97772 1.52759 9.59341 1.05453 10.3451 0.958416M9.20325 2.74395L3.73124 8.53588C3.67659 8.59419 3.60152 8.70702 3.53413 8.85153C3.46795 8.99343 3.42821 9.12471 3.41629 9.20909L3.17042 11.3621L3.17034 11.3628C3.14201 11.6194 3.22176 11.785 3.31837 11.8766C3.41457 11.9678 3.58223 12.0378 3.83519 11.9941L3.83596 11.994L5.9807 11.6277C6.06422 11.6126 6.19289 11.5673 6.3294 11.4943C6.46779 11.4203 6.57189 11.3405 6.624 11.2833L6.62997 11.2768L12.1034 5.4835C12.5491 5.01261 12.7968 4.5835 12.8255 4.17285C12.8524 3.78854 12.6944 3.2917 12.0238 2.65734C11.3569 2.03001 10.854 1.90148 10.4719 1.95034C10.0636 2.00255 9.6488 2.27336 9.20325 2.74395Z" />
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.84953 2.87249C8.12238 2.82998 8.37803 3.01671 8.42054 3.28956C8.67196 4.9033 9.98164 6.13838 11.6099 6.30238C11.8847 6.33005 12.085 6.57521 12.0573 6.84997C12.0296 7.12472 11.7845 7.32502 11.5097 7.29734C9.43136 7.08801 7.75438 5.50975 7.43246 3.4435C7.38995 3.17065 7.57668 2.915 7.84953 2.87249Z" />
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 14.6666C1.5 14.3904 1.72386 14.1666 2 14.1666H14C14.2761 14.1666 14.5 14.3904 14.5 14.6666C14.5 14.9427 14.2761 15.1666 14 15.1666H2C1.72386 15.1666 1.5 14.9427 1.5 14.6666Z" />
-                              </svg>
+                          @if (isAdmin) {
+                            <span
+                              class="action-wrapper"
+                              (click)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
+                              (keydown.space)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
+                              (keydown.enter)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
+                              [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+                            >
+                              <span class="button secondary action">
+                                <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
+                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M10.3451 0.958416C11.1229 0.858952 11.9098 1.17703 12.7094 1.9294L12.7104 1.93026C13.5127 2.68899 13.8779 3.45865 13.8231 4.24258C13.7701 5.00008 13.331 5.64121 12.8303 6.17025M12.8303 6.17025L7.35964 11.9607C7.20542 12.1286 6.99776 12.2709 6.80089 12.3761C6.6015 12.4828 6.37086 12.574 6.15433 12.6125L6.151 12.6131L4.0051 12.9796C3.48472 13.0693 2.98572 12.9393 2.63025 12.6022C2.27528 12.2655 2.11843 11.7746 2.17654 11.2517L2.17671 11.2501L2.42444 9.08078C2.45322 8.86499 2.53336 8.63147 2.62783 8.42889C2.72196 8.22704 2.8504 8.013 3.00239 7.85121L3.00336 7.85017L8.4767 2.05684C8.97772 1.52759 9.59341 1.05453 10.3451 0.958416M9.20325 2.74395L3.73124 8.53588C3.67659 8.59419 3.60152 8.70702 3.53413 8.85153C3.46795 8.99343 3.42821 9.12471 3.41629 9.20909L3.17042 11.3621L3.17034 11.3628C3.14201 11.6194 3.22176 11.785 3.31837 11.8766C3.41457 11.9678 3.58223 12.0378 3.83519 11.9941L3.83596 11.994L5.9807 11.6277C6.06422 11.6126 6.19289 11.5673 6.3294 11.4943C6.46779 11.4203 6.57189 11.3405 6.624 11.2833L6.62997 11.2768L12.1034 5.4835C12.5491 5.01261 12.7968 4.5835 12.8255 4.17285C12.8524 3.78854 12.6944 3.2917 12.0238 2.65734C11.3569 2.03001 10.854 1.90148 10.4719 1.95034C10.0636 2.00255 9.6488 2.27336 9.20325 2.74395Z" />
+                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M7.84953 2.87249C8.12238 2.82998 8.37803 3.01671 8.42054 3.28956C8.67196 4.9033 9.98164 6.13838 11.6099 6.30238C11.8847 6.33005 12.085 6.57521 12.0573 6.84997C12.0296 7.12472 11.7845 7.32502 11.5097 7.29734C9.43136 7.08801 7.75438 5.50975 7.43246 3.4435C7.38995 3.17065 7.57668 2.915 7.84953 2.87249Z" />
+                                  <path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 14.6666C1.5 14.3904 1.72386 14.1666 2 14.1666H14C14.2761 14.1666 14.5 14.3904 14.5 14.6666C14.5 14.9427 14.2761 15.1666 14 15.1666H2C1.72386 15.1666 1.5 14.9427 1.5 14.6666Z" />
+                                </svg>
+                              </span>
                             </span>
-                          </span>
+                          }
                           <span
                             class="action-wrapper"
                             (click)="$event.stopPropagation(); dashSvc.deleteTitleDialog(title)"
