@@ -5,7 +5,7 @@ import { BottomPanelComponent } from '../../layout-editor/bottom-panel/bottom-pa
 import { LeftPanelComponent } from '../../layout-editor/left-panel/left-panel.component';
 import { RightPanelComponent } from '../../layout-editor/right-panel/right-panel.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, map, Subscription, switchMap, tap } from 'rxjs';
+import { catchError, map, Subscription, switchMap, tap, throwError } from 'rxjs';
 import { GridMode, ImageItem, PageNumberType, ScanType, TitleDetail } from '../../app.types';
 import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
@@ -50,7 +50,7 @@ export class EditorComponent {
             ? this.router.navigate(['/forbidden'])
             : this.router.navigate(['/not-found']);
           console.error('Fetch error:', err);
-          throw err;
+          return throwError(() => err);
         })
       )
       .subscribe((title: TitleDetail) => {

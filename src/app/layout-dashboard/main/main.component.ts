@@ -7,7 +7,7 @@ import { Group, GroupPage, Permission, PermissionType, SortField, SortState, Use
 import { focusElement, getDate, waitForElement } from '../../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, map, of, Subscription, switchMap, tap } from 'rxjs';
+import { catchError, map, of, Subscription, switchMap, tap, throwError } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { Title } from '@angular/platform-browser';
@@ -65,7 +65,7 @@ export class MainComponent {
                 catchError(err => {
                   this.uiSvc.showToast('Při načítání skupin se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
                   console.error('Fetching groups failed:', err);
-                  throw err;
+                  return throwError(() => err);
                 })
               );
 
@@ -87,7 +87,7 @@ export class MainComponent {
                     ? this.router.navigate(['/forbidden'])
                     : this.uiSvc.showToast('Při načítání titulů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
                   console.error('Fetching titles failed:', err);
-                  throw err;
+                  return throwError(() => err);
                 })
               );
 
@@ -104,7 +104,7 @@ export class MainComponent {
                     ? this.router.navigate(['/forbidden'])
                     : this.uiSvc.showToast('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
                   console.error('Fetching users failed:', err);
-                  throw err;
+                  return throwError(() => err);
                 })
               );
 

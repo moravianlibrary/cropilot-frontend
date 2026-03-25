@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { EnvironmentService } from './environment.service';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
-import { catchError, of } from 'rxjs';
+import { catchError, of, throwError } from 'rxjs';
 import { User } from '../app.types';
 
 @Injectable({
@@ -54,9 +54,8 @@ export class AuthService {
 
     return this.verifyToken(titleId).pipe(
       catchError((err) => {
-        // this.redirectToLogin();
         console.error('Token verification failed: ', err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: User) => {
       const user = res;

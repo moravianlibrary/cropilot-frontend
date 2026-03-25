@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { DimColor, GridMode, HitInfo, ImageItem, ImageRect, MousePos, Page, PageNumberType, ScanType, TitleDetail, Viewport } from '../app.types';
-import { catchError, Observable } from 'rxjs';
+import { catchError, Observable, throwError } from 'rxjs';
 import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
 import { dimColorDict, gridColor, transparentColor } from '../app.config';
@@ -180,7 +180,7 @@ export class EditorService {
         error: (err: Error) => {
           this.uiSvc.showToast('Při ukládání změn se něco pokazilo. Zkuste změny uložit znovu.', { type: 'error' });
           console.error(err);
-          throw err;
+          return throwError(() => err);
         }
       });
   }
@@ -212,7 +212,7 @@ export class EditorService {
       catchError(err => {
         this.uiSvc.showToast('Při resetu změn dokumentu se něco pokazilo. Zkuste to znovu.', { type: 'error' });
         console.error('Fetch error:', err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: TitleDetail) => {
       const images: ImageItem[] = res.scans;

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { catchError, forkJoin, from, map, mergeMap, Observable, of, switchMap, tap, toArray } from 'rxjs';
+import { catchError, forkJoin, from, map, mergeMap, Observable, of, switchMap, tap, throwError, toArray } from 'rxjs';
 import { AuthService } from './auth.service';
 import { ChangedGroupMember, DashboardPage, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Permission, PermissionType, SelectOption, Title, User, UserInGroup } from '../app.types';
 import { Router } from '@angular/router';
@@ -356,7 +356,14 @@ export class DashboardService {
           
           return this.createGroup().pipe(
             switchMap((res: NewGroup) => this.membersAdded().length
-              ? this.bulkAddGroupMembers(res.id).pipe(map(() => res))
+              ? this.bulkAddGroupMembers(res.id).pipe(
+                  map(() => res),
+                  catchError(err => {
+                    this.uiSvc.showToast('Při přidávání členů do skupiny se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+                    console.error(err);
+                    return throwError(() => err);
+                  })
+                )
               : of(res)
             ),
             tap((res: NewGroup) => {
@@ -390,7 +397,7 @@ export class DashboardService {
             catchError(err => {
               this.uiSvc.showToast('Při vytváření skupiny se něco pokazilo. Zkuste to znovu.', { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe(() => this.openGroupDetail(this.selectedGroupDetail()))
         }
@@ -407,12 +414,18 @@ export class DashboardService {
         this.selectedModel.set(res.available_models[0]);
         this.selectedModelUsed.set(false);
       }),
-      switchMap(() => this.fetchUsers()),
       catchError(err => {
-        this.uiSvc.showToast('Nepodařilo se načíst uživatele. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        this.uiSvc.showToast('Nepodařilo se načíst dostupné AI modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
         console.error(err);
-        throw err;
-      })
+        return throwError(() => err);
+      }),
+      switchMap(() => this.fetchUsers().pipe(
+        catchError(err => {
+          this.uiSvc.showToast('Nepodařilo se načíst uživatele. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+          console.error(err);
+          return throwError(() => err);
+        })
+      )),
     ).subscribe((res: User[]) => {
       this.users.set(res);
       this.availableUsers.set(res.filter(u => u.role !== 'admin').map(u => ({ value: u._id, label: u.full_name })));
@@ -466,7 +479,7 @@ export class DashboardService {
             catchError(err => {
               this.uiSvc.showToast('Nepodařilo se upravit skupinu. Zkuste to znovu.', { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe(() => {
             // this.searchGroups.set('');
@@ -493,7 +506,7 @@ export class DashboardService {
       catchError(err => {
         this.uiSvc.showToast('Nepodařilo se načíst dostupné AI modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
         console.error(err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: Models) => {
       this.availableModels.set(res.available_models.map(m => ({ value: m, label: m })));
@@ -528,7 +541,7 @@ export class DashboardService {
           catchError(err => {
             this.uiSvc.showToast('Při mazání skupiny se něco pokazilo. Zkuste to znovu.', { type: 'error' });
             console.error(err);
-            throw err;
+            return throwError(() => err);
           })
         ).subscribe(() => this.closeDrawer())
       }
@@ -588,12 +601,24 @@ export class DashboardService {
 
               return res.id;
             }),
-            switchMap(id => this.uploadAllScans(id, this.files())),
-            switchMap(id => this.processTitle(id)),
+            switchMap(id => this.uploadAllScans(id, this.files()).pipe(
+              catchError(err => {
+                this.uiSvc.showToast(`Při nahrávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.`, { type: 'error' });
+                console.error(err);
+                return throwError(() => err);
+              })
+            )),
+            switchMap(id => this.processTitle(id).pipe(
+              catchError(err => {
+                this.uiSvc.showToast(`Při zpracovávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.`, { type: 'error' });
+                console.error(err);
+                return throwError(() => err);
+              })
+            )),
             catchError(err => {
-              this.uiSvc.showToast(`Při nahrávání skenů se něco pokazilo. Titul smažte a přidejte ji jako novou.`, { type: 'error' });
+              this.uiSvc.showToast(`Při vytváření titulu se něco pokazilo. Titul smažte a přidejte ho jako nový.`, { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe();
         }
@@ -604,7 +629,7 @@ export class DashboardService {
       catchError(err => {
         this.uiSvc.showToast('Nepodařilo se načíst dostupné AI modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
         console.error(err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: Models) => {
       this.titleName.set('');
@@ -654,7 +679,7 @@ export class DashboardService {
             catchError(err => {
               this.uiSvc.showToast(`Při ukládání změn se něco pokazilo. Zkuste to znovu.`, { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe((res: Title) => {
             const now = Date();
@@ -681,7 +706,7 @@ export class DashboardService {
       catchError(err => {
         this.uiSvc.showToast('Nepodařilo se načíst dostupné AI modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
         console.error(err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: Models) => {
       this.selectedTitle.set(title);
@@ -717,7 +742,7 @@ export class DashboardService {
           catchError(err => {
             this.uiSvc.showToast('Nepodařilo se smazat titul. Zkuste to znovu.', { type: 'error' })
             console.error(err);
-            throw err;
+            return throwError(() => err);
           })
         ).subscribe(() => this.closeDrawer())
       }
@@ -822,7 +847,7 @@ export class DashboardService {
             catchError(err => {
               uiSvc.showToast('Nepodařilo se vytvořit uživatele. Zkuste to znovu.', { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe();
         }
@@ -839,7 +864,7 @@ export class DashboardService {
       catchError(err => {
         this.uiSvc.showToast('Nepodařilo se načíst skupiny. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
         console.error(err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: Group[]) => {
       this.groups.set(res);
@@ -913,7 +938,7 @@ export class DashboardService {
             catchError(err => {
               this.uiSvc.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe(() => uiSvc.closeDialog());
         }
@@ -952,7 +977,7 @@ export class DashboardService {
           catchError(err => {
             this.uiSvc.showToast('Nepodařilo se smazat uživatele. Zkuste to znovu.', { type: 'error' });
             console.error(err);
-            throw err;
+            return throwError(() => err);
           })
         ).subscribe(() => this.closeDrawer())
       }
@@ -968,7 +993,7 @@ export class DashboardService {
       catchError(err => {
         uiSvc.showToast('Při generování nového hesla se něco pokazilo. Zkuste to znovu.', { type: 'error' });
         console.error(err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: NewPassword) => {
       this.newPassword.set(res.new_password);
@@ -1031,7 +1056,7 @@ export class DashboardService {
       catchError(err => {
         this.uiSvc.showToast('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
         console.error('Fetching users failed:', err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: User[]) => {
       this.users.set(res);
@@ -1082,7 +1107,7 @@ export class DashboardService {
               catchError(err => {
                 this.uiSvc.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
                 console.error(err);
-                throw err;
+                return throwError(() => err);
               })
             ).subscribe(() => this.closeDrawer());
           }
@@ -1163,7 +1188,7 @@ export class DashboardService {
       catchError(err => {
         this.uiSvc.showToast('Při načítání skupin se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
         console.error('Fetching groups failed:', err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: Group[]) => {
       this.groups.set(res);
@@ -1238,7 +1263,7 @@ export class DashboardService {
             catchError(err => {
               this.uiSvc.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe(() => this.closeDrawer());
         }
