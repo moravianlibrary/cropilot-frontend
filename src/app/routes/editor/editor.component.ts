@@ -10,6 +10,7 @@ import { GridMode, ImageItem, PageNumberType, ScanType, TitleDetail } from '../.
 import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
 import { UiService } from '../../services/ui.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-editor',
@@ -22,6 +23,7 @@ export class EditorComponent {
   authSvc = inject(AuthService);
   uiSvc = inject(UiService);
   private router = inject(Router);
+  private title = inject(Title);
   private activatedRoute = inject(ActivatedRoute);
   private paramsOnBookId = new Subscription();
 
@@ -62,8 +64,9 @@ export class EditorComponent {
           return throwError(() => err);
         })
       )
-      .subscribe((title: TitleDetail) => {
-        const imgItems: ImageItem[] = title.scans;
+      .subscribe((res: TitleDetail) => {
+        const imgItems: ImageItem[] = res.scans;
+        this.title.setTitle(`${res.external_id} | CROPILOT`);
         edtSvc.loadingLeft = false;
         edtSvc.images.set(imgItems);
         edtSvc.originalImages.set(imgItems);

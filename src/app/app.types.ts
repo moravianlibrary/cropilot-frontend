@@ -52,6 +52,7 @@ export interface Title {
 
 export interface TitleDetail {
   _id: string;
+  external_id?: string;
   crop_method: string;
   created_at: string;
   modified_at: string;
