@@ -78,6 +78,12 @@ export class MainComponent {
                   this.dashSvc.titles.set(res.titles);
                   this.dashSvc.displayedTitles.set(res.titles);
                   this.title.setTitle(`${res.name} | CROPILOT`);
+
+                  const titleId = localStorage.getItem('titleId');
+                  if (titleId) {
+                    this.dashSvc.selectedTitle.set(res.titles.find(t => t._id === titleId) ?? null);
+                    localStorage.removeItem('titleId');
+                  }
                   
                   this.authSvc.canReadTitle.set(false);
                   if (this.authSvc.user()?.permissions.find(group => group.group_id === group_id && group.permission.includes('read_title'))) this.authSvc.canReadTitle.set(true);
@@ -290,8 +296,6 @@ export class MainComponent {
   }
 
   filterUsers(): void {
-    // this.dashSvc.displayedUsers.set(this.dashSvc.users().filter(u => u.full_name.toLowerCase().includes(this.dashSvc.searchUsers())));
-
     const searchUsers = this.dashSvc.searchUsers();
     this.dashSvc.displayedUsers.set(this.dashSvc.users().filter(u => 
       u.full_name.toLowerCase().includes(searchUsers)

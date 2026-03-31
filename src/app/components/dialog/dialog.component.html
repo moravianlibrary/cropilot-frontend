@@ -773,7 +773,7 @@
           [class.tertiary]="!btn.primary"
           [class.primary]="btn.primary"
           [class.destructive]="btn.destructive"
-          [class.disabled]="(btn.primary && uiSvc.dialogContentType() === 'edit-title' && !dashSvc.titleChanged()) || uiSvc.confirmBtnDisabled()"
+          [class.disabled]="(btn.primary && uiSvc.dialogContent() && uiSvc.dialogContentType() === 'edit-title' && !dashSvc.titleChanged()) || uiSvc.confirmBtnDisabled()"
           (click)="btn.action ? btn.action() : close()"
           (keydown.space)="btn.action ? btn.action() : close()"
           (keydown.enter)="btn.action ? btn.action() : close()"

@@ -34,6 +34,5 @@ export class AppComponent {
       console.log('https://github.com/trineracz/orezy-frontend/commit/' + devInfo.gitCommitHash);
     }
   }
-
 }
 

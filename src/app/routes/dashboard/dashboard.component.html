@@ -1,6 +1,7 @@
 <div 
   #mainWrapper
   class="main-wrapper"
+  (click)="dashSvc.selectedTitle.set(null)"
   (keydown)="dashSvc.onKeyDown($event)"
   tabindex="0"
 >

@@ -71,6 +71,8 @@ export class EditorComponent {
         edtSvc.images.set(imgItems);
         edtSvc.originalImages.set(imgItems);
 
+        if (this.authSvc.canReadGroup()) localStorage.setItem('titleId', res._id);
+
         edtSvc.gridMode.set(localStorage.getItem('gridMode') as GridMode ?? 'when-rotating');
         edtSvc.gridRadio.set(edtSvc.gridMode());
         edtSvc.outlineTransparent = localStorage.getItem('outlineTransparent') === 'true';

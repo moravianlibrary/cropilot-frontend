@@ -748,6 +748,7 @@ export class DashboardService {
       }
     ])
 
+    this.selectedTitle.set(title);
     uiSvc.openDialog();
   }
 

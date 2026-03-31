@@ -72,7 +72,7 @@ export class DialogComponent {
     this.backdropClick.emit();
     this.close();
 
-    const edtSvc = this.edtSvc;
-    if (this.uiSvc.dialogTitle() === 'Nastavení') this.edtSvc.gridRadio.set(edtSvc.gridMode());
+    if (this.uiSvc.dialogTitle() === 'Nastavení') this.edtSvc.gridRadio.set(this.edtSvc.gridMode());
+    if (['Úprava titulu', 'Smazat titul'].includes(this.uiSvc.dialogTitle())) this.dashSvc.selectedTitle.set(null);
   }
 }
