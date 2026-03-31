@@ -106,6 +106,7 @@ export class EditorService {
 
   // Other
   dimColor = signal<DimColor>('Černá');
+  gridSpacing: number = 12; // 40
   outlineTransparent: boolean = false;
   pageOutlineWidthPrimary: number = 3;
   pageOutlineWidthSecondary: number = 1;
@@ -1010,8 +1011,6 @@ export class EditorService {
       const right = hw;
       const bottom = hh;
 
-      const spacing = 40;
-
       ctx.save();
       ctx.beginPath();
 
@@ -1023,17 +1022,17 @@ export class EditorService {
 
       // To make 1px lines crisp on canvas, align to half-pixel in local space.
       // Also ensure the first line starts exactly at the top-left corner.
-      const xStart = left + spacing + 0.5;
-      const yStart = top + spacing + 0.5;
+      const xStart = left + this.gridSpacing + 0.5;
+      const yStart = top + this.gridSpacing + 0.5;
 
       // Vertical lines
-      for (let x = xStart; x <= right; x += spacing) {
+      for (let x = xStart; x <= right; x += this.gridSpacing) {
         ctx.moveTo(x, top);
         ctx.lineTo(x, bottom);
       }
 
       // Horizontal lines
-      for (let y = yStart; y <= bottom; y += spacing) {
+      for (let y = yStart; y <= bottom; y += this.gridSpacing) {
         ctx.moveTo(left, y);
         ctx.lineTo(right, y);
       }

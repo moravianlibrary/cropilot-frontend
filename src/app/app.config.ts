@@ -10,7 +10,7 @@ export const warningColor = '#FF9500';
 export const errorColor = '#FF3A30';
 export const editedColor = '#FFCC00';
 export const transparentColor = '#00000000';
-export const gridColor = '#FF000050';
+export const gridColor = '#0078FF66'; // '#FF000050'
 
 export const flagMessages: Record<string, string> = {
   'prediction_overlap': 'Výřezy se překrývají',
