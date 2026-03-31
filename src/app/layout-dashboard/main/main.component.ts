@@ -3,14 +3,14 @@ import { DashboardService } from '../../services/dashboard.service';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { permissionDict, titleStateDict, titleStateFilterDict } from '../../app.config';
-import { Group, GroupPage, Permission, PermissionType, SortField, SortState, User, UserInGroup } from '../../app.types';
+import { Title, Group, GroupPage, Permission, PermissionType, SortField, SortState, User, UserInGroup } from '../../app.types';
 import { focusElement, getDate, waitForElement } from '../../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, of, Subscription, switchMap, tap, throwError } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { OverlayModule } from '@angular/cdk/overlay';
-import { Title } from '@angular/platform-browser';
+import { Title as titleBrowser } from '@angular/platform-browser';
 import { ToastComponent } from '../../components/toast/toast.component';
 import { UiService } from '../../services/ui.service';
 import { TagsOverflowComponent } from '../../components/tags-overflow/tags-overflow.component';
@@ -26,7 +26,7 @@ export class MainComponent {
   dashSvc = inject(DashboardService);
   uiSvc = inject(UiService);
   authSvc = inject(AuthService);
-  private title = inject(Title);
+  private title = inject(titleBrowser);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private paramsOnGroupId = new Subscription();
@@ -243,6 +243,10 @@ export class MainComponent {
       || t._id.toLowerCase().includes(searchTitles)
       || (t.model ?? '').toLowerCase().includes(searchTitles)
     ));
+  }
+
+  canOpenTitle(title: Title): boolean {
+    return this.authSvc.canReadTitle() && this.shouldHaveLink(title.state);
   }
 
   shouldHaveLink(state: string): boolean {

@@ -425,15 +425,14 @@
               @let titles = dashSvc.displayedTitles();
               @if (titles.length) {
                 @for (title of titles; track title._id) {
-                  @let isClickable = authSvc.canReadTitle() && shouldHaveLink(title.state);
                   <tr
-                    [tabindex]="isClickable && !dialogOrDrawerOpen ? 0 : -1"
+                    [tabindex]="canOpenTitle(title) && !dialogOrDrawerOpen ? 0 : -1"
                     class="row"
                     [class.active]="dashSvc.selectedTitle() === title"
-                    [class.clickable]="isClickable"
-                    (click)="isClickable ? dashSvc.openTitle(title._id) : null"
-                    (keydown.space)="isClickable ? dashSvc.openTitle(title._id) : null"
-                    (keydown.enter)="isClickable ? dashSvc.openTitle(title._id) : null"
+                    [class.clickable]="canOpenTitle(title)"
+                    (click)="canOpenTitle(title) ? dashSvc.openTitle(title._id) : null"
+                    (keydown.space)="canOpenTitle(title) ? dashSvc.openTitle(title._id) : null"
+                    (keydown.enter)="canOpenTitle(title) ? dashSvc.openTitle(title._id) : null"
                   >
                     @if (seeActions) {
                       <td class="actions-cell">
