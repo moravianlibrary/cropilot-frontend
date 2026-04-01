@@ -79,10 +79,10 @@ export class MainComponent {
                   this.dashSvc.displayedTitles.set(res.titles);
                   this.title.setTitle(`${res.name} | CROPILOT`);
 
-                  const titleId = localStorage.getItem('titleId');
+                  const titleId = localStorage.getItem('backFromTitleId');
                   if (titleId) {
                     this.dashSvc.selectedTitle.set(res.titles.find(t => t._id === titleId) ?? null);
-                    localStorage.removeItem('titleId');
+                    localStorage.removeItem('backFromTitleId');
                   }
                   
                   this.authSvc.canReadTitle.set(false);

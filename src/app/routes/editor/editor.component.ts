@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
 import { UiService } from '../../services/ui.service';
 import { Title } from '@angular/platform-browser';
+import { scrollToElement, waitForElement } from '../../utils/utils';
 
 @Component({
   selector: 'app-editor',
@@ -64,28 +65,46 @@ export class EditorComponent {
           return throwError(() => err);
         })
       )
-      .subscribe((res: TitleDetail) => {
-        const imgItems: ImageItem[] = res.scans;
+      .subscribe(async (res: TitleDetail) => {
+
+        // Set tab title
         this.title.setTitle(`${res.external_id} | CROPILOT`);
+
+        // Set images
+        const imgItems: ImageItem[] = res.scans;
         edtSvc.loadingLeft = false;
         edtSvc.images.set(imgItems);
         edtSvc.originalImages.set(imgItems);
 
-        if (this.authSvc.canReadGroup()) localStorage.setItem('titleId', res._id);
-
+        // Set settings stuff
         edtSvc.gridMode.set(localStorage.getItem('gridMode') as GridMode ?? 'when-rotating');
         edtSvc.gridRadio.set(edtSvc.gridMode());
         edtSvc.outlineTransparent = localStorage.getItem('outlineTransparent') === 'true';
+        edtSvc.rememberLastSelectedImageOfLastOpenTitle = localStorage.getItem('rememberLastSelectedImageOfLastOpenTitle') === 'true';
+        edtSvc.lastSelectedImageId = localStorage.getItem('lastSelectedImageId') ?? '';
         edtSvc.selectedFilter = localStorage.getItem('filterScanTypeStart') as ScanType ?? 'all';
         edtSvc.scanTypeRadio.set(edtSvc.selectedFilter);
         edtSvc.selectedPageNumberFilter.set(localStorage.getItem('filterPageNumberStart') as PageNumberType ?? null);
         edtSvc.pageNumberRadio.set(edtSvc.selectedPageNumberFilter() ?? 'all');
-        edtSvc.setDisplayedImages();
         
+        // Set displayed images and main image
+        edtSvc.setDisplayedImages();
         const imageList = edtSvc.displayedImagesFinal();
         if (!imageList.length) edtSvc.loadingMain.set(false);
-        const newImage = imageList.find(img => img._id === edtSvc.mainImageItem()._id) || imageList[0] || { url: '' };
+        const shouldUseLastSelectedImage = res._id === localStorage.getItem('lastTitleId') && edtSvc.rememberLastSelectedImageOfLastOpenTitle;
+        const newImage = shouldUseLastSelectedImage
+          ? (imageList.find(img => img._id === edtSvc.lastSelectedImageId) ?? imageList[0])
+          : (imageList.find(img => img._id === edtSvc.mainImageItem()._id) || imageList[0] || { url: '' });
         edtSvc.setMainImage(newImage);
+        if (shouldUseLastSelectedImage) {
+          const el = await waitForElement(`#thumbnail-wrapper-${edtSvc.lastSelectedImageId}`);
+          scrollToElement(el);
+        }
+
+        // Store titleId
+        localStorage.setItem('lastTitleId', res._id);
+        if (!shouldUseLastSelectedImage) localStorage.removeItem('lastSelectedImageId');
+        if (this.authSvc.canReadGroup()) localStorage.setItem('backFromTitleId', res._id);
       });
   }
 

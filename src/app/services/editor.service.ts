@@ -104,7 +104,7 @@ export class EditorService {
   panPrevX: number = 0;
   panPrevY: number = 0;
 
-  // Other
+  // Draw page parameters
   dimColor = signal<DimColor>('Černá');
   gridSpacing: number = 12; // 40
   outlineTransparent: boolean = false;
@@ -112,7 +112,13 @@ export class EditorService {
   pageOutlineWidthSecondary: number = 1;
   cornerOutlineWidth: number = this.pageOutlineWidthPrimary - 1;
   cornerSize: number = 6;
+  
+  // Max pages per image
   maxPages: number = 2;
+
+  // Last selected scan
+  rememberLastSelectedImageOfLastOpenTitle: boolean = false;
+  lastSelectedImageId: string = '';
 
 
   /* ------------------------------
@@ -1208,6 +1214,8 @@ export class EditorService {
           this.dimColor.set('Černá');
           this.dimRadio.set('Černá');
           localStorage.setItem('dimColor', 'Černá');
+          this.rememberLastSelectedImageOfLastOpenTitle = false;
+          localStorage.setItem('rememberLastSelectedImageOfLastOpenTitle', 'false');
           this.scanTypeRadio.set('all');
           localStorage.setItem('filterScanTypeStart', 'all');
           this.pageNumberRadio.set('all');
@@ -1234,6 +1242,19 @@ export class EditorService {
   toggleOutline(): void {
     this.outlineTransparent = !this.outlineTransparent;
     localStorage.setItem('outlineTransparent', `${this.outlineTransparent}`);
+  }
+
+  toggleLastSelectedScan(): void {
+    this.rememberLastSelectedImageOfLastOpenTitle = !this.rememberLastSelectedImageOfLastOpenTitle;
+    localStorage.setItem('rememberLastSelectedImageOfLastOpenTitle', `${this.rememberLastSelectedImageOfLastOpenTitle}`);
+
+    if (this.rememberLastSelectedImageOfLastOpenTitle) {
+      this.lastSelectedImageId = this.mainImageItem()._id;
+      localStorage.setItem('lastSelectedImageId', `${this.lastSelectedImageId}`);
+      return;
+    }
+
+    localStorage.removeItem('lastSelectedImageId');
   }
 
   saveSettings(): void {

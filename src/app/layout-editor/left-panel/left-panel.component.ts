@@ -109,6 +109,14 @@ export class LeftPanelComponent {
     
     edtSvc.updateImagesByCurrentPages();
     edtSvc.setMainImage(image);
+
+    if (edtSvc.rememberLastSelectedImageOfLastOpenTitle) {
+      edtSvc.lastSelectedImageId = image._id;
+      localStorage.setItem('lastSelectedImageId', `${image._id}`);
+      return;
+    }
+    
+    localStorage.removeItem('lastSelectedImageId');
   }
 
   getStatus(image: ImageItem): 'edited' | 'error' | 'warning' | 'success' {

@@ -84,6 +84,17 @@
               </span>
             </div>
           }
+          <div class="settings-block">
+            <label class="settings-block-label toggle-switch">
+              <input
+                type="checkbox"
+                [checked]="edtSvc.rememberLastSelectedImageOfLastOpenTitle"
+                (click)="edtSvc.toggleLastSelectedScan()"
+              />
+              <span class="slider"></span>
+              Pamatovat si poslední vybraný sken u posledního otevřeného titulu
+            </label>
+          </div>
           <div class="settings-block last">
             <div class="settings-block-label">Aktivní filtry při startu aplikace</div>
             <div class="sublabel">Typ skenů</div>
