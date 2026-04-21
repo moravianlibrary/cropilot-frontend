@@ -1350,7 +1350,7 @@ export class EditorService {
       'm', 'M',                                             // Mřížka / grid
       'o', 'O',                                             // Obrys / outline
       'c', 'C',                                             // Clona (barva)
-      'Enter',                                              // Next scan, + control/cmd = uložit změny
+      'Enter', 'b', 'B',                                    // Next scan, + control/cmd = uložit změny
       'F1', 'F2', 'F3', 'F4',                               // Filters
       'Shift',                                              // + arrows = change width / height by 1
       'Control', 'Meta',                                    // + R = reset změn skenu; + shift + R = reset změn dokumentu
@@ -1829,7 +1829,7 @@ export class EditorService {
     }
 
     // Next scan based on number of current pages and selected page
-    if (key === 'Enter' && !event.ctrlKey && !event.metaKey && !dialogOpen) {
+    if (['Enter', 'b', 'B'].includes(key) && !event.ctrlKey && !event.metaKey && !dialogOpen) {
       if (!canWriteTitle) {
         this.showNextImage();
         return;
