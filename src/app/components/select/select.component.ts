@@ -60,7 +60,12 @@ export class SelectComponent implements ControlValueAccessor {
   });
 
   private browsingIndex = signal<number | null>(null);
-  browsingOption = computed<SelectOption | null>(() => this.filteredOptions()[this.browsingIndex() ?? 0]);
+  browsingOption = computed<SelectOption | null>(() => {
+    const browsingIndex = this.browsingIndex();
+    return browsingIndex !== null
+    ? this.filteredOptions()[browsingIndex]
+    : null;
+  });
 
   private onChange: (v: number | string | null) => void = () => {};
   private onTouched: () => void = () => {};
@@ -78,7 +83,7 @@ export class SelectComponent implements ControlValueAccessor {
   async open(): Promise<void> {
     this.isOpen.set(true);
     this.label.set('');
-    this.browsingIndex.set(0);
+    this.browsingIndex.set(null);
 
     const items = await waitForElement('.items', this.selectWrapper()?.nativeElement);
     
