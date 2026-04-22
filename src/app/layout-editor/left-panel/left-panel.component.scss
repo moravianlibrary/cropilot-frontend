@@ -213,6 +213,9 @@
   }
 }
 
-.selected { border-color: var(--primary); }
+.selected {
+  background-color: var(--bg-contrast);
+  border: 2px solid var(--primary);
+}
 
 app-loader { margin-top: var(--spacing-x5); }
