@@ -1350,7 +1350,7 @@ export class EditorService {
       'm', 'M',                                             // Mřížka / grid
       'o', 'O',                                             // Obrys / outline
       'c', 'C',                                             // Clona (barva)
-      'Enter', 'b', 'B',                                    // Next scan, + control/cmd = uložit změny
+      'Enter', 'b', 'B',                                    // Next scan, + control/cmd = uložit vše
       'F1', 'F2', 'F3', 'F4',                               // Filters
       'Shift',                                              // + arrows = change width / height by 1
       'Control', 'Meta',                                    // + R = reset změn skenu; + shift + R = reset změn dokumentu
@@ -1863,7 +1863,7 @@ export class EditorService {
       }
     }
 
-    // Uložit změny
+    // Uložit vše
     if (canWriteTitle && key === 'Enter' && (event.ctrlKey || event.metaKey)) {
       if (!dialogOpen) {
         this.saveChanges();
