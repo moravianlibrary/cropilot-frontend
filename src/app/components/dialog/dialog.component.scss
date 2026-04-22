@@ -158,6 +158,10 @@
         transform: translateX(16px);
       }
     }
+
+    .description {
+      @include styles.font(350, var(--font-size-x1-5), var(--spacing-x4), var(--text-light));
+    }
   }
 
   .last {
