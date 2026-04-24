@@ -6,7 +6,7 @@ import { LeftPanelComponent } from '../../layout-editor/left-panel/left-panel.co
 import { RightPanelComponent } from '../../layout-editor/right-panel/right-panel.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, forkJoin, map, Observable, of, Subscription, switchMap, tap, throwError } from 'rxjs';
-import { GridMode, ImageItem, PageNumberType, ScanType, TitleDetail } from '../../app.types';
+import { DimColor, GridMode, ImageItem, PageNumberType, ScanType, TitleDetail } from '../../app.types';
 import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
 import { UiService } from '../../services/ui.service';
@@ -92,6 +92,8 @@ export class EditorComponent {
         edtSvc.predictedImages.set(imgItemsPredicted ?? []);
 
         // Set settings stuff
+        edtSvc.dimColor.set(this.storage.get('dimColor') as DimColor ?? 'Černá');
+        edtSvc.dimRadio.set(edtSvc.dimColor());
         edtSvc.gridMode.set(this.storage.get('gridMode') as GridMode ?? 'when-rotating');
         edtSvc.gridRadio.set(edtSvc.gridMode());
         edtSvc.outlineTransparent = !!this.storage.get('outlineTransparent');
