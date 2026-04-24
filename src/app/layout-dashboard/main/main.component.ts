@@ -15,6 +15,7 @@ import { ToastComponent } from '../../components/toast/toast.component';
 import { UiService } from '../../services/ui.service';
 import { TagsOverflowComponent } from '../../components/tags-overflow/tags-overflow.component';
 import { ThTooltipDirective } from '../../directives/th-tooltip.directive';
+import { LocalStorageService } from '../../services/local-storage.service';
 
 @Component({
   selector: 'app-main-dashboard',
@@ -26,6 +27,7 @@ export class MainComponent {
   dashSvc = inject(DashboardService);
   uiSvc = inject(UiService);
   authSvc = inject(AuthService);
+  private storage = inject(LocalStorageService);
   private title = inject(titleBrowser);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
@@ -79,10 +81,10 @@ export class MainComponent {
                   this.dashSvc.displayedTitles.set(res.titles);
                   this.title.setTitle(`${res.name} | CROPILOT`);
 
-                  const titleId = localStorage.getItem('backFromTitleId');
+                  const titleId = this.storage.get('backFromTitleId');
                   if (titleId) {
                     this.dashSvc.selectedTitle.set(res.titles.find(t => t._id === titleId) ?? null);
-                    localStorage.removeItem('backFromTitleId');
+                    this.storage.remove('backFromTitleId');
                   }
                   
                   this.authSvc.canReadTitle.set(false);

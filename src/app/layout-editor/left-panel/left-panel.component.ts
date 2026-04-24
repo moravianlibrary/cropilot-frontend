@@ -8,6 +8,7 @@ import { flagMessages } from '../../app.config';
 import { AuthService } from '../../services/auth.service';
 import { DashboardService } from '../../services/dashboard.service';
 import { OverlayScrollbars } from 'overlayscrollbars';
+import { LocalStorageService } from '../../services/local-storage.service';
 
 @Component({
   selector: 'app-left-panel-editor',
@@ -19,6 +20,7 @@ export class LeftPanelComponent {
   edtSvc = inject(EditorService);
   dashSvc = inject(DashboardService);
   authSvc = inject(AuthService);
+  private storage = inject(LocalStorageService);
 
   thumbnailsScroll = viewChild<ElementRef<HTMLDivElement>>('thumbnailsScroll');
   private osInstance?: ReturnType<typeof OverlayScrollbars>;
@@ -112,11 +114,11 @@ export class LeftPanelComponent {
 
     if (edtSvc.rememberLastSelectedImageOfLastOpenTitle) {
       edtSvc.lastSelectedImageId = image._id;
-      localStorage.setItem('lastSelectedImageId', `${image._id}`);
+      this.storage.set('lastSelectedImageId', `${image._id}`);
       return;
     }
     
-    localStorage.removeItem('lastSelectedImageId');
+    this.storage.remove('lastSelectedImageId');
   }
 
   getStatus(image: ImageItem): 'edited' | 'error' | 'warning' | 'success' {

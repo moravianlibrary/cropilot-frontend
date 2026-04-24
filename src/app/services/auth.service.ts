@@ -4,6 +4,7 @@ import { EnvironmentService } from './environment.service';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { catchError, of, throwError } from 'rxjs';
 import { User } from '../app.types';
+import { LocalStorageService } from './local-storage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private envSvc = inject(EnvironmentService);
+  private storage = inject(LocalStorageService);
 
   username = signal<string>('');
   password = signal<string>('');
@@ -30,7 +32,7 @@ export class AuthService {
   get apiUrl(): string { return this.envSvc.get('serverBaseUrl') };
   authHeaders(type: string = 'json', contentType: boolean = false): HttpHeaders {
     const authType = 'Bearer';
-    const accessToken = localStorage.getItem('access_token');
+    const accessToken = this.storage.get<string>('access_token');
 
     return new HttpHeaders({
       accept: type === 'json' ? 'application/json' : '*/*',
@@ -47,7 +49,7 @@ export class AuthService {
     
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
     const url = state.url;
-    localStorage.setItem('redirectUri', url);
+    this.storage.set('redirectUri', url);
 
     let titleId: string | undefined = '';
     if (url.includes('book')) titleId = url.split('/').pop();
@@ -82,7 +84,7 @@ export class AuthService {
   }
 
   login(): void {
-    localStorage.removeItem('access_token');
+    this.storage.remove('access_token');
     this.error.set('');
 
     this.getToken().pipe(
@@ -97,7 +99,7 @@ export class AuthService {
         return;
       }
 
-      localStorage.setItem('access_token', res.access_token);
+      this.storage.set('access_token', res.access_token);
 
       this.redirectToStoredUri();
     })
@@ -117,11 +119,11 @@ export class AuthService {
   }
 
   private redirectToStoredUri(): void {
-    window.location.href = `${this.baseUri}${localStorage.getItem('redirectUri')}`;
+    window.location.href = `${this.baseUri}${this.storage.get('redirectUri')}`;
   }
 
   logout(): void {
-    localStorage.removeItem('access_token');
+    this.storage.remove('access_token');
     window.location.href = `${this.baseUri}/login`;
   }
 }

@@ -36,9 +36,22 @@
       @let canWriteTitle = authSvc.canWriteTitle();
       @let dialogContentType = uiSvc.dialogContentType();
 
-      <!-- Setting -->
+      <!-- Settings -->
       @if (dialogContentType === 'settings') {
         <div class="settings-content-wrapper">
+          @if (authSvc.isAdmin()) {
+            <div class="settings-block">
+              <label class="settings-block-label toggle-switch">
+                <input
+                  type="checkbox"
+                  [checked]="edtSvc.showPredictions"
+                  (click)="edtSvc.togglePredictions()"
+                />
+                <span class="slider"></span>
+                Zobrazení původních predikcí
+              </label>
+            </div>
+          }
           @if (canWriteTitle) {
             <div class="settings-block">
               <div class="settings-block-label">Zobrazení mřížky</div>

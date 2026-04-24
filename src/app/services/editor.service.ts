@@ -7,6 +7,7 @@ import { EnvironmentService } from './environment.service';
 import { dimColorDict, gridColor, transparentColor } from '../app.config';
 import { AuthService } from './auth.service';
 import { UiService } from './ui.service';
+import { LocalStorageService } from './local-storage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,7 @@ export class EditorService {
   private envService = inject(EnvironmentService);
   private authSvc = inject(AuthService);
   private uiSvc = inject(UiService);
+  private storage = inject(LocalStorageService);
   
   private get apiUrl(): string { return this.envService.get('serverBaseUrl') };
 
@@ -32,6 +34,7 @@ export class EditorService {
   originalImages = signal<ImageItem[]>([]);
   displayedImages = signal<ImageItem[]>([]);
   displayedImagesPages = signal<ImageItem[]>([]);
+  predictedImages = signal<ImageItem[]>([]);
   sthWasEdited: boolean = false;
 
   mainImageItem = signal<ImageItem>({ _id: '', url: '', thumbnailUrl: '', edited: false, flags: [], pages: [] });
@@ -112,6 +115,7 @@ export class EditorService {
   pageOutlineWidthSecondary: number = 1;
   cornerOutlineWidth: number = this.pageOutlineWidthPrimary - 1;
   cornerSize: number = 6;
+  showPredictions: boolean = false;
   
   // Max pages per image
   maxPages: number = 2;
@@ -1206,20 +1210,22 @@ export class EditorService {
       { 
         label: 'Reset',
         action: () => {
+          this.showPredictions = false;
+          this.storage.remove('showPredictions');
           this.gridRadio.set('when-rotating');
           this.gridMode.set('when-rotating');
-          localStorage.setItem('gridMode', 'when-rotating');
+          this.storage.set('gridMode', 'when-rotating');
           this.outlineTransparent = false;
-          localStorage.setItem('outlineTransparent', 'false');
+          this.storage.remove('outlineTransparent');
           this.dimColor.set('Černá');
           this.dimRadio.set('Černá');
-          localStorage.setItem('dimColor', 'Černá');
+          this.storage.set('dimColor', 'Černá');
           this.rememberLastSelectedImageOfLastOpenTitle = false;
-          localStorage.setItem('rememberLastSelectedImageOfLastOpenTitle', 'false');
+          this.storage.remove('rememberLastSelectedImageOfLastOpenTitle');
           this.scanTypeRadio.set('all');
-          localStorage.setItem('filterScanTypeStart', 'all');
+          this.storage.set('filterScanTypeStart', 'all');
           this.pageNumberRadio.set('all');
-          localStorage.setItem('filterPageNumberStart', 'all');
+          this.storage.set('filterPageNumberStart', 'all');
           this.redrawImageOnCanvas();
           this.currentPages.forEach(p => this.drawPage(p));
           uiSvc.closeDialog();
@@ -1239,33 +1245,38 @@ export class EditorService {
     uiSvc.openDialog();
   }
 
+  togglePredictions(): void {
+    this.showPredictions = !this.showPredictions;
+  }
+
   toggleOutline(): void {
     this.outlineTransparent = !this.outlineTransparent;
-    localStorage.setItem('outlineTransparent', `${this.outlineTransparent}`);
   }
 
   toggleLastSelectedScan(): void {
     this.rememberLastSelectedImageOfLastOpenTitle = !this.rememberLastSelectedImageOfLastOpenTitle;
-    localStorage.setItem('rememberLastSelectedImageOfLastOpenTitle', `${this.rememberLastSelectedImageOfLastOpenTitle}`);
-
-    if (this.rememberLastSelectedImageOfLastOpenTitle) {
-      this.lastSelectedImageId = this.mainImageItem()._id;
-      localStorage.setItem('lastSelectedImageId', `${this.lastSelectedImageId}`);
-      return;
-    }
-
-    localStorage.removeItem('lastSelectedImageId');
   }
 
   saveSettings(): void {
+    this.storage.set('showPredictions', this.showPredictions);
     const gridRadio = this.gridRadio();
     this.gridMode.set(gridRadio);
-    localStorage.setItem('gridMode', gridRadio);
+    this.storage.set('gridMode', gridRadio);
+    this.storage.set('outlineTransparent', this.outlineTransparent);
     const dimRadio = this.dimRadio();
     this.dimColor.set(dimRadio);
-    localStorage.setItem('dimColor', dimRadio);
-    localStorage.setItem('filterScanTypeStart', this.scanTypeRadio());
-    localStorage.setItem('filterPageNumberStart', this.pageNumberRadio());
+    this.storage.set('dimColor', dimRadio);
+    
+    this.storage.set('rememberLastSelectedImageOfLastOpenTitle', this.rememberLastSelectedImageOfLastOpenTitle);
+    if (this.rememberLastSelectedImageOfLastOpenTitle) {
+      this.lastSelectedImageId = this.mainImageItem()._id;
+      this.storage.set('lastSelectedImageId', `${this.lastSelectedImageId}`);
+    } else {
+      this.storage.remove('lastSelectedImageId');
+    }
+
+    this.storage.set('filterScanTypeStart', this.scanTypeRadio());
+    this.storage.set('filterPageNumberStart', this.pageNumberRadio());
     this.redrawImageOnCanvas();
     this.currentPages.forEach(p => this.drawPage(p));
     this.uiSvc.showToast('Nastavení bylo uloženo.', { type: 'success' });
@@ -1357,7 +1368,8 @@ export class EditorService {
       'a', 'A', 's', 'S',                                   // Rotate by 1
       'k', 'K',                                             // Shortcuts
       'q', 'Q', 'w', 'W', 'e', 'E', 'r', 'R',               // Zooming
-      'Tab'                                                 // Cycle through current pages
+      'Tab',                                                // Cycle through current pages
+      'h', 'H'                                              // Show predictions
     ].includes(key);
   }
 
@@ -1425,13 +1437,20 @@ export class EditorService {
     // Add page
     if (canWriteTitle && ['p', 'P'].includes(key) && !dialogOpen && this.currentPages.length < this.maxPages) this.addPage();
 
+    // Show predictions
+    if (this.authSvc.isAdmin() && ['h', 'H'].includes(key) && !dialogOpen) {
+      this.showPredictions = !this.showPredictions;
+      this.storage.set('showPredictions', this.showPredictions);
+      window.location.reload();
+    }
+
     // Change grid mode
     if (canWriteTitle && ['m', 'M'].includes(key) && this.selectedPage &&!dialogOpen) {
       this.gridMode.set(!this.isRotating
         ? this.gridMode() === 'always' ? 'when-rotating' : 'always'
         : this.gridMode() === 'never' ? 'when-rotating' : 'never');
       this.gridRadio.set(this.gridMode());
-      localStorage.setItem('gridMode', this.gridMode());
+      this.storage.set('gridMode', this.gridMode());
       this.redrawImageOnCanvas();
       this.currentPages.forEach(p => this.drawPage(p));
     };
@@ -1439,7 +1458,7 @@ export class EditorService {
     // Outline transparency
     if (canWriteTitle && ['o', 'O'].includes(key) && this.selectedPage && !dialogOpen) {
       this.outlineTransparent = !this.outlineTransparent;
-      localStorage.setItem('outlineTransparent', String(this.outlineTransparent));
+      this.storage.set('outlineTransparent', this.outlineTransparent);
       this.redrawImageOnCanvas();
       this.currentPages.forEach(p => this.drawPage(p));
     }
@@ -1448,7 +1467,7 @@ export class EditorService {
     if (canWriteTitle && ['c', 'C'].includes(key) && this.selectedPage && !dialogOpen) {
       this.dimColor.update(prev => prev === 'Černá' ? 'Červená' : (prev === 'Červená' ? 'Bílá' : 'Černá'));
       this.dimRadio.set(this.dimColor());
-      localStorage.setItem('dimColor', this.dimColor());
+      this.storage.set('dimColor', this.dimColor());
       this.redrawImageOnCanvas();
       this.currentPages.forEach(p => this.drawPage(p));
     }
