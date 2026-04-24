@@ -4,7 +4,7 @@ import { DimColor, GridMode, HitInfo, ImageItem, ImageRect, MousePos, Page, Page
 import { catchError, Observable, throwError } from 'rxjs';
 import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
-import { dimColorDict, gridColor, transparentColor } from '../app.config';
+import { dimColorDict, gridColor, predictedColor, transparentColor } from '../app.config';
 import { AuthService } from './auth.service';
 import { UiService } from './ui.service';
 import { LocalStorageService } from './local-storage.service';
@@ -53,6 +53,7 @@ export class EditorService {
 
   // Interactions
   pageWasEdited: boolean = false;
+  currentPredictedPages: Page[] = [];
   currentPages: Page[] = [];
   selectedPage: Page | null = null;
   lastSelectedPage: Page | null = null;
@@ -141,6 +142,10 @@ export class EditorService {
     return this.http.get<TitleDetail>(`${this.apiUrl}/${id}/scans`, { headers: this.authSvc.authHeaders('json', true) });
   }
 
+  fetchPredictedScans(id: string): Observable<TitleDetail> {
+    return this.http.get<TitleDetail>(`${this.apiUrl}/${id}/predicted-scans`, { headers: this.authSvc.authHeaders('json', true) });
+  }
+
   fetchThumbnail(id: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${this.book()}/thumbnails?scan_id=${id}`, { 
       responseType: 'blob',
@@ -174,6 +179,7 @@ export class EditorService {
     this.selectedPage = null;
     this.resetZoom();
     this.redrawImageOnCanvas();
+    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
     this.currentPages.forEach(p => this.drawPage(p));
     this.updateMainImageItemAndImages();
     
@@ -439,6 +445,66 @@ export class EditorService {
     this.applyViewportTransform(ctx);
     ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 
+    // Predicted pages
+    if (this.showPredictions) {
+      this.currentPredictedPages = [];
+      this.predictedImages()
+        .find(img => img._id === imgItem._id)
+        ?.pages
+        ?.forEach(p => {
+          const { left, right, top, bottom } = this.computeBounds(p.xc, p.yc, p.width, p.height, p.angle);
+          
+          // Correction of edges going outside canvas (should be done on BE)
+          let correctXc = p.xc;
+          let correctYc = p.yc;
+          let correctWidth = p.width;
+          let correctHeight = p.height;
+          let correctLeft = left;
+          let correctRight = right;
+          let correctTop = top;
+          let correctBottom = bottom;
+          
+          if (left < 0) {
+            correctLeft = 0;
+            correctXc += Math.abs(left / 2);
+            correctWidth -= Math.abs(left);
+          }
+
+          if (right > 1) {
+            correctRight = 1;
+            correctXc -= Math.abs((right - 1) / 2);
+            correctWidth -= right - 1;
+          }
+
+          if (top < 0) {
+            correctTop = 0;
+            correctYc += Math.abs(top / 2);
+            correctHeight -= Math.abs(top);
+          }
+
+          if (bottom > 1) {
+            correctBottom = 1;
+            correctYc -= Math.abs((bottom - 1) / 2);
+            correctHeight -= bottom - 1;
+          }
+          
+          const updatedPage = {
+            ...p,
+            xc: roundToDecimals(correctXc, 4),
+            yc: roundToDecimals(correctYc, 4),
+            width: roundToDecimals(correctWidth, 4),
+            height: roundToDecimals(correctHeight, 4),
+            left: roundToDecimals(correctLeft, 4),
+            right: roundToDecimals(correctRight, 4),
+            top: roundToDecimals(correctTop, 4),
+            bottom: roundToDecimals(correctBottom, 4)
+          }
+
+          this.currentPredictedPages.push(updatedPage);
+          this.drawPagePredicted(updatedPage);
+        });
+    }
+
     // Pages
     this.currentPages = [];
     this.images()
@@ -510,31 +576,28 @@ export class EditorService {
     }
   }
 
-  private dimOutside(p: Page) {
-    const { c, ctx } = this;
-    
-    const angle = degreeToRadian(p.angle);
+  drawPagePredicted(p: Page): void {
+    const { ctx } = this;
 
-    ctx.save();
-
-    // Outside rect
-    ctx.beginPath();
-    const { x, y, width: iw, height: ih } = this.imageRect;
-    ctx.rect(x, y, iw, ih);
-
-    ctx.save();
-
-    // Inner rect
     const { centerX, centerY, width, height } = this.getPageRectPx(p);
+    
+    ctx.save();
+
     ctx.translate(centerX, centerY);
-    ctx.rotate(angle);
-    ctx.rect(-width/2, -height/2, width, height);
-    ctx.restore();
+    ctx.rotate(degreeToRadian(p.angle));
 
-    ctx.clip('evenodd');
-
-    ctx.fillStyle = `rgba(${dimColorDict[this.dimColor()]})`;
-    ctx.fillRect(0, 0, c.width, c.height);
+    // Outline
+    ctx.strokeStyle = `${predictedColor}B2`;
+    const pageOutlineWidth = !this.selectedPage
+      ? this.pageOutlineWidthPrimary
+      : this.pageOutlineWidthSecondary;
+    ctx.lineWidth = pageOutlineWidth;
+    ctx.strokeRect(
+      -width / 2 - pageOutlineWidth / 2,
+      -height / 2 - pageOutlineWidth / 2,
+      width + pageOutlineWidth,
+      height + pageOutlineWidth
+    );
 
     ctx.restore();
   }
@@ -587,6 +650,7 @@ export class EditorService {
     this.snapped = false;
 
     this.redrawImageOnCanvas();
+    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
     this.currentPages.forEach(p => this.drawPage(p));
   }
 
@@ -612,6 +676,7 @@ export class EditorService {
 
     this.clampViewportToMinZoomEnvelope();
     this.redrawImageOnCanvas();
+    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
     this.currentPages.forEach(p => this.drawPage(p));
   }
 
@@ -623,6 +688,7 @@ export class EditorService {
 
     this.clampViewportToMinZoomEnvelope();
     this.redrawImageOnCanvas();
+    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
     this.currentPages.forEach(p => this.drawPage(p));
   }
 
@@ -833,6 +899,7 @@ export class EditorService {
     this.snapped = true;
 
     this.redrawImageOnCanvas();
+    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
     this.currentPages.forEach(p => this.drawPage(p));
   }
 
@@ -859,28 +926,6 @@ export class EditorService {
       await this.uiSvc.waitForFalse(this.imgWasEdited);
       this.setDisplayedImages();
     }
-  }
-
-  markImageOK(): void {
-    if (this.currentPages.find(p => p.edited) || this.imgWasEdited() || !this.displayedImagesFinal().length) return;
-    
-    this.imgWasEdited.set(false);
-    this.images.update(prev =>
-      prev.map(img => img._id === this.mainImageItem()._id
-        ? { 
-            ...img,
-            flags: [],
-            pages: this.currentPages.map(p => ({
-              ...p,
-              flags: []
-            }))
-          }
-        : img
-      )
-    );
-
-    this.showImage(1);
-    this.uiSvc.showToast('Sken byl přesunut do OK.');
   }
 
   private showImage(offset: number): void {
@@ -927,6 +972,7 @@ export class EditorService {
 
   hoveringPage(hoveredPageId: string): void {
     this.redrawImageOnCanvas();
+    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
     this.currentPages.forEach(p => this.drawPage(p, hoveredPageId));
   }
 
@@ -1113,6 +1159,7 @@ export class EditorService {
     this.selectedPage = this.currentPages[this.currentPages.length - 1];
     this.imgWasEdited.set(true);
     this.redrawImageOnCanvas();
+    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
     this.currentPages.forEach(p => this.drawPage(p));
 
     this.resetZoom();
@@ -1123,11 +1170,41 @@ export class EditorService {
     if (this.currentPages.length) this.currentPages = this.currentPages.map(p => ({ ...p, type: 'single' }));
     this.selectedPage = null;
     this.redrawImageOnCanvas();
+    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
     this.currentPages.forEach(p => this.drawPage(p));
     this.updateMainImageItem();
     this.pageWasEdited = true;
     this.imgWasEdited.set(true);
     this.sthWasEdited = true;
+  }
+
+  private dimOutside(p: Page) {
+    const { c, ctx } = this;
+    
+    const angle = degreeToRadian(p.angle);
+
+    ctx.save();
+
+    // Outside rect
+    ctx.beginPath();
+    const { x, y, width: iw, height: ih } = this.imageRect;
+    ctx.rect(x, y, iw, ih);
+
+    ctx.save();
+
+    // Inner rect
+    const { centerX, centerY, width, height } = this.getPageRectPx(p);
+    ctx.translate(centerX, centerY);
+    ctx.rotate(angle);
+    ctx.rect(-width/2, -height/2, width, height);
+    ctx.restore();
+
+    ctx.clip('evenodd');
+
+    ctx.fillStyle = `rgba(${dimColorDict[this.dimColor()]})`;
+    ctx.fillRect(0, 0, c.width, c.height);
+
+    ctx.restore();
   }
 
   redrawImageOnCanvas(): void {
@@ -1227,6 +1304,7 @@ export class EditorService {
           this.pageNumberRadio.set('all');
           this.storage.set('filterPageNumberStart', 'all');
           this.redrawImageOnCanvas();
+          if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
           this.currentPages.forEach(p => this.drawPage(p));
           uiSvc.closeDialog();
           uiSvc.showToast('Nastavení bylo resetováno.', { type: 'success' });
@@ -1278,6 +1356,7 @@ export class EditorService {
     this.storage.set('filterScanTypeStart', this.scanTypeRadio());
     this.storage.set('filterPageNumberStart', this.pageNumberRadio());
     this.redrawImageOnCanvas();
+    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
     this.currentPages.forEach(p => this.drawPage(p));
     this.uiSvc.showToast('Nastavení bylo uloženo.', { type: 'success' });
   }
@@ -1409,6 +1488,7 @@ export class EditorService {
       this.clickedDiffPage = this.lastSelectedPage && this.selectedPage && this.lastSelectedPage !== this.selectedPage;
       this.lastPageCursorIsInside = this.selectedPage;
       this.redrawImageOnCanvas();
+      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
       this.updateMainImageItem();
     }
@@ -1427,6 +1507,7 @@ export class EditorService {
       this.selectedPage = null;
       this.lastPageCursorIsInside = null;
       this.redrawImageOnCanvas();
+      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
       this.updateMainImageItem();
     }
@@ -1452,6 +1533,7 @@ export class EditorService {
       this.gridRadio.set(this.gridMode());
       this.storage.set('gridMode', this.gridMode());
       this.redrawImageOnCanvas();
+      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
     };
 
@@ -1460,6 +1542,7 @@ export class EditorService {
       this.outlineTransparent = !this.outlineTransparent;
       this.storage.set('outlineTransparent', this.outlineTransparent);
       this.redrawImageOnCanvas();
+      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
     }
 
@@ -1469,6 +1552,7 @@ export class EditorService {
       this.dimRadio.set(this.dimColor());
       this.storage.set('dimColor', this.dimColor());
       this.redrawImageOnCanvas();
+      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
     }
 
@@ -1527,6 +1611,7 @@ export class EditorService {
       this.currentPages = this.currentPages.map(p =>p._id === updatedPage._id ? updatedPage : p);
 
       this.redrawImageOnCanvas();
+      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
     }
 
@@ -1775,6 +1860,7 @@ export class EditorService {
       this.imgWasEdited.set(true);
       this.sthWasEdited = true;
       this.redrawImageOnCanvas();
+      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
     }
 
@@ -1819,6 +1905,7 @@ export class EditorService {
       this.imgWasEdited.set(true);
       this.sthWasEdited = true;
       this.redrawImageOnCanvas();
+      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
     }
 
@@ -1864,6 +1951,7 @@ export class EditorService {
         this.selectedPage = this.currentPages[newIndex];
         this.lastPageCursorIsInside = this.selectedPage;
         this.redrawImageOnCanvas();
+        if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
         this.currentPages.forEach(p => this.drawPage(p));
         return;
       }
@@ -1877,6 +1965,7 @@ export class EditorService {
         this.selectedPage = this.currentPages.reduce((min, page) => page.xc < min.xc ? page : min);
         this.lastPageCursorIsInside = this.selectedPage;
         this.redrawImageOnCanvas();
+        if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
         this.currentPages.forEach(p => this.drawPage(p));
         this.updateMainImageItem();
       }
@@ -1959,6 +2048,7 @@ export class EditorService {
       this.selectedPage = this.currentPages[newIndex];
       this.lastPageCursorIsInside = this.selectedPage;
       this.redrawImageOnCanvas();
+      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
     };
   }
@@ -1980,6 +2070,7 @@ export class EditorService {
     ) {
       this.isRotating = false;
       this.redrawImageOnCanvas();
+      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
     }
   }

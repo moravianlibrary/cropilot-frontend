@@ -98,6 +98,7 @@ export class MainComponent {
                 };
 
                 edtSvc.redrawImageOnCanvas();
+                if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
                 edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
               }
             });
@@ -154,6 +155,7 @@ export class MainComponent {
       edtSvc.selectedPage = null;
       edtSvc.lastPageCursorIsInside = null;
       edtSvc.redrawImageOnCanvas();
+      if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
       edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
       edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
       edtSvc.hoveringPage('');
@@ -259,6 +261,7 @@ export class MainComponent {
       edtSvc.clickedDiffPage = edtSvc.lastSelectedPage && edtSvc.selectedPage && edtSvc.lastSelectedPage !== edtSvc.selectedPage;
       edtSvc.lastPageCursorIsInside = hitPage;
       edtSvc.redrawImageOnCanvas();
+      if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
       edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
       edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
       edtSvc.hoveringPage(hitPage?._id ?? '');
@@ -317,6 +320,7 @@ export class MainComponent {
           if (!edtSvc.imgWasEdited()) return;
           if (hitPage) edtSvc.hoveringPage(hitPage._id);
           edtSvc.redrawImageOnCanvas();
+          if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
           edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
           edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
           return;
@@ -363,6 +367,7 @@ export class MainComponent {
           edtSvc.isRotating = false;
           edtSvc.rotationStartPage = null;
           edtSvc.redrawImageOnCanvas();
+          if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
           edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
           edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
           return;
@@ -392,6 +397,7 @@ export class MainComponent {
         edtSvc.resizeStartPage = null;
         edtSvc.resizeStartMouse = null;
         edtSvc.redrawImageOnCanvas();
+        if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
         edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
         edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
         return;
@@ -688,6 +694,7 @@ export class MainComponent {
     edtSvc.imgWasEdited.set(true);
     edtSvc.sthWasEdited = true;
     edtSvc.redrawImageOnCanvas();
+    if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
     edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
   }
 
@@ -775,6 +782,7 @@ export class MainComponent {
     edtSvc.imgWasEdited.set(true);
     edtSvc.sthWasEdited = true;
     edtSvc.redrawImageOnCanvas();
+    if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
     edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
   }
 
@@ -1600,6 +1608,7 @@ export class MainComponent {
     edtSvc.selectedPage = p;
     edtSvc.currentPages = edtSvc.currentPages.map(page => page._id === p._id ? p : page);
     edtSvc.redrawImageOnCanvas();
+    if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
     edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
   }
 
@@ -2558,6 +2567,7 @@ export class MainComponent {
     edtSvc.selectedPage = p;
     edtSvc.currentPages = edtSvc.currentPages.map(page => page._id === p._id ? p : page);
     edtSvc.redrawImageOnCanvas();
+    if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
     edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
   }
 
@@ -2578,6 +2588,7 @@ export class MainComponent {
       edtSvc.resizeMode = null;
       
       edtSvc.redrawImageOnCanvas();
+      if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
       edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));  
       return;
     }

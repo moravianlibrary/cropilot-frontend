@@ -9,7 +9,7 @@ export const defaultColor = '#00DDFF';
 export const warningColor = '#FF9500';
 export const errorColor = '#FF3A30';
 export const editedColor = '#FFCC00';
-export const predictedColor = '#34C759';
+export const predictedColor = '#A855F7';
 export const transparentColor = '#00000000';
 export const gridColor = '#0078FF66'; // '#FF000050'
 

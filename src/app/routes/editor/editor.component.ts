@@ -5,7 +5,7 @@ import { BottomPanelComponent } from '../../layout-editor/bottom-panel/bottom-pa
 import { LeftPanelComponent } from '../../layout-editor/left-panel/left-panel.component';
 import { RightPanelComponent } from '../../layout-editor/right-panel/right-panel.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, map, Subscription, switchMap, tap, throwError } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, Subscription, switchMap, tap, throwError } from 'rxjs';
 import { GridMode, ImageItem, PageNumberType, ScanType, TitleDetail } from '../../app.types';
 import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
@@ -58,7 +58,18 @@ export class EditorComponent {
           edtSvc.loadingLeft = true;
           edtSvc.loadingMain.set(true);
         }),
-        switchMap(() => edtSvc.fetchScans(edtSvc.book())),
+        switchMap(() => {
+          edtSvc.showPredictions = !!this.storage.get('showPredictions');
+          const book = edtSvc.book();
+          
+          const requests: [Observable<TitleDetail | null>, Observable<TitleDetail>] = [
+            edtSvc.showPredictions
+              ? edtSvc.fetchPredictedScans(book)
+              : of(null),
+            edtSvc.fetchScans(book)];
+
+          return forkJoin(requests);
+        }),
         catchError(err => {
           err.status === 403
             ? this.router.navigate(['/forbidden'])
@@ -67,19 +78,20 @@ export class EditorComponent {
           return throwError(() => err);
         })
       )
-      .subscribe(async (res: TitleDetail) => {
+      .subscribe(async ([resPredicted, res]) => {
 
         // Set tab title
         this.title.setTitle(`${res.external_id} | CROPILOT`);
 
         // Set images
+        const imgItemsPredicted: ImageItem[] | undefined = resPredicted?.scans;
         const imgItems: ImageItem[] = res.scans;
         edtSvc.loadingLeft = false;
         edtSvc.images.set(imgItems);
         edtSvc.originalImages.set(imgItems);
+        edtSvc.predictedImages.set(imgItemsPredicted ?? []);
 
         // Set settings stuff
-        edtSvc.showPredictions = !!this.storage.get('showPredictions');
         edtSvc.gridMode.set(this.storage.get('gridMode') as GridMode ?? 'when-rotating');
         edtSvc.gridRadio.set(edtSvc.gridMode());
         edtSvc.outlineTransparent = !!this.storage.get('outlineTransparent');
