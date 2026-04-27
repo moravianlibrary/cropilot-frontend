@@ -75,7 +75,8 @@
               </span>
             </div>
             <div class="settings-block">
-              <div class="settings-block-label">Tloušťka obrysu vybraného výřezu</div>
+              <div class="settings-block-label">Obrys vybraného výřezu</div>
+              <div class="sublabel">Tloušťka</div>
               <span class="radios-wrapper">
                 @for (outlineWidth of outlineWidthDictKeys; track outlineWidth) {
                   <label class="radio">
@@ -89,8 +90,7 @@
                   </label>
                 }
               </span>
-            </div>
-            <div class="settings-block">
+              <div class="sublabel last-sublabel">Čárkovanost</div>
               <label class="settings-block-label toggle-switch">
                 <input
                   type="checkbox"
@@ -98,9 +98,12 @@
                   (click)="edtSvc.toggleOutlineDashed()"
                 />
                 <span class="slider"></span>
-                Čárkovaný obrys vybraného výřezu
+                <!-- Čárkovaný obrys vybraného výřezu -->
               </label>
             </div>
+            <!-- <div class="settings-block">
+              
+            </div> -->
             <div class="settings-block">
               <div class="settings-block-label">Barva clony</div>
               <span class="radios-wrapper">
