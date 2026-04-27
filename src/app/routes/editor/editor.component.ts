@@ -59,7 +59,7 @@ export class EditorComponent {
           edtSvc.loadingMain.set(true);
         }),
         switchMap(() => {
-          edtSvc.showPredictions = !!this.storage.get('showPredictions');
+          edtSvc.showPredictions = !!this.storage.get('showPredictions', null, true);
           const book = edtSvc.book();
           
           const requests: [Observable<TitleDetail | null>, Observable<TitleDetail>] = [
@@ -92,23 +92,23 @@ export class EditorComponent {
         edtSvc.predictedImages.set(imgItemsPredicted ?? []);
 
         // Set settings stuff
-        edtSvc.dimColor.set(this.storage.get('dimColor') as DimColor ?? 'Černá');
+        edtSvc.dimColor.set(this.storage.get('dimColor', 'Černá', true) as DimColor);
         edtSvc.dimRadio.set(edtSvc.dimColor());
-        edtSvc.gridMode.set(this.storage.get('gridMode') as GridMode ?? 'when-rotating');
+        edtSvc.gridMode.set(this.storage.get('gridMode', 'when-rotating', true) as GridMode);
         edtSvc.gridRadio.set(edtSvc.gridMode());
-        edtSvc.outlineTransparent = !!this.storage.get('outlineTransparent');
-        edtSvc.rememberLastSelectedImageOfLastOpenTitle = !!this.storage.get('rememberLastSelectedImageOfLastOpenTitle');
-        edtSvc.lastSelectedImageId = this.storage.get('lastSelectedImageId') ?? '';
-        edtSvc.selectedFilter = this.storage.get('filterScanTypeStart') as ScanType ?? 'all';
+        edtSvc.outlineTransparent = !!this.storage.get('outlineTransparent', null, true);
+        edtSvc.rememberLastSelectedImageOfLastOpenTitle = !!this.storage.get('rememberLastSelectedImageOfLastOpenTitle', null, true);
+        edtSvc.lastSelectedImageId = this.storage.get('lastSelectedImageId', '', true) ?? '';
+        edtSvc.selectedFilter = this.storage.get('filterScanTypeStart', 'all', true) as ScanType;
         edtSvc.scanTypeRadio.set(edtSvc.selectedFilter);
-        edtSvc.selectedPageNumberFilter.set(this.storage.get('filterPageNumberStart') as PageNumberType ?? null);
+        edtSvc.selectedPageNumberFilter.set(this.storage.get('filterPageNumberStart', 'all', true) as PageNumberType);
         edtSvc.pageNumberRadio.set(edtSvc.selectedPageNumberFilter() ?? 'all');
         
         // Set displayed images and main image
         edtSvc.setDisplayedImages();
         const imageList = edtSvc.displayedImagesFinal();
         if (!imageList.length) edtSvc.loadingMain.set(false);
-        const shouldUseLastSelectedImage = res._id === this.storage.get('lastTitleId') && edtSvc.rememberLastSelectedImageOfLastOpenTitle;
+        const shouldUseLastSelectedImage = res._id === this.storage.get('lastTitleId', '', true) && edtSvc.rememberLastSelectedImageOfLastOpenTitle;
         const newImage = shouldUseLastSelectedImage
           ? (imageList.find(img => img._id === edtSvc.lastSelectedImageId) ?? imageList[0])
           : (imageList.find(img => img._id === edtSvc.mainImageItem()._id) || imageList[0] || { url: '' });

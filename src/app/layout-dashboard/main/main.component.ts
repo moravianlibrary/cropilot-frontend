@@ -81,7 +81,7 @@ export class MainComponent {
                   this.dashSvc.displayedTitles.set(res.titles);
                   this.title.setTitle(`${res.name} | CROPILOT`);
 
-                  const titleId = this.storage.get('backFromTitleId');
+                  const titleId = this.storage.get('backFromTitleId', null, true);
                   if (titleId) {
                     this.dashSvc.selectedTitle.set(res.titles.find(t => t._id === titleId) ?? null);
                     this.storage.remove('backFromTitleId');

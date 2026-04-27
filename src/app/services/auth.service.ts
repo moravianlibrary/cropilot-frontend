@@ -32,7 +32,7 @@ export class AuthService {
   get apiUrl(): string { return this.envSvc.get('serverBaseUrl') };
   authHeaders(type: string = 'json', contentType: boolean = false): HttpHeaders {
     const authType = 'Bearer';
-    const accessToken = this.storage.get<string>('access_token');
+    const accessToken = this.storage.get<string>('access_token', null, true);
 
     return new HttpHeaders({
       accept: type === 'json' ? 'application/json' : '*/*',
@@ -119,7 +119,7 @@ export class AuthService {
   }
 
   private redirectToStoredUri(): void {
-    window.location.href = `${this.baseUri}${this.storage.get('redirectUri')}`;
+    window.location.href = `${this.baseUri}${this.storage.get('redirectUri', '/', true)}`;
   }
 
   logout(): void {
