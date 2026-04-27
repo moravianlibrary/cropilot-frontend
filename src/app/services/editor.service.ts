@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { DimColor, GridMode, HitInfo, ImageItem, ImageRect, MousePos, Page, PageNumberType, ScanType, TitleDetail, Viewport } from '../app.types';
+import { DimColor, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, Viewport } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
 import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
-import { dimColorDict, gridColor, predictedColor, transparentColor } from '../app.config';
+import { dimColorDict, gridColor, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
 import { AuthService } from './auth.service';
 import { UiService } from './ui.service';
 import { LocalStorageService } from './local-storage.service';
@@ -111,10 +111,12 @@ export class EditorService {
   // Draw page parameters
   dimColor = signal<DimColor>('Černá');
   gridSpacing: number = 12; // 40
-  outlineTransparent: boolean = false;
-  pageOutlineWidthPrimary: number = 3;
+  outlineWidthLabel = signal<OutlineWidthLabel>('Silný');
+  outlineDashed: boolean = false;
+  dashLength: number = 6;
+  dashGapLength: number = 4;
   pageOutlineWidthSecondary: number = 1;
-  cornerOutlineWidth: number = this.pageOutlineWidthPrimary - 1;
+  cornerOutlineWidth: number = outlineWidthDict[this.outlineWidthLabel()] - 1;
   cornerSize: number = 6;
   showPredictions: boolean = false;
   
@@ -589,7 +591,7 @@ export class EditorService {
     // Outline
     ctx.strokeStyle = `${predictedColor}B2`;
     const pageOutlineWidth = !this.selectedPage
-      ? this.pageOutlineWidthPrimary
+      ? outlineWidthDict['Silný']
       : this.pageOutlineWidthSecondary;
     ctx.lineWidth = pageOutlineWidth;
     ctx.strokeRect(
@@ -614,12 +616,13 @@ export class EditorService {
 
     // Outline
     ctx.strokeStyle = getColor(p) + 'B2';
-    ctx.lineWidth = this.pageOutlineWidthPrimary;
+    const outlineWidth = outlineWidthDict['Silný'];
+    ctx.lineWidth = outlineWidth;
     ctx.strokeRect(
-      -width / 2 - this.pageOutlineWidthPrimary / 2,
-      -height / 2 - this.pageOutlineWidthPrimary / 2,
-      width + this.pageOutlineWidthPrimary,
-      height + this.pageOutlineWidthPrimary
+      -width / 2 - outlineWidth / 2,
+      -height / 2 - outlineWidth / 2,
+      width + outlineWidth,
+      height + outlineWidth
     );
 
     ctx.restore();
@@ -1028,7 +1031,8 @@ export class EditorService {
     const { centerX, centerY, width, height } = this.getPageRectPx(p);
     const color = getColor(p);
     const isPageNotSelectedWhileOtherIs = this.currentPages.length > 1 && this.selectedPage && p !== this.selectedPage;
-    const pageOutlineWidth = isPageNotSelectedWhileOtherIs ? this.pageOutlineWidthSecondary : this.pageOutlineWidthPrimary;
+    const outlineWidthLabel = this.outlineWidthLabel();
+    const pageOutlineWidth = isPageNotSelectedWhileOtherIs ? this.pageOutlineWidthSecondary : (this.selectedPage ? outlineWidthDict[outlineWidthLabel] : outlineWidthDict['Silný']);
     
     ctx.save();
 
@@ -1037,7 +1041,9 @@ export class EditorService {
 
     // Outline
     {
-      ctx.strokeStyle = p._id === this.selectedPage?._id && this.outlineTransparent
+      if (this.outlineDashed && this.selectedPage?._id === p._id) ctx.setLineDash([this.dashLength, this.dashGapLength]);
+
+      ctx.strokeStyle = p._id === this.selectedPage?._id && outlineWidthLabel === 'Žádný'
         ? transparentColor
         : color + (isPageNotSelectedWhileOtherIs ? '77' : 'B2');
       ctx.lineWidth = pageOutlineWidth;
@@ -1047,6 +1053,8 @@ export class EditorService {
         width + pageOutlineWidth,
         height + pageOutlineWidth
       );
+
+      ctx.setLineDash([]);
     }
 
     // Hover
@@ -1110,13 +1118,14 @@ export class EditorService {
       ];
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.strokeStyle = p._id === this.selectedPage?._id && this.outlineTransparent
+      ctx.strokeStyle = p._id === this.selectedPage?._id && outlineWidthLabel === 'Žádný'
         ? transparentColor
         : color + 'B2';
-      ctx.lineWidth = this.cornerOutlineWidth;
+      const cornerOutlineWidth = pageOutlineWidth - 1;
+      ctx.lineWidth = cornerOutlineWidth;
 
       for (const c of corners) {
-        const outlineOffset = this.outlineTransparent ? 0 : this.cornerOutlineWidth;
+        const outlineOffset = outlineWidthLabel === 'Žádný' ? 0 : cornerOutlineWidth;
         const negativeOffset = this.cornerSize + outlineOffset;
 
         const offsetX = c.x < 0 ? -negativeOffset : outlineOffset;
@@ -1124,10 +1133,10 @@ export class EditorService {
 
         ctx.fillRect(c.x + offsetX, c.y + offsetY, this.cornerSize, this.cornerSize);
         ctx.strokeRect(
-          c.x + offsetX - this.cornerOutlineWidth / 2,
-          c.y + offsetY - this.cornerOutlineWidth / 2,
-          this.cornerSize + this.cornerOutlineWidth,
-          this.cornerSize + this.cornerOutlineWidth
+          c.x + offsetX - cornerOutlineWidth / 2,
+          c.y + offsetY - cornerOutlineWidth / 2,
+          this.cornerSize + cornerOutlineWidth,
+          this.cornerSize + cornerOutlineWidth
         );
       }
     }
@@ -1271,6 +1280,7 @@ export class EditorService {
     DIALOG ACTIONS
   ------------------------------ */
   gridRadio = signal<GridMode>('when-rotating');
+  outlineRadio = signal<OutlineWidthLabel>('Silný');
   dimRadio = signal<DimColor>('Černá');
   scanTypeRadio = signal<ScanType>('all');
   pageNumberRadio = signal<PageNumberType>('all');
@@ -1292,7 +1302,11 @@ export class EditorService {
           this.gridRadio.set('when-rotating');
           this.gridMode.set('when-rotating');
           this.storage.set('gridMode', 'when-rotating');
-          this.outlineTransparent = false;
+          this.outlineRadio.set('Silný');
+          this.outlineWidthLabel.set('Silný');
+          this.storage.set('outlineWidthLabel', 'Silný');
+          this.outlineDashed = false;
+          this.storage.set('outlineDashed', false);
           this.storage.remove('outlineTransparent');
           this.dimColor.set('Černá');
           this.dimRadio.set('Černá');
@@ -1327,8 +1341,8 @@ export class EditorService {
     this.showPredictions = !this.showPredictions;
   }
 
-  toggleOutline(): void {
-    this.outlineTransparent = !this.outlineTransparent;
+  toggleOutlineDashed(): void {
+    this.outlineDashed = !this.outlineDashed;
   }
 
   toggleLastSelectedScan(): void {
@@ -1340,7 +1354,10 @@ export class EditorService {
     const gridRadio = this.gridRadio();
     this.gridMode.set(gridRadio);
     this.storage.set('gridMode', gridRadio);
-    this.storage.set('outlineTransparent', this.outlineTransparent);
+    const outlineRadio = this.outlineRadio();
+    this.outlineWidthLabel.set(outlineRadio);
+    this.storage.set('outlineWidthLabel', outlineRadio);
+    this.storage.set('outlineDashed', this.outlineDashed);
     const dimRadio = this.dimRadio();
     this.dimColor.set(dimRadio);
     this.storage.set('dimColor', dimRadio);
@@ -1530,17 +1547,21 @@ export class EditorService {
       this.gridMode.set(!this.isRotating
         ? this.gridMode() === 'always' ? 'when-rotating' : 'always'
         : this.gridMode() === 'never' ? 'when-rotating' : 'never');
-      this.gridRadio.set(this.gridMode());
-      this.storage.set('gridMode', this.gridMode());
+      const gridMode = this.gridMode();
+      this.gridRadio.set(gridMode);
+      this.storage.set('gridMode', gridMode);
       this.redrawImageOnCanvas();
       if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
     };
 
-    // Outline transparency
+    // Outline width
     if (canWriteTitle && ['o', 'O'].includes(key) && this.selectedPage && !dialogOpen) {
-      this.outlineTransparent = !this.outlineTransparent;
-      this.storage.set('outlineTransparent', this.outlineTransparent);
+      const outlineWidthLabel = this.outlineWidthLabel();
+      this.outlineWidthLabel.set(outlineWidthLabel === 'Silný' ? 'Střední' : (outlineWidthLabel === 'Střední' ? 'Tenký' : (outlineWidthLabel === 'Tenký' ? 'Žádný' : 'Silný')));
+      const outlineWidthLabel2 = this.outlineWidthLabel();
+      this.outlineRadio.set(outlineWidthLabel2);
+      this.storage.set('outlineWidthLabel', outlineWidthLabel2);
       this.redrawImageOnCanvas();
       if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));

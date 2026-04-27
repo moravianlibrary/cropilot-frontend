@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { EnvironmentService } from './services/environment.service';
-import { DimColor, GridMode, PageNumberType, PermissionType, Role, ScanType, TitleState } from './app.types';
+import { DimColor, GridMode, OutlineWidthLabel, PageNumberType, PermissionType, Role, ScanType, TitleState } from './app.types';
 
 export const defaultColor = '#00DDFF';
 export const warningColor = '#FF9500';
@@ -25,6 +25,13 @@ export const gridModeDict: Record<GridMode, string> = {
   'when-rotating': 'Při otáčení',
   'always': 'Vždy',
   'never': 'Nikdy'
+};
+
+export const outlineWidthDict: Record<OutlineWidthLabel, number> = {
+  'Silný': 3,
+  'Střední': 2,
+  'Tenký': 1,
+  'Žádný': 0
 };
 
 export const dimColorDict: Record<DimColor, string> = {

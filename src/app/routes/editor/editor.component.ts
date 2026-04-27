@@ -6,7 +6,7 @@ import { LeftPanelComponent } from '../../layout-editor/left-panel/left-panel.co
 import { RightPanelComponent } from '../../layout-editor/right-panel/right-panel.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, forkJoin, map, Observable, of, Subscription, switchMap, tap, throwError } from 'rxjs';
-import { DimColor, GridMode, ImageItem, PageNumberType, ScanType, TitleDetail } from '../../app.types';
+import { DimColor, GridMode, ImageItem, OutlineWidthLabel, PageNumberType, ScanType, TitleDetail } from '../../app.types';
 import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
 import { UiService } from '../../services/ui.service';
@@ -96,7 +96,9 @@ export class EditorComponent {
         edtSvc.dimRadio.set(edtSvc.dimColor());
         edtSvc.gridMode.set(this.storage.get('gridMode', 'when-rotating', true) as GridMode);
         edtSvc.gridRadio.set(edtSvc.gridMode());
-        edtSvc.outlineTransparent = !!this.storage.get('outlineTransparent', null, true);
+        edtSvc.outlineWidthLabel.set(this.storage.get('outlineWidthLabel', 'Silný', true) as OutlineWidthLabel);
+        edtSvc.outlineRadio.set(edtSvc.outlineWidthLabel());
+        edtSvc.outlineDashed = !!this.storage.get('outlineDashed', false, true);
         edtSvc.rememberLastSelectedImageOfLastOpenTitle = !!this.storage.get('rememberLastSelectedImageOfLastOpenTitle', null, true);
         edtSvc.lastSelectedImageId = this.storage.get('lastSelectedImageId', '', true) ?? '';
         edtSvc.selectedFilter = this.storage.get('filterScanTypeStart', 'all', true) as ScanType;

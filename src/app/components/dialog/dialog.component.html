@@ -75,14 +75,30 @@
               </span>
             </div>
             <div class="settings-block">
+              <div class="settings-block-label">Tloušťka obrysu vybraného výřezu</div>
+              <span class="radios-wrapper">
+                @for (outlineWidth of outlineWidthDictKeys; track outlineWidth) {
+                  <label class="radio">
+                    <input
+                      type="radio"
+                      name="outline-width"
+                      [checked]="outlineWidth === edtSvc.outlineWidthLabel()"
+                      (change)="edtSvc.outlineRadio.set(outlineWidth)"
+                    />
+                    <span class="radio-value">{{ outlineWidth }}</span>
+                  </label>
+                }
+              </span>
+            </div>
+            <div class="settings-block">
               <label class="settings-block-label toggle-switch">
                 <input
                   type="checkbox"
-                  [checked]="!edtSvc.outlineTransparent"
-                  (click)="edtSvc.toggleOutline()"
+                  [checked]="edtSvc.outlineDashed"
+                  (click)="edtSvc.toggleOutlineDashed()"
                 />
                 <span class="slider"></span>
-                Zobrazení obrysu vybraného výřezu
+                Čárkovaný obrys vybraného výřezu
               </label>
             </div>
             <div class="settings-block">
