@@ -50,7 +50,7 @@ export class DashboardService {
 
     const nameChanged = group.name !== this.groupName();
     const descriptionChanged = group.description !== this.groupDescription();
-    const modelChanged = group.default_model !== this.selectedModel();
+    const modelChanged = group.default_settings.crop_model !== this.selectedModel();
 
     return nameChanged || descriptionChanged || modelChanged;
   });
@@ -166,7 +166,7 @@ export class DashboardService {
     const payload = {
       name: this.groupName(),
       description: this.groupDescription(),
-      default_model: this.selectedModel()
+      default_settings: { crop_model: this.selectedModel() }
     };
     return this.http.post<NewGroup>(`${this.authSvc.apiUrl}/groups`, payload, { headers: this.authSvc.authHeaders('json', true) });
   }
@@ -179,7 +179,7 @@ export class DashboardService {
     const payload = {
       name: this.groupName(),
       description: this.groupDescription(),
-      default_model: this.selectedModel()
+      default_settings: { crop_model: this.selectedModel() }
     };
 
     return this.http.patch<void>(`${this.authSvc.apiUrl}/groups/${groupId}`, payload, { headers: this.authSvc.authHeaders('json', true) });
@@ -368,9 +368,8 @@ export class DashboardService {
             ),
             tap((res: NewGroup) => {
               const now = Date();
-              const user = this.authSvc.user();
               const permissions = ['read_group', 'read_title', 'write', 'upload'] as PermissionType[];
-              const newGroup = {
+              const newGroup: Group = {
                 _id: res.id,
                 name: groupName,
                 api_key: {
@@ -378,7 +377,7 @@ export class DashboardService {
                   created_at: now  
                 },
                 description: this.groupDescription(),
-                default_model: this.selectedModel(),
+                default_settings: { crop_model: this.selectedModel() },
                 created_at: now,
                 modified_at: now,
                 title_count: 0,
@@ -483,11 +482,11 @@ export class DashboardService {
             })
           ).subscribe(() => {
             // this.searchGroups.set('');
-            const updatedGroup = {
+            const updatedGroup: Group = {
               ...group,
               name: this.groupName(),
               description: this.groupDescription(),
-              default_model: this.selectedModel()
+              default_settings: { crop_model: this.selectedModel() }
             };
             this.groups.update(prev => prev.map(g => g._id === group?._id ? updatedGroup : g))
             this.displayedGroups.set(this.groups());
@@ -510,7 +509,7 @@ export class DashboardService {
       })
     ).subscribe((res: Models) => {
       this.availableModels.set(res.available_models.map(m => ({ value: m, label: m })));
-      this.selectedModel.set(group.default_model);
+      this.selectedModel.set(group.default_settings.crop_model);
       this.selectedModelUsed.set(false);
       uiSvc.openDialog();
     });
@@ -636,7 +635,7 @@ export class DashboardService {
       this.titleNameError.set('');
       this.uploadFilesError.set('');
       this.availableModels.set(res.available_models.map(m => ({ value: m, label: m })));
-      this.selectedModel.set(this.selectedGroupPage()?.default_model ?? res.available_models[0]);
+      this.selectedModel.set(this.selectedGroupPage()?.default_settings.crop_model ?? res.available_models[0]);
       this.selectedModelUsed.set(false);
       this.closeDrawer();
       uiSvc.openDialog();
@@ -1048,7 +1047,7 @@ export class DashboardService {
     this.groupName.set(group.name);
     this.groupNameError.set('');
     this.groupDescription.set(group.description);
-    this.selectedModel.set(group.default_model);
+    this.selectedModel.set(group.default_settings.crop_model);
 
     this.selectedUserId.set('');
     this.groupPermissions.set(group.users);

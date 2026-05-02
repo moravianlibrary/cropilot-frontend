@@ -166,7 +166,7 @@
                       </td>
                     }
                     <td>{{ group.name }}</td>
-                    <td>{{ group.default_model }}</td>
+                    <td>{{ group?.default_settings?.crop_model }}</td>
                     <td><span class="tag title-count">{{ group.title_count }}</span></td>
                     @if (isAdmin) {
                       <td><app-tags-overflow [tags]="getTags(group)" /></td>

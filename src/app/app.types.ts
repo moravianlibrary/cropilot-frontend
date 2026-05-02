@@ -13,7 +13,10 @@ export interface Group {
   name: string;
   api_key?: ApiKey;
   description: string;
-  default_model: string;
+  default_settings: {
+    crop_model: string;
+    rotation_model?: string;
+  };
   created_at: string;
   modified_at: string;
   title_count: number;
@@ -25,7 +28,10 @@ export interface GroupPage {
   _id: string;
   name: string;
   description: string;
-  default_model: string;
+  default_settings: {
+    crop_model: string;
+    rotation_model?: string;
+  };
   created_at: string;
   modified_at: string;
   titles: Title[];
