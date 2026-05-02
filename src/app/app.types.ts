@@ -44,7 +44,11 @@ export interface ApiKey {
 export interface Title {
   _id: string;
   external_id?: string;
-  model?: string;
+  // model?: string;
+  settings?: {
+    crop_model: string;
+    rotation_model?: string;
+  };
   created_at: string;
   modified_at: string;
   state: TitleState;

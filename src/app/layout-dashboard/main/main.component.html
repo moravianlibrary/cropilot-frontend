@@ -476,7 +476,7 @@
                     }
                     <td>{{ title.external_id ?? title._id }}</td>
                     <td>{{ title._id }}</td>
-                    <td>{{ title.model ?? 'Neznámý' }}</td>
+                    <td>{{ title.settings?.crop_model ?? 'Neznámý' }}</td>
                     <td>
                       <span
                         class="tag state"
