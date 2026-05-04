@@ -107,7 +107,7 @@ export class DashboardService {
   selectedModelUsed = signal<boolean>(false);
   files = signal<File[]>([]);
   uploadFilesError = signal<string>('');
-  modelChanged = computed<boolean>(() => this.selectedTitle()?.settings?.crop_model !== this.selectedModel());
+  modelChanged = computed<boolean>(() => this.selectedTitle()?.default_settings?.crop_model !== this.selectedModel());
   titleChanged = computed<boolean>(() => {
     const title = this.selectedTitle();
     if (!title) return false;
@@ -215,7 +215,7 @@ export class DashboardService {
   createTitle(groupId: string): Observable<{ id: string }> {
     const payload = {
       external_id: this.titleName(),
-      settings: { crop_model: this.selectedModel() }
+      default_settings: { crop_model: this.selectedModel() }
     };
     return this.http.post<{ id: string }>(`${this.authSvc.apiUrl}/create?group_id=${groupId}`, payload, { headers: this.authSvc.authHeaders('json', true) });
   }
@@ -241,7 +241,7 @@ export class DashboardService {
   updateTitle(titleId: string): Observable<Title> {
     const payload = {
       external_id: this.titleName(),
-      ...(this.modelChanged() && { settings: { crop_model: this.selectedModel() } })
+      ...(this.modelChanged() && { default_settings: { crop_model: this.selectedModel() } })
     };
     return this.http.patch<Title>(`${this.authSvc.apiUrl}/${titleId}`, payload, { headers: this.authSvc.authHeaders('json', true) });
   }
@@ -588,7 +588,7 @@ export class DashboardService {
               const newTitle: Title = {
                 _id: res.id,
                 external_id: titleName,
-                settings: { crop_model: this.selectedModel() },
+                default_settings: { crop_model: this.selectedModel() },
                 created_at: now,
                 modified_at: now,
                 state: 'scheduled'
@@ -685,7 +685,7 @@ export class DashboardService {
             const editedTitle: Title = {
               _id: res._id,
               external_id: titleName,
-              settings: { crop_model: this.selectedModel() },
+              default_settings: { crop_model: this.selectedModel() },
               created_at: now,
               modified_at: now,
               state: res.state
@@ -712,7 +712,7 @@ export class DashboardService {
       this.titleName.set(title.external_id ?? '');
       this.titleNameError.set('');
       this.availableModels.set(res.available_models.map(m => ({ value: m, label: m })));
-      this.selectedModel.set(title.settings?.crop_model ?? res.available_models[0]);
+      this.selectedModel.set(title.default_settings?.crop_model ?? res.available_models[0]);
       this.selectedModelUsed.set(false);
       this.closeDrawer();
       uiSvc.openDialog();

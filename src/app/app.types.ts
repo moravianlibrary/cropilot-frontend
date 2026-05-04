@@ -50,8 +50,7 @@ export interface ApiKey {
 export interface Title {
   _id: string;
   external_id?: string;
-  // model?: string;
-  settings?: {
+  default_settings?: {
     crop_model: string;
     rotation_model?: string;
   };
@@ -166,7 +165,7 @@ export type Role = 'admin' | 'user';
 export type GridMode = 'always' | 'never' | 'when-rotating';
 export type OutlineWidthLabel = 'Silný' | 'Střední' | 'Tenký' | 'Žádný';
 export type DimColor = 'Černá' | 'Červená' | 'Bílá' | 'Žádná';
-export type TitleState = 'new' | 'scheduled' | 'in_progress' | 'failed' | 'ready' | 'user_approved' | 'completed';
+export type TitleState = 'new' | 'scheduled' | 'in_progress' | 'failed' | 'ready' | 'user_approved' | 'retrain' | 'completed';
 
 // Cursors
 export type MousePos = { x: number, y: number };

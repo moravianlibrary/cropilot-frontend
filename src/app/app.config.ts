@@ -73,13 +73,14 @@ export const titleStateDict: Record<TitleState, string> = {
   'failed': 'Chyba',
   'ready': 'Nové',
   'user_approved': 'Uloženo',
-  'completed': 'Uloženo'
+  'retrain': 'Přetrénování',
+  'completed': 'Dokončeno'
 }
 
 export const titleStateFilterDict: Record<string, string> = {
   'Vše': 'all',
   'Nové': 'ready',
-  'Uloženo': 'saved',
+  'Uloženo': 'user_approved',
   'Skeny nenahrány': 'new',
   'Bude se zpracovávat': 'scheduled',
   'Zpracovává se': 'in_progress',

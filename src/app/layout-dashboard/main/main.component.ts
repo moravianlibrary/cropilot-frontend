@@ -249,7 +249,7 @@ export class MainComponent {
     this.dashSvc.displayedTitles.set(this.dashSvc.titles().filter(t => 
       (t.external_id ?? '').toLowerCase().includes(searchTitles)
       || t._id.toLowerCase().includes(searchTitles)
-      || (t.settings?.crop_model ?? '').toLowerCase().includes(searchTitles)
+      || (t.default_settings?.crop_model ?? '').toLowerCase().includes(searchTitles)
     ));
   }
 
@@ -258,7 +258,7 @@ export class MainComponent {
   }
 
   shouldHaveLink(state: string): boolean {
-    return ['ready', 'user_approved', 'completed'].includes(state);
+    return ['ready', 'user_approved'].includes(state);
   }
 
   // State filter
@@ -278,9 +278,6 @@ export class MainComponent {
     switch (stateValue) {
       case 'all':
         this.dashSvc.displayedTitles.set(this.dashSvc.titles());
-        break;
-      case 'saved':
-        this.dashSvc.displayedTitles.set(this.dashSvc.titles().filter(t => ['user_approved', 'completed'].includes(t.state)));
         break;
       default:
         this.dashSvc.displayedTitles.set(this.dashSvc.titles().filter(t => t.state === stateValue));

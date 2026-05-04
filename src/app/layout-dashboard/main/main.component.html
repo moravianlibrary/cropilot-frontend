@@ -166,7 +166,7 @@
                       </td>
                     }
                     <td>{{ group.name }}</td>
-                    <td>{{ group?.default_settings?.crop_model }}</td>
+                    <td>{{ group?.default_settings?.crop_model ?? 'Neznámý' }}</td>
                     <td><span class="tag title-count">{{ group.title_count }}</span></td>
                     @if (isAdmin) {
                       <td><app-tags-overflow [tags]="getTags(group)" /></td>
@@ -476,12 +476,12 @@
                     }
                     <td>{{ title.external_id ?? title._id }}</td>
                     <td>{{ title._id }}</td>
-                    <td>{{ title.settings?.crop_model ?? 'Neznámý' }}</td>
+                    <td>{{ title.default_settings?.crop_model ?? 'Neznámý' }}</td>
                     <td>
                       <span
                         class="tag state"
                         [class.info]="title.state === 'ready'"
-                        [class.success]="['user_approved', 'completed'].includes(title.state)"
+                        [class.success]="['user_approved', 'retrain', 'completed'].includes(title.state)"
                         [class.pending]="['new', 'scheduled', 'in_progress'].includes(title.state)"
                         [class.error]="['failed'].includes(title.state)"
                       >
