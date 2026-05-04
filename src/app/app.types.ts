@@ -144,6 +144,7 @@ export interface Page {
 
 export interface ImageItem {
   _id: string;
+  scan_name?: string;
   url?: string;
   thumbnailUrl?: string;
   edited: boolean;

@@ -1,10 +1,16 @@
 @let canWriteTitle = authSvc.canWriteTitle();
 
 <div class="header top border-bottom">
-  <span class="title-menu-wrapper">
+  <div class="title-menu-wrapper">
     <h1>Sken {{ currentIndexImage }}/{{ edtSvc.displayedImagesFinal().length }}</h1>
     <app-menu [type]="'menu-secondary'" />
-</span>
+  </div>
+  @if (edtSvc.mainImageItem().scan_name) {
+    <div class="scan-name">
+      <div class="label">Název skenu</div>
+      <div class="name">{{ edtSvc.mainImageItem().scan_name }}</div>
+    </div>
+  }
   @for (flag of edtSvc.mainImageItem().flags; track flag) {
     @if (!(edtSvc.mainImageItem().flags.length > 1 && flag === 'low_confidence')) {
       <span
@@ -30,7 +36,7 @@
       </span>
     }
   }
-  <span class="actions">
+  <div class="actions">
     <span
       class="action"
       [class.disabled]="!canWriteTitle || edtSvc.currentPages.length >= edtSvc.maxPages || !edtSvc.displayedImagesFinal().length"
@@ -42,7 +48,7 @@
         <path fill-rule="evenodd" clip-rule="evenodd" d="M8 3.5C8.27614 3.5 8.5 3.72386 8.5 4V7.5H12C12.2761 7.5 12.5 7.72386 12.5 8C12.5 8.27614 12.2761 8.5 12 8.5H8.5V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V8.5H4C3.72386 8.5 3.5 8.27614 3.5 8C3.5 7.72386 3.72386 7.5 4 7.5H7.5V4C7.5 3.72386 7.72386 3.5 8 3.5Z" />
       </svg>
     </span>
-  </span>
+  </div>
 </div>
 
 <div class="middle">
