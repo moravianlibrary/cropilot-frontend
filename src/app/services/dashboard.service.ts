@@ -110,14 +110,10 @@ export class DashboardService {
   modelChanged = computed<boolean>(() => this.selectedTitle()?.default_settings?.crop_model !== this.selectedModel());
   titleChanged = computed<boolean>(() => {
     const title = this.selectedTitle();
-    console.log(title);
     if (!title) return false;
     
     const titleNameChanged = title.external_id !== this.titleName();
     const modelChanged = this.modelChanged();
-
-    console.log(titleNameChanged);
-    console.log(modelChanged);
     
     return titleNameChanged || modelChanged;
   });
