@@ -50,7 +50,7 @@ export interface ApiKey {
 export interface Title {
   _id: string;
   external_id?: string;
-  default_settings?: {
+  settings?: {
     crop_model: string;
     rotation_model?: string;
   };

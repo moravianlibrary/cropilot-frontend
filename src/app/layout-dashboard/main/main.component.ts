@@ -249,7 +249,7 @@ export class MainComponent {
     this.dashSvc.displayedTitles.set(this.dashSvc.titles().filter(t => 
       (t.external_id ?? '').toLowerCase().includes(searchTitles)
       || t._id.toLowerCase().includes(searchTitles)
-      || (t.default_settings?.crop_model ?? '').toLowerCase().includes(searchTitles)
+      || (t.settings?.crop_model ?? '').toLowerCase().includes(searchTitles)
     ));
   }
 
