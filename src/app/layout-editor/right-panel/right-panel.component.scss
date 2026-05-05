@@ -44,9 +44,6 @@
 
     .name {
       @include styles.font(400, var(--font-size-x2), var(--spacing-x5-5), var(--text-base));
-      // overflow-x: hidden;
-      // text-overflow: ellipsis;
-      // white-space: nowrap;
     }
   }
 

@@ -95,6 +95,11 @@
             [attr.data-tooltip]="getStatusIconTooltip(image)"
           ></span>
           <span class="number">{{ $index + 1 }}</span>
+          @if (image.scan_name) {
+            <div class="scan-name-wrapper">
+              <span class="scan-name">{{ image.scan_name }}</span>
+            </div>
+          }
         </div>
       }
     </div>

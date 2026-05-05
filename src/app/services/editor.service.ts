@@ -1568,7 +1568,7 @@ export class EditorService {
     }
 
     // Dimming color
-    if (canWriteTitle && ['c', 'C'].includes(key) && this.selectedPage && !dialogOpen) {
+    if (canWriteTitle && ['c', 'C'].includes(key) && this.selectedPage && !event.ctrlKey && !event.metaKey && !dialogOpen) {
       this.dimColor.update(prev => prev === 'Černá' ? 'Červená' : (prev === 'Červená' ? 'Bílá' : (prev === 'Bílá' ? 'Žádná' : 'Černá')));
       this.dimRadio.set(this.dimColor());
       this.storage.set('dimColor', this.dimColor());
@@ -2072,6 +2072,12 @@ export class EditorService {
       if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
       this.currentPages.forEach(p => this.drawPage(p));
     };
+
+    // Copy text
+    if (['c', 'C'].includes(key) && (event.ctrlKey || event.metaKey) && !dialogOpen) {
+      const selection = window.getSelection()?.toString();
+      if (selection) navigator.clipboard.writeText(selection);
+    }
   }
 
   onKeyUp(event: KeyboardEvent): void {
