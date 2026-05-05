@@ -57,6 +57,10 @@ export const defer = (fn: () => void, delay: number = 0) => {
   return setTimeout(fn, delay);
 }
 
+export const wait = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export const focusElement = (el: HTMLElement, delay: number = 0, preventScroll: boolean = false): void => {
   if (el) {
     if (delay < 0) {

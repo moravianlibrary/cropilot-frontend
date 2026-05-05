@@ -37,8 +37,10 @@ export class EditorComponent {
   handleBeforeUnload(event: BeforeUnloadEvent) {
     if (this.edtSvc.sthWasEdited) {
       event.preventDefault();
-      event.returnValue = '';
+      return false;
     }
+
+    return true;
   }
 
   ngOnInit() {
