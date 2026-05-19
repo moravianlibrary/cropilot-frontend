@@ -1442,7 +1442,6 @@ export class EditorService {
   }
 
 
-  // TO DO: REFACTOR!
   /* ------------------------------
     KEYBOARD SHORTCUTS
   ------------------------------ */

@@ -809,7 +809,6 @@ export class MainComponent {
     edtSvc.sthWasEdited = true;
   }
 
-  // TO DO: REFACTOR!
   private applyEdgeResize(p: Page, start: Page, userSide: EdgeSide, ev: MouseEvent) {
     // const c = this.imagesService.c;
     // const cw = c.width;
@@ -1612,7 +1611,6 @@ export class MainComponent {
     edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
   }
 
-  // TO DO: REFACTOR!
   private applyCornerResize(p: Page, start: Page, userCorner: CornerName, ev: MouseEvent) {
     // const c = this.imagesService.c;
     // const cw = c.width;
