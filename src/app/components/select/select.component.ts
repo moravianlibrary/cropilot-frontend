@@ -21,6 +21,7 @@ import { UiService } from '../../services/ui.service';
 export class SelectComponent implements ControlValueAccessor {
   uiSvc = inject(UiService);
   
+  width = input<number>(326);
   maxDropdownHeight = input<number>(240);
   inputName = input<string>('');
   location = input<string>('');

@@ -2,7 +2,11 @@
   #selectWrapper
   class="select"
 >
-  <label [for]="`select-${inputName()}`" class="trigger">
+  <label
+    [for]="`select-${inputName()}`"
+    class="trigger"
+    [style]="`width:${width()}px`"
+  >
     <input
       #comboInput
       [id]="`select-${inputName()}`"

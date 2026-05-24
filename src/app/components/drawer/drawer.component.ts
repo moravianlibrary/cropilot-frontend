@@ -6,8 +6,6 @@ import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { UiService } from '../../services/ui.service';
 import { SelectComponent } from '../select/select.component';
-import { catchError } from 'rxjs';
-import { Models } from '../../app.types';
 
 @Component({
   selector: 'app-drawer',

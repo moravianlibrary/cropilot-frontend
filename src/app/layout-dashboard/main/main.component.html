@@ -56,9 +56,10 @@
             @if (isAdmin) { <col style="width:70px"> }
             <col style="min-width:200px">
             <col style="min-width:124px">
+            <col style="min-width:80px">
             <col style="min-width:102px">
-            @if (isAdmin) { <col style="min-width:330px"> }
-            <col [style]="`min-width:${isAdmin ? 242 : 120}px`">
+            @if (isAdmin) { <col style="min-width:280px"> }
+            <col [style]="`min-width:${isAdmin ? 232 : 120}px`">
             <col style="min-width:165px">
             <col style="min-width:175px">
             @if (tableHasScrollbar()) { <col style="width:12px"> }
@@ -67,7 +68,8 @@
             <tr>
               @if (isAdmin) { <th>Akce</th> }
               <th>Název skupiny</th>
-              <th>AI model</th>
+              <th>Ořezový model</th>
+              <th>Rotační</th>
               <th>Počet titulů</th>
               @if (isAdmin) { <th>Uživatelé</th> }
               <th>{{ `Práv${isAdmin ? 'a' : 'o'}` }}</th>
@@ -124,9 +126,10 @@
               @if (isAdmin) { <col style="width:70px"> }
               <col style="min-width:200px">
               <col style="min-width:124px">
+              <col style="min-width:80px">
               <col style="min-width:102px">
-              @if (isAdmin) { <col style="min-width:330px"> }
-              <col [style]="`min-width:${isAdmin ? 242 : 120}px`">
+              @if (isAdmin) { <col style="min-width:280px"> }
+              <col [style]="`min-width:${isAdmin ? 232 : 120}px`">
               <col style="min-width:165px">
               <col style="min-width:175px">
               @if (tableHasScrollbar()) { <col style="width:12px"> }
@@ -167,6 +170,7 @@
                     }
                     <td>{{ group.name }}</td>
                     <td>{{ group?.default_settings?.crop_model ?? 'Neznámý' }}</td>
+                    <td>{{ group?.default_settings?.rotation_model ?? 'Neznámý' }}</td>
                     <td><span class="tag title-count">{{ group.title_count }}</span></td>
                     @if (isAdmin) {
                       <td><app-tags-overflow [tags]="getTags(group)" /></td>
@@ -306,6 +310,7 @@
             <col style="min-width:230px">
             <col style="min-width:230px">
             <col style="min-width:124px">
+            <col style="min-width:80px">
             <col style="min-width:180px">
             <col style="min-width:165px">
             <col style="min-width:175px">
@@ -316,7 +321,8 @@
               @if (seeActions) { <th>Akce</th> }
               <th>Název titulu</th>
               <th>ID titulu</th>
-              <th>AI model</th>
+              <th>Ořezový model</th>
+              <th>Rotační</th>
               <th class="state-dropdown-wrapper" #stateDropdown cdkOverlayOrigin>
                 <div class="state-dropdown-title" (click)="toggleStateDropdown()">
                   Stav
@@ -416,6 +422,7 @@
               <col style="min-width:230px">
               <col style="min-width:230px">
               <col style="min-width:124px">
+              <col style="min-width:80px">
               <col style="min-width:180px">
               <col style="min-width:165px">
               <col style="min-width:175px">
@@ -477,6 +484,7 @@
                     <td>{{ title.external_id ?? title._id }}</td>
                     <td>{{ title._id }}</td>
                     <td>{{ title.settings?.crop_model ?? 'Neznámý' }}</td>
+                    <td>{{ title.settings?.rotation_model ?? 'Neznámý' }}</td>
                     <td>
                       <span
                         class="tag state"

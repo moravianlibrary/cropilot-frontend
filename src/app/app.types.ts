@@ -5,7 +5,8 @@ export type DashboardPage = 'groups' | 'titles' | 'users';
 export type PermissionType = 'read_group' | 'read_title' | 'write' | 'upload';
 
 export interface Models {
-  available_models: string[];
+  crop_models: string[];
+  rotation_models: string[];
 }
 
 export interface Group {
@@ -15,7 +16,7 @@ export interface Group {
   description: string;
   default_settings: {
     crop_model: string;
-    rotation_model?: string;
+    rotation_model: string;
   };
   created_at: string;
   modified_at: string;
@@ -30,7 +31,7 @@ export interface GroupPage {
   description: string;
   default_settings: {
     crop_model: string;
-    rotation_model?: string;
+    rotation_model: string;
   };
   created_at: string;
   modified_at: string;
@@ -52,7 +53,7 @@ export interface Title {
   external_id?: string;
   settings?: {
     crop_model: string;
-    rotation_model?: string;
+    rotation_model: string;
   };
   created_at: string;
   modified_at: string;
