@@ -1,6 +1,6 @@
-@let dashboardPage = dashSvc.dashboardPage();
-@let isAdmin = authSvc.isAdmin();
-@let dialogOrDrawerOpen = uiSvc.dialogOpen() || uiSvc.drawerOpen();
+@let dashboardPage = dashboard.dashboardPage();
+@let isAdmin = auth.isAdmin();
+@let dialogOrDrawerOpen = ui.dialogOpen() || ui.drawerOpen();
 
 @if (dashboardPage === 'groups') {
 
@@ -11,9 +11,9 @@
         @if (isAdmin) {
           <span
             class="button real-button with-icon primary"
-            (click)="dashSvc.createGroupDialog()"
-            (keydown.space)="dashSvc.createGroupDialog()"
-            (keydown.enter)="dashSvc.createGroupDialog()"
+            (click)="dashboard.createGroupDialog()"
+            (keydown.space)="dashboard.createGroupDialog()"
+            (keydown.enter)="dashboard.createGroupDialog()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           >
             <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
@@ -36,7 +36,7 @@
             name="search-group"
             type="text"
             placeholder="Hledat skupinu"
-            [(ngModel)]="dashSvc.searchGroups"
+            [(ngModel)]="dashboard.searchGroups"
             (input)="filterGroups()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           />
@@ -135,29 +135,29 @@
               @if (tableHasScrollbar()) { <col style="width:12px"> }
             </colgroup>
             <tbody>
-              @let groups = dashSvc.displayedGroups();
+              @let groups = dashboard.displayedGroups();
               @if (groups.length) {
                 @for (group of groups; track group._id) {
                   <tr
                     [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                     class="clickable"
-                    [class.active]="dashSvc.selectedGroupDetail() === group"
-                    (click)="dashSvc.openGroupsTitles(group._id)"
-                    (keydown.space)="dashSvc.openGroupsTitles(group._id)"
-                    (keydown.enter)="dashSvc.openGroupsTitles(group._id)"
+                    [class.active]="dashboard.selectedGroupDetail() === group"
+                    (click)="dashboard.openGroupsTitles(group._id)"
+                    (keydown.space)="dashboard.openGroupsTitles(group._id)"
+                    (keydown.enter)="dashboard.openGroupsTitles(group._id)"
                   >
                     @if (isAdmin) {
                       <td class="actions-cell">
                         <div class="actions">
                           <span
                             class="action-wrapper"
-                            (keydown.space)="$event.stopPropagation(); dashSvc.openGroupDetail(group)"
-                            (keydown.enter)="$event.stopPropagation(); dashSvc.openGroupDetail(group)"
+                            (keydown.space)="$event.stopPropagation(); dashboard.openGroupDetail(group)"
+                            (keydown.enter)="$event.stopPropagation(); dashboard.openGroupDetail(group)"
                             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                           >
                             <span
                               class="button secondary action"
-                              (click)="$event.stopPropagation(); dashSvc.openGroupDetail(group)"
+                              (click)="$event.stopPropagation(); dashboard.openGroupDetail(group)"
                             >
                               <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" clip-rule="evenodd" d="M3.16666 7.99992C3.16666 7.90787 3.24128 7.83325 3.33332 7.83325C3.42537 7.83325 3.49999 7.90787 3.49999 7.99992C3.49999 8.09197 3.42537 8.16659 3.33332 8.16659C3.24128 8.16659 3.16666 8.09197 3.16666 7.99992ZM3.33332 6.83325C2.68899 6.83325 2.16666 7.35559 2.16666 7.99992C2.16666 8.64425 2.68899 9.16659 3.33332 9.16659C3.97766 9.16659 4.49999 8.64425 4.49999 7.99992C4.49999 7.35559 3.97766 6.83325 3.33332 6.83325ZM7.83332 7.99992C7.83332 7.90787 7.90794 7.83325 7.99999 7.83325C8.09204 7.83325 8.16666 7.90787 8.16666 7.99992C8.16666 8.09197 8.09204 8.16659 7.99999 8.16659C7.90794 8.16659 7.83332 8.09197 7.83332 7.99992ZM7.99999 6.83325C7.35566 6.83325 6.83332 7.35559 6.83332 7.99992C6.83332 8.64425 7.35566 9.16659 7.99999 9.16659C8.64432 9.16659 9.16666 8.64425 9.16666 7.99992C9.16666 7.35559 8.64432 6.83325 7.99999 6.83325ZM12.5 7.99992C12.5 7.90787 12.5746 7.83325 12.6667 7.83325C12.7587 7.83325 12.8333 7.90787 12.8333 7.99992C12.8333 8.09197 12.7587 8.16659 12.6667 8.16659C12.5746 8.16659 12.5 8.09197 12.5 7.99992ZM12.6667 6.83325C12.0223 6.83325 11.5 7.35559 11.5 7.99992C11.5 8.64425 12.0223 9.16659 12.6667 9.16659C13.311 9.16659 13.8333 8.64425 13.8333 7.99992C13.8333 7.35559 13.311 6.83325 12.6667 6.83325Z" />
@@ -253,18 +253,18 @@
       </div>
     </div>
   </div>
-} @else if (dashSvc.dashboardPage() === 'titles') {
+} @else if (dashboard.dashboardPage() === 'titles') {
 
   <!-- Titles -->
   <div class="content-wrapper">
     <div class="top-part">
       <span class="left-part">
-        @if (authSvc.canUpload()) {
+        @if (auth.canUpload()) {
           <span
             class="button real-button with-icon primary"
-            (click)="dashSvc.createTitleDialog()"
-            (keydown.space)="dashSvc.createTitleDialog()"
-            (keydown.enter)="dashSvc.createTitleDialog()"
+            (click)="dashboard.createTitleDialog()"
+            (keydown.space)="dashboard.createTitleDialog()"
+            (keydown.enter)="dashboard.createTitleDialog()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           >
             <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
@@ -287,7 +287,7 @@
             name="search-title"
             type="text"
             placeholder="Hledat titul"
-            [(ngModel)]="dashSvc.searchTitles"
+            [(ngModel)]="dashboard.searchTitles"
             (input)="filterTitles()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           />
@@ -303,14 +303,14 @@
           class="table-header"
           cellspacing="0" cellpadding="0"
         >
-          @let canUpload = authSvc.canUpload();
+          @let canUpload = auth.canUpload();
           @let seeActions = isAdmin || canUpload;
           <colgroup>
             @if (seeActions) { <col [style]="`width:${isAdmin ? 110 : 70}px`"> }
             <col style="min-width:230px">
             <col style="min-width:230px">
-            <col style="min-width:124px">
-            <col style="min-width:80px">
+            <col style="min-width:140px">
+            <col style="min-width:96px">
             <col style="min-width:180px">
             <col style="min-width:165px">
             <col style="min-width:175px">
@@ -341,15 +341,101 @@
                 </span>
               </th>
               <th>ID titulu</th>
-              <th>Ořezový model</th>
-              <th>Rotační</th>
-              <th class="state-dropdown-wrapper" #stateDropdown cdkOverlayOrigin>
-                <div class="state-dropdown-title" (click)="toggleStateDropdown()">
-                  Stav
-                  <span class="state-icon-wrapper">
+              <th class="crop-model-dropdown-wrapper" #cropModelDropdown cdkOverlayOrigin>
+                <div class="filter-dropdown-title" (click)="toggleCropModelDropdown()">
+                  Ořezový model
+                  <span class="filter-icon-wrapper">
                     <svg
                       width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg"
-                      class="state-icon"
+                      class="filter-icon"
+                    >
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.27869 0.900458H3.59969C2.57437 0.900458 1.76636 1.74043 1.76636 2.80046V4.33379C1.76636 4.62928 1.86029 4.95157 1.9851 5.22999C2.11091 5.51063 2.29052 5.79681 2.50794 6.0158L5.02125 8.66139C5.11579 8.78355 5.22056 8.96558 5.30212 9.16949C5.38822 9.38475 5.43302 9.58586 5.43302 9.73379V13.2671C5.43302 14.7545 7.08739 15.549 8.26174 14.8263L8.27007 14.821L9.19776 14.2247C9.46668 14.0607 9.66906 13.7944 9.80163 13.5395C9.93704 13.2791 10.033 12.9666 10.033 12.6671V9.80046C10.033 9.61069 10.0821 9.37701 10.1766 9.15407C10.2722 8.92894 10.3977 8.75294 10.5198 8.65124C10.5235 8.64814 10.5272 8.64499 10.5308 8.64179L13.3975 6.10846C13.4052 6.10165 13.4126 6.09461 13.4199 6.08735C13.6381 5.86921 13.836 5.56556 13.9799 5.24903C14.1231 4.93384 14.233 4.56147 14.233 4.20046V2.73379C14.233 1.72432 13.4092 0.900458 12.3997 0.900458H7.2951C7.28963 0.900368 7.28416 0.900368 7.27869 0.900458ZM6.38503 1.90046H3.59969C3.15834 1.90046 2.76636 2.26049 2.76636 2.80046V4.33379C2.76636 4.4383 2.80575 4.61602 2.89761 4.82093C2.98754 5.02153 3.10618 5.19984 3.21991 5.31357L3.22886 5.32275L3.84476 5.97107L6.38503 1.90046ZM4.55618 6.71993L7.56377 1.90046H12.3997C12.8569 1.90046 13.233 2.2766 13.233 2.73379V4.20046C13.233 4.37278 13.1762 4.60041 13.0695 4.83522C12.9663 5.06219 12.8355 5.25407 12.7225 5.37042L9.87355 7.88808C9.59863 8.11935 9.39289 8.441 9.25607 8.76352C9.11732 9.09057 9.03302 9.45689 9.03302 9.80046V12.6671C9.03302 12.7677 8.99568 12.9218 8.91442 13.0781C8.83155 13.2375 8.73646 13.3353 8.67578 13.3717C8.67136 13.3744 8.66698 13.3771 8.66265 13.3799L7.73392 13.9769C7.17536 14.3168 6.43302 13.9117 6.43302 13.2671V9.73379C6.43302 9.41506 6.34449 9.08283 6.2306 8.7981C6.11562 8.51067 5.95921 8.2328 5.79013 8.02144C5.78127 8.01038 5.77195 7.99969 5.76219 7.98942L4.55618 6.71993Z" />
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.27869 0.900458H3.59969C2.57437 0.900458 1.76636 1.74043 1.76636 2.80046V4.33379C1.76636 4.62928 1.86029 4.95157 1.9851 5.22999C2.11091 5.51063 2.29052 5.79681 2.50794 6.0158L5.02125 8.66139C5.11579 8.78355 5.22056 8.96558 5.30212 9.16949C5.38822 9.38475 5.43302 9.58586 5.43302 9.73379V13.2671C5.43302 14.7545 7.08739 15.549 8.26174 14.8263L8.27007 14.821L9.19776 14.2247C9.46668 14.0607 9.66906 13.7944 9.80163 13.5395C9.93704 13.2791 10.033 12.9666 10.033 12.6671V9.80046C10.033 9.61069 10.0821 9.37701 10.1766 9.15407C10.2722 8.92894 10.3977 8.75294 10.5198 8.65124C10.5235 8.64814 10.5272 8.64499 10.5308 8.64179L13.3975 6.10846C13.4052 6.10165 13.4126 6.09461 13.4199 6.08735C13.6381 5.86921 13.836 5.56556 13.9799 5.24903C14.1231 4.93384 14.233 4.56147 14.233 4.20046V2.73379C14.233 1.72432 13.4092 0.900458 12.3997 0.900458H7.2951C7.28963 0.900368 7.28416 0.900368 7.27869 0.900458ZM6.38503 1.90046H3.59969C3.15834 1.90046 2.76636 2.26049 2.76636 2.80046V4.33379C2.76636 4.4383 2.80575 4.61602 2.89761 4.82093C2.98754 5.02153 3.10618 5.19984 3.21991 5.31357L3.22886 5.32275L3.84476 5.97107L6.38503 1.90046ZM4.55618 6.71993L7.56377 1.90046H12.3997C12.8569 1.90046 13.233 2.2766 13.233 2.73379V4.20046C13.233 4.37278 13.1762 4.60041 13.0695 4.83522C12.9663 5.06219 12.8355 5.25407 12.7225 5.37042L9.87355 7.88808C9.59863 8.11935 9.39289 8.441 9.25607 8.76352C9.11732 9.09057 9.03302 9.45689 9.03302 9.80046V12.6671C9.03302 12.7677 8.99568 12.9218 8.91442 13.0781C8.83155 13.2375 8.73646 13.3353 8.67578 13.3717C8.67136 13.3744 8.66698 13.3771 8.66265 13.3799L7.73392 13.9769C7.17536 14.3168 6.43302 13.9117 6.43302 13.2671V9.73379C6.43302 9.41506 6.34449 9.08283 6.2306 8.7981C6.11562 8.51067 5.95921 8.2328 5.79013 8.02144C5.78127 8.01038 5.77195 7.99969 5.76219 7.98942L4.55618 6.71993Z" />
+                    </svg>
+                    @if (selectedCropModel !== 'all') { <span class="active"></span> }
+                  </span>
+                </div>
+
+                <ng-template
+                  cdkConnectedOverlay
+                  [cdkConnectedOverlayPanelClass]="'crop-model-dropdown-wrapper'"
+                  [cdkConnectedOverlayOrigin]="cropModelDropdown"
+                  [cdkConnectedOverlayOpen]="cropModelDropdownOpen"
+                  (overlayOutsideClick)="cropModelDropdownOpen = false"
+                >
+                  <div
+                    class="filter-dropdown radios-wrapper"
+                    [class.show]="cropModelDropdownOpen"
+                  >
+                    @for (cropModel of cropModelOptions(); track cropModel) {
+                      <label
+                        class="radio"
+                        [for]="cropModel"
+                      >
+                        <input
+                          type="radio"
+                          [id]="cropModel"
+                          [name]="cropModel"
+                          [checked]="cropModel === selectedCropModel"
+                          (click)="onCropModelChange(cropModel ?? 'all')"
+                        />
+                        <span class="radio-value">{{ cropModel === 'all' ? 'Vše' : cropModel }}</span>
+                      </label>
+                    }
+                  </div>
+                </ng-template>
+              </th>
+              <th class="rotation-model-dropdown-wrapper" #rotationModelDropdown cdkOverlayOrigin>
+                <div class="filter-dropdown-title" (click)="toggleRotationModelDropdown()">
+                  Rotační
+                  <span class="filter-icon-wrapper">
+                    <svg
+                      width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg"
+                      class="filter-icon"
+                    >
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.27869 0.900458H3.59969C2.57437 0.900458 1.76636 1.74043 1.76636 2.80046V4.33379C1.76636 4.62928 1.86029 4.95157 1.9851 5.22999C2.11091 5.51063 2.29052 5.79681 2.50794 6.0158L5.02125 8.66139C5.11579 8.78355 5.22056 8.96558 5.30212 9.16949C5.38822 9.38475 5.43302 9.58586 5.43302 9.73379V13.2671C5.43302 14.7545 7.08739 15.549 8.26174 14.8263L8.27007 14.821L9.19776 14.2247C9.46668 14.0607 9.66906 13.7944 9.80163 13.5395C9.93704 13.2791 10.033 12.9666 10.033 12.6671V9.80046C10.033 9.61069 10.0821 9.37701 10.1766 9.15407C10.2722 8.92894 10.3977 8.75294 10.5198 8.65124C10.5235 8.64814 10.5272 8.64499 10.5308 8.64179L13.3975 6.10846C13.4052 6.10165 13.4126 6.09461 13.4199 6.08735C13.6381 5.86921 13.836 5.56556 13.9799 5.24903C14.1231 4.93384 14.233 4.56147 14.233 4.20046V2.73379C14.233 1.72432 13.4092 0.900458 12.3997 0.900458H7.2951C7.28963 0.900368 7.28416 0.900368 7.27869 0.900458ZM6.38503 1.90046H3.59969C3.15834 1.90046 2.76636 2.26049 2.76636 2.80046V4.33379C2.76636 4.4383 2.80575 4.61602 2.89761 4.82093C2.98754 5.02153 3.10618 5.19984 3.21991 5.31357L3.22886 5.32275L3.84476 5.97107L6.38503 1.90046ZM4.55618 6.71993L7.56377 1.90046H12.3997C12.8569 1.90046 13.233 2.2766 13.233 2.73379V4.20046C13.233 4.37278 13.1762 4.60041 13.0695 4.83522C12.9663 5.06219 12.8355 5.25407 12.7225 5.37042L9.87355 7.88808C9.59863 8.11935 9.39289 8.441 9.25607 8.76352C9.11732 9.09057 9.03302 9.45689 9.03302 9.80046V12.6671C9.03302 12.7677 8.99568 12.9218 8.91442 13.0781C8.83155 13.2375 8.73646 13.3353 8.67578 13.3717C8.67136 13.3744 8.66698 13.3771 8.66265 13.3799L7.73392 13.9769C7.17536 14.3168 6.43302 13.9117 6.43302 13.2671V9.73379C6.43302 9.41506 6.34449 9.08283 6.2306 8.7981C6.11562 8.51067 5.95921 8.2328 5.79013 8.02144C5.78127 8.01038 5.77195 7.99969 5.76219 7.98942L4.55618 6.71993Z" />
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.27869 0.900458H3.59969C2.57437 0.900458 1.76636 1.74043 1.76636 2.80046V4.33379C1.76636 4.62928 1.86029 4.95157 1.9851 5.22999C2.11091 5.51063 2.29052 5.79681 2.50794 6.0158L5.02125 8.66139C5.11579 8.78355 5.22056 8.96558 5.30212 9.16949C5.38822 9.38475 5.43302 9.58586 5.43302 9.73379V13.2671C5.43302 14.7545 7.08739 15.549 8.26174 14.8263L8.27007 14.821L9.19776 14.2247C9.46668 14.0607 9.66906 13.7944 9.80163 13.5395C9.93704 13.2791 10.033 12.9666 10.033 12.6671V9.80046C10.033 9.61069 10.0821 9.37701 10.1766 9.15407C10.2722 8.92894 10.3977 8.75294 10.5198 8.65124C10.5235 8.64814 10.5272 8.64499 10.5308 8.64179L13.3975 6.10846C13.4052 6.10165 13.4126 6.09461 13.4199 6.08735C13.6381 5.86921 13.836 5.56556 13.9799 5.24903C14.1231 4.93384 14.233 4.56147 14.233 4.20046V2.73379C14.233 1.72432 13.4092 0.900458 12.3997 0.900458H7.2951C7.28963 0.900368 7.28416 0.900368 7.27869 0.900458ZM6.38503 1.90046H3.59969C3.15834 1.90046 2.76636 2.26049 2.76636 2.80046V4.33379C2.76636 4.4383 2.80575 4.61602 2.89761 4.82093C2.98754 5.02153 3.10618 5.19984 3.21991 5.31357L3.22886 5.32275L3.84476 5.97107L6.38503 1.90046ZM4.55618 6.71993L7.56377 1.90046H12.3997C12.8569 1.90046 13.233 2.2766 13.233 2.73379V4.20046C13.233 4.37278 13.1762 4.60041 13.0695 4.83522C12.9663 5.06219 12.8355 5.25407 12.7225 5.37042L9.87355 7.88808C9.59863 8.11935 9.39289 8.441 9.25607 8.76352C9.11732 9.09057 9.03302 9.45689 9.03302 9.80046V12.6671C9.03302 12.7677 8.99568 12.9218 8.91442 13.0781C8.83155 13.2375 8.73646 13.3353 8.67578 13.3717C8.67136 13.3744 8.66698 13.3771 8.66265 13.3799L7.73392 13.9769C7.17536 14.3168 6.43302 13.9117 6.43302 13.2671V9.73379C6.43302 9.41506 6.34449 9.08283 6.2306 8.7981C6.11562 8.51067 5.95921 8.2328 5.79013 8.02144C5.78127 8.01038 5.77195 7.99969 5.76219 7.98942L4.55618 6.71993Z" />
+                    </svg>
+                    @if (selectedRotationModel !== 'all') { <span class="active"></span> }
+                  </span>
+                </div>
+
+                <ng-template
+                  cdkConnectedOverlay
+                  [cdkConnectedOverlayPanelClass]="'rotation-model-dropdown-wrapper'"
+                  [cdkConnectedOverlayOrigin]="rotationModelDropdown"
+                  [cdkConnectedOverlayOpen]="rotationModelDropdownOpen"
+                  (overlayOutsideClick)="rotationModelDropdownOpen = false"
+                >
+                  <div
+                    class="filter-dropdown radios-wrapper"
+                    [class.show]="rotationModelDropdownOpen"
+                  >
+                    @for (rotationModel of rotationModelOptions(); track rotationModel) {
+                      <label
+                        class="radio"
+                        [for]="rotationModel"
+                      >
+                        <input
+                          type="radio"
+                          [id]="rotationModel"
+                          [name]="rotationModel"
+                          [checked]="rotationModel === selectedRotationModel"
+                          (click)="onRotationModelChange(rotationModel ?? 'all')"
+                        />
+                        <span class="radio-value">{{ rotationModel === 'all' ? 'Vše' : rotationModel }}</span>
+                      </label>
+                    }
+                  </div>
+                </ng-template>
+              </th>
+              <th class="state-dropdown-wrapper" #stateDropdown cdkOverlayOrigin>
+                <div class="filter-dropdown-title" (click)="toggleStateDropdown()">
+                  Stav
+                  <span class="filter-icon-wrapper">
+                    <svg
+                      width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg"
+                      class="filter-icon"
                     >
                       <path fill-rule="evenodd" clip-rule="evenodd" d="M7.27869 0.900458H3.59969C2.57437 0.900458 1.76636 1.74043 1.76636 2.80046V4.33379C1.76636 4.62928 1.86029 4.95157 1.9851 5.22999C2.11091 5.51063 2.29052 5.79681 2.50794 6.0158L5.02125 8.66139C5.11579 8.78355 5.22056 8.96558 5.30212 9.16949C5.38822 9.38475 5.43302 9.58586 5.43302 9.73379V13.2671C5.43302 14.7545 7.08739 15.549 8.26174 14.8263L8.27007 14.821L9.19776 14.2247C9.46668 14.0607 9.66906 13.7944 9.80163 13.5395C9.93704 13.2791 10.033 12.9666 10.033 12.6671V9.80046C10.033 9.61069 10.0821 9.37701 10.1766 9.15407C10.2722 8.92894 10.3977 8.75294 10.5198 8.65124C10.5235 8.64814 10.5272 8.64499 10.5308 8.64179L13.3975 6.10846C13.4052 6.10165 13.4126 6.09461 13.4199 6.08735C13.6381 5.86921 13.836 5.56556 13.9799 5.24903C14.1231 4.93384 14.233 4.56147 14.233 4.20046V2.73379C14.233 1.72432 13.4092 0.900458 12.3997 0.900458H7.2951C7.28963 0.900368 7.28416 0.900368 7.27869 0.900458ZM6.38503 1.90046H3.59969C3.15834 1.90046 2.76636 2.26049 2.76636 2.80046V4.33379C2.76636 4.4383 2.80575 4.61602 2.89761 4.82093C2.98754 5.02153 3.10618 5.19984 3.21991 5.31357L3.22886 5.32275L3.84476 5.97107L6.38503 1.90046ZM4.55618 6.71993L7.56377 1.90046H12.3997C12.8569 1.90046 13.233 2.2766 13.233 2.73379V4.20046C13.233 4.37278 13.1762 4.60041 13.0695 4.83522C12.9663 5.06219 12.8355 5.25407 12.7225 5.37042L9.87355 7.88808C9.59863 8.11935 9.39289 8.441 9.25607 8.76352C9.11732 9.09057 9.03302 9.45689 9.03302 9.80046V12.6671C9.03302 12.7677 8.99568 12.9218 8.91442 13.0781C8.83155 13.2375 8.73646 13.3353 8.67578 13.3717C8.67136 13.3744 8.66698 13.3771 8.66265 13.3799L7.73392 13.9769C7.17536 14.3168 6.43302 13.9117 6.43302 13.2671V9.73379C6.43302 9.41506 6.34449 9.08283 6.2306 8.7981C6.11562 8.51067 5.95921 8.2328 5.79013 8.02144C5.78127 8.01038 5.77195 7.99969 5.76219 7.98942L4.55618 6.71993Z" />
                       <path fill-rule="evenodd" clip-rule="evenodd" d="M7.27869 0.900458H3.59969C2.57437 0.900458 1.76636 1.74043 1.76636 2.80046V4.33379C1.76636 4.62928 1.86029 4.95157 1.9851 5.22999C2.11091 5.51063 2.29052 5.79681 2.50794 6.0158L5.02125 8.66139C5.11579 8.78355 5.22056 8.96558 5.30212 9.16949C5.38822 9.38475 5.43302 9.58586 5.43302 9.73379V13.2671C5.43302 14.7545 7.08739 15.549 8.26174 14.8263L8.27007 14.821L9.19776 14.2247C9.46668 14.0607 9.66906 13.7944 9.80163 13.5395C9.93704 13.2791 10.033 12.9666 10.033 12.6671V9.80046C10.033 9.61069 10.0821 9.37701 10.1766 9.15407C10.2722 8.92894 10.3977 8.75294 10.5198 8.65124C10.5235 8.64814 10.5272 8.64499 10.5308 8.64179L13.3975 6.10846C13.4052 6.10165 13.4126 6.09461 13.4199 6.08735C13.6381 5.86921 13.836 5.56556 13.9799 5.24903C14.1231 4.93384 14.233 4.56147 14.233 4.20046V2.73379C14.233 1.72432 13.4092 0.900458 12.3997 0.900458H7.2951C7.28963 0.900368 7.28416 0.900368 7.27869 0.900458ZM6.38503 1.90046H3.59969C3.15834 1.90046 2.76636 2.26049 2.76636 2.80046V4.33379C2.76636 4.4383 2.80575 4.61602 2.89761 4.82093C2.98754 5.02153 3.10618 5.19984 3.21991 5.31357L3.22886 5.32275L3.84476 5.97107L6.38503 1.90046ZM4.55618 6.71993L7.56377 1.90046H12.3997C12.8569 1.90046 13.233 2.2766 13.233 2.73379V4.20046C13.233 4.37278 13.1762 4.60041 13.0695 4.83522C12.9663 5.06219 12.8355 5.25407 12.7225 5.37042L9.87355 7.88808C9.59863 8.11935 9.39289 8.441 9.25607 8.76352C9.11732 9.09057 9.03302 9.45689 9.03302 9.80046V12.6671C9.03302 12.7677 8.99568 12.9218 8.91442 13.0781C8.83155 13.2375 8.73646 13.3353 8.67578 13.3717C8.67136 13.3744 8.66698 13.3771 8.66265 13.3799L7.73392 13.9769C7.17536 14.3168 6.43302 13.9117 6.43302 13.2671V9.73379C6.43302 9.41506 6.34449 9.08283 6.2306 8.7981C6.11562 8.51067 5.95921 8.2328 5.79013 8.02144C5.78127 8.01038 5.77195 7.99969 5.76219 7.98942L4.55618 6.71993Z" />
@@ -366,7 +452,7 @@
                   (overlayOutsideClick)="stateDropdownOpen = false"
                 >
                   <div
-                    class="state-dropdown radios-wrapper"
+                    class="filter-dropdown radios-wrapper"
                     [class.show]="stateDropdownOpen"
                   >
                     @for (state of stateOptions; track state) {
@@ -441,25 +527,25 @@
               @if (seeActions) { <col [style]="`width:${isAdmin ? 110 : 70}px`"> }
               <col style="min-width:230px">
               <col style="min-width:230px">
-              <col style="min-width:124px">
-              <col style="min-width:80px">
+              <col style="min-width:140px">
+              <col style="min-width:96px">
               <col style="min-width:180px">
               <col style="min-width:165px">
               <col style="min-width:175px">
               @if (tableHasScrollbar()) { <col style="width:12px"> }
             </colgroup>
             <tbody>
-              @let titles = dashSvc.displayedTitles();
+              @let titles = dashboard.displayedTitles();
               @if (titles.length) {
                 @for (title of titles; track title._id) {
                   <tr
                     [tabindex]="canOpenTitle(title) && !dialogOrDrawerOpen ? 0 : -1"
                     class="row"
-                    [class.active]="dashSvc.selectedTitle() === title"
+                    [class.active]="dashboard.selectedTitle() === title"
                     [class.clickable]="canOpenTitle(title)"
-                    (click)="canOpenTitle(title) ? dashSvc.openTitle(title._id) : null"
-                    (keydown.space)="canOpenTitle(title) ? dashSvc.openTitle(title._id) : null"
-                    (keydown.enter)="canOpenTitle(title) ? dashSvc.openTitle(title._id) : null"
+                    (click)="canOpenTitle(title) ? dashboard.openTitle(title._id) : null"
+                    (keydown.space)="canOpenTitle(title) ? dashboard.openTitle(title._id) : null"
+                    (keydown.enter)="canOpenTitle(title) ? dashboard.openTitle(title._id) : null"
                   >
                     @if (seeActions) {
                       <td class="actions-cell">
@@ -467,9 +553,9 @@
                           @if (isAdmin) {
                             <span
                               class="action-wrapper"
-                              (click)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
-                              (keydown.space)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
-                              (keydown.enter)="$event.stopPropagation(); dashSvc.editTitleDialog(title)"
+                              (click)="$event.stopPropagation(); dashboard.editTitleDialog(title)"
+                              (keydown.space)="$event.stopPropagation(); dashboard.editTitleDialog(title)"
+                              (keydown.enter)="$event.stopPropagation(); dashboard.editTitleDialog(title)"
                               [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                             >
                               <span class="button secondary action">
@@ -483,9 +569,9 @@
                           }
                           <span
                             class="action-wrapper"
-                            (click)="$event.stopPropagation(); dashSvc.deleteTitleDialog(title)"
-                            (keydown.space)="$event.stopPropagation(); dashSvc.deleteTitleDialog(title)"
-                            (keydown.enter)="$event.stopPropagation(); dashSvc.deleteTitleDialog(title)"
+                            (click)="$event.stopPropagation(); dashboard.deleteTitleDialog(title)"
+                            (keydown.space)="$event.stopPropagation(); dashboard.deleteTitleDialog(title)"
+                            (keydown.enter)="$event.stopPropagation(); dashboard.deleteTitleDialog(title)"
                             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                           >
                             <span class="button secondary action">
@@ -539,7 +625,7 @@
       </div>
     </div>
   </div>
-} @else if (dashSvc.dashboardPage() === 'users') {
+} @else if (dashboard.dashboardPage() === 'users') {
   
   <!-- Users -->
   <div class="content-wrapper">
@@ -547,9 +633,9 @@
       <span class="left-part">
         <span
           class="button real-button with-icon primary"
-          (click)="dashSvc.createUserDialog()"
-          (keydown.space)="dashSvc.createUserDialog()"
-          (keydown.enter)="dashSvc.createUserDialog()"
+          (click)="dashboard.createUserDialog()"
+          (keydown.space)="dashboard.createUserDialog()"
+          (keydown.enter)="dashboard.createUserDialog()"
           [tabindex]="dialogOrDrawerOpen ? -1 : 0"
         >
           <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
@@ -572,7 +658,7 @@
             name="search-user"
             type="text"
             placeholder="Hledat uživatele"
-            [(ngModel)]="dashSvc.searchUsers"
+            [(ngModel)]="dashboard.searchUsers"
             (input)="filterUsers()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           />
@@ -639,24 +725,24 @@
               @if (tableHasScrollbar()) { <col style="width:12px"> }
             </colgroup>
             <tbody>
-              @let users = dashSvc.displayedUsers();
+              @let users = dashboard.displayedUsers();
               @if (users.length) {
                 @for (user of users; track user._id) {
                   <tr
                     [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                     class="clickable"
-                    [class.active]="dashSvc.selectedUser() === user"
-                    (click)="dashSvc.openUserDetail(user)"
-                    (keydown.space)="dashSvc.openUserDetail(user)"
-                    (keydown.enter)="dashSvc.openUserDetail(user)"
+                    [class.active]="dashboard.selectedUser() === user"
+                    (click)="dashboard.openUserDetail(user)"
+                    (keydown.space)="dashboard.openUserDetail(user)"
+                    (keydown.enter)="dashboard.openUserDetail(user)"
                   >
                     <td class="actions-cell">
                       <div class="actions">
                         <span
                           class="action-wrapper"
-                          (click)="$event.stopPropagation(); dashSvc.openUserDetail(user)"
-                          (keydown.space)="$event.stopPropagation(); dashSvc.openUserDetail(user)"
-                          (keydown.enter)="$event.stopPropagation(); dashSvc.openUserDetail(user)"
+                          (click)="$event.stopPropagation(); dashboard.openUserDetail(user)"
+                          (keydown.space)="$event.stopPropagation(); dashboard.openUserDetail(user)"
+                          (keydown.enter)="$event.stopPropagation(); dashboard.openUserDetail(user)"
                           [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                         >
                           <span class="button secondary action">

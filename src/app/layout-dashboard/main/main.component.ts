@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, signal, viewChild, WritableSignal } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, viewChild, WritableSignal } from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
@@ -24,9 +24,9 @@ import { LocalStorageService } from '../../services/local-storage.service';
   styleUrl: './main.component.scss'
 })
 export class MainComponent {
-  dashSvc = inject(DashboardService);
-  uiSvc = inject(UiService);
-  authSvc = inject(AuthService);
+  dashboard = inject(DashboardService);
+  ui = inject(UiService);
+  auth = inject(AuthService);
   private storage = inject(LocalStorageService);
   private title = inject(titleBrowser);
   private router = inject(Router);
@@ -58,14 +58,14 @@ export class MainComponent {
 
             // Groups
             case 'groups':
-              return this.dashSvc.fetchGroups().pipe(
+              return this.dashboard.fetchGroups().pipe(
                 tap((res: Group[]) => {
-                  this.dashSvc.dashboardPage.set('groups');
-                  this.dashSvc.groups.set(res);
-                  this.dashSvc.displayedGroups.set(this.dashSvc.groups());
+                  this.dashboard.dashboardPage.set('groups');
+                  this.dashboard.groups.set(res);
+                  this.dashboard.displayedGroups.set(this.dashboard.groups());
                 }),
                 catchError(err => {
-                  this.uiSvc.showToast('Při načítání skupin se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
+                  this.ui.showToast('Při načítání skupin se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
                   console.error('Fetching groups failed:', err);
                   return throwError(() => err);
                 })
@@ -73,27 +73,27 @@ export class MainComponent {
 
             // Titles
             case 'group':
-              return this.dashSvc.fetchTitles(group_id).pipe(
+              return this.dashboard.fetchTitles(group_id).pipe(
                 tap((res: GroupPage) => {
-                  this.dashSvc.dashboardPage.set('titles');
-                  this.dashSvc.selectedGroupPage.set(res);
-                  this.dashSvc.titles.set(res.titles);
-                  this.dashSvc.displayedTitles.set(res.titles);
+                  this.dashboard.dashboardPage.set('titles');
+                  this.dashboard.selectedGroupPage.set(res);
+                  this.dashboard.titles.set(res.titles);
+                  this.dashboard.displayedTitles.set(res.titles);
                   this.title.setTitle(`${res.name} | CROPILOT`);
 
                   const titleId = this.storage.get('backFromTitleId', null, true);
                   if (titleId) {
-                    this.dashSvc.selectedTitle.set(res.titles.find(t => t._id === titleId) ?? null);
+                    this.dashboard.selectedTitle.set(res.titles.find(t => t._id === titleId) ?? null);
                     this.storage.remove('backFromTitleId');
                   }
                   
-                  this.authSvc.canReadTitle.set(false);
-                  if (this.authSvc.user()?.permissions.find(group => group.group_id === group_id && group.permission.includes('read_title'))) this.authSvc.canReadTitle.set(true);
+                  this.auth.canReadTitle.set(false);
+                  if (this.auth.user()?.permissions.find(group => group.group_id === group_id && group.permission.includes('read_title'))) this.auth.canReadTitle.set(true);
                 }),
                 catchError(err => {
                   err.status === 403
                     ? this.router.navigate(['/forbidden'])
-                    : this.uiSvc.showToast('Při načítání titulů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
+                    : this.ui.showToast('Při načítání titulů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
                   console.error('Fetching titles failed:', err);
                   return throwError(() => err);
                 })
@@ -101,16 +101,16 @@ export class MainComponent {
 
             // Users
             case 'users':
-              return this.dashSvc.fetchUsers().pipe(
+              return this.dashboard.fetchUsers().pipe(
                 tap((res: User[]) => {
-                  this.dashSvc.dashboardPage.set('users');
-                  this.dashSvc.users.set(res);
-                  this.dashSvc.displayedUsers.set(res);
+                  this.dashboard.dashboardPage.set('users');
+                  this.dashboard.users.set(res);
+                  this.dashboard.displayedUsers.set(res);
                 }),
                 catchError(err => {
                   err.status === 403
                     ? this.router.navigate(['/forbidden'])
-                    : this.uiSvc.showToast('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
+                    : this.ui.showToast('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
                   console.error('Fetching users failed:', err);
                   return throwError(() => err);
                 })
@@ -160,15 +160,15 @@ export class MainComponent {
     if (!field) return;
     let table: WritableSignal<any[]> | undefined;
 
-    switch (this.dashSvc.dashboardPage()) {
+    switch (this.dashboard.dashboardPage()) {
       case 'groups':
-        table = this.dashSvc.displayedGroups;
+        table = this.dashboard.displayedGroups;
         break;
       case 'titles':
-        table = this.dashSvc.displayedTitles;
+        table = this.dashboard.displayedTitles;
         break;
       case 'users':
-        table = this.dashSvc.displayedUsers;
+        table = this.dashboard.displayedUsers;
         break;
     }
 
@@ -212,13 +212,13 @@ export class MainComponent {
   permissionDict = permissionDict;
   
   get totalGroupsLabel(): string {
-    const length = this.dashSvc.displayedGroups().length;
+    const length = this.dashboard.displayedGroups().length;
     return `Celkem ${length} skupin${length === 1 ? 'a' : [2, 3, 4].includes(length) ? 'y' : '' }`;
   }
 
   filterGroups(): void {
-    const searchGroups = this.dashSvc.searchGroups();
-    this.dashSvc.displayedGroups.set(this.dashSvc.groups().filter(g => 
+    const searchGroups = this.dashboard.searchGroups();
+    this.dashboard.displayedGroups.set(this.dashboard.groups().filter(g => 
       g.name.toLowerCase().includes(searchGroups)
       || g.description.toLowerCase().includes(searchGroups)
       || g._id.toLowerCase().includes(searchGroups)
@@ -257,13 +257,13 @@ export class MainComponent {
   titleStateDict = titleStateDict;
 
   get totalTitlesLabel(): string {
-    const length = this.dashSvc.displayedTitles().length;
+    const length = this.dashboard.displayedTitles().length;
     return `Celkem ${length} titul${length === 1 ? '' : [2, 3, 4].includes(length) ? 'y' : 'ů' }`;
   }
 
   filterTitles(): void {
-    const searchTitles = this.dashSvc.searchTitles();
-    this.dashSvc.displayedTitles.set(this.dashSvc.titles().filter(t => 
+    const searchTitles = this.dashboard.searchTitles();
+    this.dashboard.displayedTitles.set(this.dashboard.titles().filter(t => 
       (t.external_id ?? '').toLowerCase().includes(searchTitles)
       || t._id.toLowerCase().includes(searchTitles)
       || (t.settings?.crop_model ?? '').toLowerCase().includes(searchTitles)
@@ -271,11 +271,63 @@ export class MainComponent {
   }
 
   canOpenTitle(title: Title): boolean {
-    return this.authSvc.canReadTitle() && this.shouldHaveLink(title.state);
+    return this.auth.canReadTitle() && this.shouldHaveLink(title.state);
   }
 
   shouldHaveLink(state: string): boolean {
     return ['ready', 'user_approved'].includes(state);
+  }
+
+  // Crop model filter
+  cropModelDropdownOpen = false;
+  selectedCropModel: string | null = 'all';
+  cropModelOptions = computed<(string)[]>(() => [...new Set(['all', ...this.dashboard.titles().map(t => t.settings?.crop_model ?? 'default')])]);
+
+  toggleCropModelDropdown(): void {
+    this.cropModelDropdownOpen = !this.cropModelDropdownOpen;
+  }
+
+  onCropModelChange(cropModel: string): void {
+    this.selectedRotationModel = 'all';
+    this.selectedState = 'all';
+    
+    this.selectedCropModel = cropModel;
+    this.cropModelDropdownOpen = false;
+
+    switch (cropModel) {
+      case 'all':
+        this.dashboard.displayedTitles.set(this.dashboard.titles());
+        break;
+      default:
+        this.dashboard.displayedTitles.set(this.dashboard.titles().filter(t => t.settings?.crop_model === cropModel));
+        break;
+    }
+  }
+
+  // Rotation model filter
+  rotationModelDropdownOpen = false;
+  selectedRotationModel: string | null = 'all';
+  rotationModelOptions = computed<(string)[]>(() => [...new Set(['all', ...this.dashboard.titles().map(t => t.settings?.rotation_model ?? 'text')])]);
+
+  toggleRotationModelDropdown(): void {
+    this.rotationModelDropdownOpen = !this.rotationModelDropdownOpen;
+  }
+
+  onRotationModelChange(rotationModel: string): void {
+    this.selectedCropModel = 'all';
+    this.selectedState = 'all';
+    
+    this.selectedRotationModel = rotationModel;
+    this.rotationModelDropdownOpen = false;
+
+    switch (rotationModel) {
+      case 'all':
+        this.dashboard.displayedTitles.set(this.dashboard.titles());
+        break;
+      default:
+        this.dashboard.displayedTitles.set(this.dashboard.titles().filter(t => t.settings?.rotation_model === rotationModel));
+        break;
+    }
   }
 
   // State filter
@@ -288,16 +340,19 @@ export class MainComponent {
     this.stateDropdownOpen = !this.stateDropdownOpen;
   }
 
-  onStateChange(stateValue: string): void {
+  onStateChange(stateValue: string): void {    
+    this.selectedCropModel = 'all';
+    this.selectedRotationModel = 'all';
+    
     this.selectedState = stateValue;
     this.stateDropdownOpen = false;
 
     switch (stateValue) {
       case 'all':
-        this.dashSvc.displayedTitles.set(this.dashSvc.titles());
+        this.dashboard.displayedTitles.set(this.dashboard.titles());
         break;
       default:
-        this.dashSvc.displayedTitles.set(this.dashSvc.titles().filter(t => t.state === stateValue));
+        this.dashboard.displayedTitles.set(this.dashboard.titles().filter(t => t.state === stateValue));
         break;
     }
   }
@@ -307,13 +362,13 @@ export class MainComponent {
     USERS
   ------------------------------ */
   get totalUsersLabel(): string {
-    const length = this.dashSvc.displayedUsers().length;
+    const length = this.dashboard.displayedUsers().length;
     return `Celkem ${length} uživatel${[2, 3, 4].includes(length) ? 'é' : 'ů' }`;
   }
 
   filterUsers(): void {
-    const searchUsers = this.dashSvc.searchUsers();
-    this.dashSvc.displayedUsers.set(this.dashSvc.users().filter(u => 
+    const searchUsers = this.dashboard.searchUsers();
+    this.dashboard.displayedUsers.set(this.dashboard.users().filter(u => 
       u.full_name.toLowerCase().includes(searchUsers)
       || u.email.toLowerCase().includes(searchUsers)
       || u._id.toLowerCase().includes(searchUsers)

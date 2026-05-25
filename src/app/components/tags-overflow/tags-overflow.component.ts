@@ -58,7 +58,7 @@ export class TagsOverflowComponent {
       return;
     }
 
-    const containerWidth = container.clientWidth;
+    const containerWidth = container.clientWidth - 26;
     if (!containerWidth) return;
 
     const gap = 8;

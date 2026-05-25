@@ -8,7 +8,7 @@
   background-color: var(--bg-bright);
 }
 
-::ng-deep .state-dropdown {
+::ng-deep .filter-dropdown {
   min-width: 240px;
   padding: var(--spacing-x3) var(--spacing-x4);
   background-color: var(--bg-base);
@@ -139,7 +139,7 @@
             }
           }
 
-          .state-dropdown-title {
+          .filter-dropdown-title {
             @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
             display: inline-flex;
             align-items: center;
@@ -148,13 +148,13 @@
             user-select: none;
           }
 
-          .state-icon-wrapper {
+          .filter-icon-wrapper {
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
 
-            .state-icon {
+            .filter-icon {
               font-size: 10px;
               transition: transform 0.2s ease;
               fill: var(--primary);
