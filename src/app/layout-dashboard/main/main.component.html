@@ -75,11 +75,11 @@
               <th>{{ `Práv${isAdmin ? 'a' : 'o'}` }}</th>
               <th>
                 <span
-                  class="date-sort-wrapper"
-                  (click)="sortDate('created_at')"
+                  class="sort-wrapper"
+                  (click)="sort('created_at')"
                   thTooltip
                   [direction]="sortState.direction"
-                  [isActiveField]="sortState.field === 'created_at'"
+                  [activeField]="'created_at'"
                 >
                   Vytvořeno
                   <span class="icon">
@@ -96,11 +96,11 @@
               </th>
               <th>
                 <span
-                  class="date-sort-wrapper"
-                  (click)="sortDate('modified_at')"
+                  class="sort-wrapper"
+                  (click)="sort('modified_at')"
                   thTooltip
                   [direction]="sortState.direction"
-                  [isActiveField]="sortState.field === 'modified_at'"
+                  [activeField]="'modified_at'"
                 >
                   Upraveno
                   <span class="icon">
@@ -319,7 +319,27 @@
           <thead>
             <tr>
               @if (seeActions) { <th>Akce</th> }
-              <th>Název titulu</th>
+              <th>
+                <span
+                  class="sort-wrapper"
+                  (click)="sort('external_id')"
+                  thTooltip
+                  [direction]="sortState.direction"
+                  [activeField]="'external_id'"
+                >
+                  Název titulu
+                  <span class="icon">
+                    <svg 
+                      width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      [class.active]="sortState.field === 'external_id' && sortState.direction"
+                      [class.oldest]="sortState.field === 'external_id' && sortState.direction === 'asc'"
+                    >
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M3.59957 9.26616C3.79483 9.0709 4.11142 9.0709 4.30668 9.26616L7.99979 12.9593L11.6929 9.26616C11.8882 9.0709 12.2048 9.0709 12.4 9.26616C12.5953 9.46142 12.5953 9.778 12.4 9.97326L8.35335 14.0199C8.25958 14.1137 8.1324 14.1664 7.99979 14.1664C7.86718 14.1664 7.74001 14.1137 7.64624 14.0199L3.59957 9.97326C3.40431 9.778 3.40431 9.46142 3.59957 9.26616Z" />
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.83325C8.27614 1.83325 8.5 2.05711 8.5 2.33325V13.5533C8.5 13.8294 8.27614 14.0533 8 14.0533C7.72386 14.0533 7.5 13.8294 7.5 13.5533V2.33325C7.5 2.05711 7.72386 1.83325 8 1.83325Z" />
+                    </svg>
+                  </span>
+                </span>
+              </th>
               <th>ID titulu</th>
               <th>Ořezový model</th>
               <th>Rotační</th>
@@ -370,11 +390,11 @@
               </th>
               <th>
                 <span
-                  class="date-sort-wrapper"
-                  (click)="sortDate('created_at')"
+                  class="sort-wrapper"
+                  (click)="sort('created_at')"
                   thTooltip
                   [direction]="sortState.direction"
-                  [isActiveField]="sortState.field === 'created_at'"
+                  [activeField]="'created_at'"
                 >
                   Vytvořeno
                   <span class="icon">
@@ -391,11 +411,11 @@
               </th>
               <th>
                 <span
-                  class="date-sort-wrapper"
-                  (click)="sortDate('modified_at')"
+                  class="sort-wrapper"
+                  (click)="sort('modified_at')"
                   thTooltip
                   [direction]="sortState.direction"
-                  [isActiveField]="sortState.field === 'modified_at'"
+                  [activeField]="'modified_at'"
                 >
                   Upraveno
                   <span class="icon">
@@ -584,11 +604,11 @@
               <th>Práva</th>
               <th>
                 <span
-                  class="date-sort-wrapper"
-                  (click)="sortDate('modified_at')"
+                  class="sort-wrapper"
+                  (click)="sort('modified_at')"
                   thTooltip
                   [direction]="sortState.direction"
-                  [isActiveField]="sortState.field === 'modified_at'"
+                  [activeField]="'modified_at'"
                 >
                   Naposledy změněno
                   <span class="icon">

@@ -156,7 +156,7 @@ export class MainComponent {
     direction: null,
   };
 
-  sortDate(field: SortField): void {
+  sort(field: SortField): void {
     if (!field) return;
     let table: WritableSignal<any[]> | undefined;
 
@@ -181,9 +181,26 @@ export class MainComponent {
 
     table.update(items =>
       [...items].sort((a, b) => {
-        const aTime = new Date(a[field]).getTime();
-        const bTime = new Date(b[field]).getTime();
-        return direction === 'asc' ? aTime - bTime : bTime - aTime;
+        const aValue = a[field];
+        const bValue = b[field];
+
+        // Date comparison
+        if (['created_at', 'modified_at'].includes(field)) {
+          const aDate = new Date(aValue).getTime();
+          const bDate = new Date(bValue).getTime();
+
+          return direction === 'asc'
+            ? aDate - bDate
+            : bDate - aDate;
+        }
+
+        // Text comparison
+        const aStr = String(aValue ?? '').toLowerCase();
+        const bStr = String(bValue ?? '').toLowerCase();
+
+        return direction === 'asc'
+          ? bStr.localeCompare(aStr)
+          : aStr.localeCompare(bStr);
       })
     );
   }
