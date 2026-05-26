@@ -37,6 +37,16 @@
     }
   }
 
+  .scan-name {
+    .label {
+      @include styles.font(500, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+    }
+
+    .name {
+      @include styles.font(400, var(--font-size-x2), var(--spacing-x5-5), var(--text-base));
+    }
+  }
+
   .flag {
     padding: var(--spacing-x3-5) var(--spacing-x3);
     border-radius: var(--spacing-x2);
@@ -238,7 +248,7 @@ input[type=number] {
 
 
 /* ------------------------------
-    DOKONČIT
+    ULOŽIT VŠE
   ------------------------------ */
 .footer {
   width: 100%;

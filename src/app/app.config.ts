@@ -3,14 +3,15 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { EnvironmentService } from './services/environment.service';
-import { DimColor, GridMode, PageNumberType, PermissionType, Role, ScanType, TitleState } from './app.types';
+import { DimColor, GridMode, OutlineWidthLabel, PageNumberType, PermissionType, Role, ScanType, TitleState } from './app.types';
 
 export const defaultColor = '#00DDFF';
 export const warningColor = '#FF9500';
 export const errorColor = '#FF3A30';
 export const editedColor = '#FFCC00';
+export const predictedColor = '#A855F7';
 export const transparentColor = '#00000000';
-export const gridColor = '#FF000050';
+export const gridColor = '#0078FF66'; // '#FF000050'
 
 export const flagMessages: Record<string, string> = {
   'prediction_overlap': 'Výřezy se překrývají',
@@ -26,10 +27,18 @@ export const gridModeDict: Record<GridMode, string> = {
   'never': 'Nikdy'
 };
 
+export const outlineWidthDict: Record<OutlineWidthLabel, number> = {
+  'Silný': 3,
+  'Střední': 2,
+  'Tenký': 1,
+  'Žádný': 0
+};
+
 export const dimColorDict: Record<DimColor, string> = {
   'Černá': '0,0,0,0.45',
   'Červená': '255,0,0,0.2',
-  'Bílá': '255,255,255,0.2'
+  'Bílá': '255,255,255,0.2',
+  'Žádná': '0,0,0,0',
 };
 
 export const filterScanTypeStartDict: Record<ScanType, string> = {
@@ -64,13 +73,14 @@ export const titleStateDict: Record<TitleState, string> = {
   'failed': 'Chyba',
   'ready': 'Nové',
   'user_approved': 'Uloženo',
-  'completed': 'Uloženo'
+  'retrain': 'Přetrénování',
+  'completed': 'Dokončeno'
 }
 
 export const titleStateFilterDict: Record<string, string> = {
   'Vše': 'all',
   'Nové': 'ready',
-  'Uloženo': 'saved',
+  'Uloženo': 'user_approved',
   'Skeny nenahrány': 'new',
   'Bude se zpracovávat': 'scheduled',
   'Zpracovává se': 'in_progress',

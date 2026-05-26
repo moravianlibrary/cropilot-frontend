@@ -1,6 +1,7 @@
 <div 
   #mainWrapper
   class="main-wrapper"
+  (click)="!uiSvc.dialogOpen() ? dashSvc.selectedTitle.set(null) : null"
   (keydown)="dashSvc.onKeyDown($event)"
   tabindex="0"
 >

@@ -71,9 +71,15 @@
         }
 
         <div class="many-blocks">
-          <div class="block">
-            <div class="label">AI MODEL</div>
-            <div class="value">{{ group?.default_model }}</div>
+          <div class="many-blocks">
+            <div class="block">
+              <div class="label">OŘEZOVÝ MODEL</div>
+              <div class="value">{{ group?.default_settings?.crop_model }}</div>
+            </div>
+            <div class="block">
+              <div class="label">ROTAČNÍ</div>
+              <div class="value">{{ group?.default_settings?.rotation_model }}</div>
+            </div>
           </div>
           <div class="block">
             <div class="label">POČET TITULŮ</div>

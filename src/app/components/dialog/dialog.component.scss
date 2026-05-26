@@ -100,6 +100,10 @@
 
     .settings-block-label {
       @include styles.font(450, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+
+      &.outline-type {
+        @include styles.font(450, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
+      }
     }
 
     .sublabel {
@@ -114,7 +118,7 @@
     .toggle-switch {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--spacing-x2);
 
       &:hover {
         cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
@@ -128,11 +132,10 @@
       }
 
       .slider {
-        margin-top: 2px;
         position: relative;
-        width: 40px;
-        height: 24px;
-        background-color: var(--icon-disabled);
+        width: var(--spacing-x8-5);
+        height: var(--spacing-x5);
+        background-color: var(--bg-light);
         border-radius: 999px;
         transition: background-color 0.25s ease;
       }
@@ -140,14 +143,14 @@
       .slider::before {
         content: "";
         position: absolute;
-        height: 20px;
-        width: 20px;
-        left: 2px;
-        top: 2px;
+        height: var(--spacing-x4);
+        width: var(--spacing-x4);
+        left: var(--spacing-x0-5);
+        top: var(--spacing-x0-5);
         background-color: white;
         border-radius: 50%;
         transition: transform 0.25s ease;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
 
       input:checked + .slider {
@@ -155,8 +158,16 @@
       }
 
       input:checked + .slider::before {
-        transform: translateX(16px);
+        transform: translateX(var(--spacing-x3-5));
       }
+
+      svg {
+        fill: var(--primary);
+      }
+    }
+
+    .description {
+      @include styles.font(350, var(--font-size-x1-5), var(--spacing-x4), var(--text-light));
     }
   }
 
@@ -512,23 +523,41 @@
     }
   }
 
+  .many-blocks-horizontal {
+    display: flex;
+    border-top: 1px solid var(--border-color);
+
+    .block {
+      border-top: none;
+
+      &:first-of-type {
+        width: 50%;
+      }
+
+      &:last-of-type {
+        width: 50%;
+      }
+    }
+  }
+
   & > div:first-child {
     padding-top: var(--spacing-x3);
   }
 }
 
 .new-edit-content-wrapper {
-&.title {
-  .warning {
-    margin-top: var(--spacing-x1);
+  &.title {
+    .warning {
+      margin-top: -8px;
+      margin-left: var(--spacing-x4);
+    }
   }
-}
 
-&.user-password {
-  .warning {
-    margin-bottom: var(--spacing-x2);
+  &.user-password {
+    .warning {
+      margin-bottom: var(--spacing-x2);
+    }
   }
-}
 
   &.title, &.user-password {
     .warning {

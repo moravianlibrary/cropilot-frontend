@@ -36,9 +36,27 @@
       @let canWriteTitle = authSvc.canWriteTitle();
       @let dialogContentType = uiSvc.dialogContentType();
 
-      <!-- Setting -->
+      <!-- Settings -->
       @if (dialogContentType === 'settings') {
         <div class="settings-content-wrapper">
+          @if (authSvc.isAdmin()) {
+            <div class="settings-block">
+              <label class="settings-block-label toggle-switch">
+                <input
+                  type="checkbox"
+                  [checked]="edtSvc.showPredictions"
+                  (click)="edtSvc.togglePredictions()"
+                />
+                <span class="slider"></span>
+                Zobrazení původních predikcí
+                <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M8.00347 1.85303C7.94693 1.91416 7.86771 2.03642 7.78855 2.24845L7.78826 2.24925L6.61365 5.37931C6.47259 5.74706 6.19574 6.03073 5.8294 6.14322C5.46306 6.2557 5.07412 6.17652 4.74886 5.95134L4.74252 5.94695L2.14177 4.08634C1.99367 3.97996 1.87505 3.91374 1.78612 3.87513C1.79853 3.97189 1.82941 4.10535 1.89109 4.27898L4.65207 12.0017C4.65725 12.0165 4.68241 12.0598 4.74202 12.1019C4.80173 12.1441 4.85131 12.1536 4.8668 12.1536H11.1335C11.1493 12.1536 11.2005 12.1439 11.264 12.1001C11.3234 12.0593 11.352 12.0172 11.3602 12.0001L14.0487 4.47356L14.0491 4.47264C14.1348 4.23005 14.1673 4.05504 14.172 3.94111C14.0645 3.97731 13.9065 4.05702 13.6984 4.20641L13.6971 4.20734L11.2544 5.94927C10.9309 6.17676 10.542 6.25586 10.1761 6.14305C9.81085 6.03042 9.53426 5.74682 9.3933 5.37931L9.392 5.37592L8.21868 2.24925L8.21838 2.24845C8.13922 2.03642 8.06 1.91416 8.00347 1.85303ZM9.155 1.89812C9.04801 1.6117 8.91029 1.35937 8.73409 1.17024C8.55609 0.979196 8.30838 0.823578 8.00347 0.823578C7.69855 0.823578 7.45084 0.979196 7.27284 1.17024C7.09664 1.35937 6.95892 1.6117 6.85192 1.89813L5.67943 5.02257C5.63386 5.14038 5.57106 5.17646 5.53587 5.18727C5.50083 5.19803 5.42737 5.20387 5.32074 5.13099L2.72517 3.27415C2.4631 3.08595 2.20158 2.94332 1.95218 2.8752C1.70836 2.80861 1.39089 2.79333 1.12401 2.9938C0.856973 3.19437 0.783189 3.50379 0.779457 3.75726C0.77564 4.01652 0.840188 4.3082 0.949005 4.61436L0.949316 4.61523L3.7082 12.3321L3.70884 12.3339C3.79721 12.5849 3.97497 12.7844 4.16491 12.9186C4.3552 13.0531 4.60229 13.1536 4.8668 13.1536H11.1335C11.3977 13.1536 11.6431 13.0533 11.8312 12.9237C12.0191 12.7943 12.1975 12.6029 12.2919 12.3638C12.2939 12.3587 12.2958 12.3536 12.2977 12.3484L14.991 4.80844L14.9915 4.80693C15.1087 4.47556 15.1768 4.16271 15.1724 3.88686C15.168 3.61687 15.0894 3.29639 14.815 3.08893C14.5401 2.881 14.2099 2.89344 13.9487 2.96421C13.6826 3.03632 13.4013 3.18877 13.1159 3.39356L13.1152 3.39408L10.6792 5.13123L10.6781 5.13204C10.5756 5.2037 10.5048 5.19792 10.4708 5.18744C10.4362 5.17678 10.3732 5.14063 10.3275 5.02261L9.155 1.89812Z" />
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M3.83333 14.6667C3.83333 14.3905 4.05719 14.1667 4.33333 14.1667H11.6667C11.9428 14.1667 12.1667 14.3905 12.1667 14.6667C12.1667 14.9428 11.9428 15.1667 11.6667 15.1667H4.33333C4.05719 15.1667 3.83333 14.9428 3.83333 14.6667Z" />
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M5.83333 9.33334C5.83333 9.0572 6.05719 8.83334 6.33333 8.83334H9.66667C9.94281 8.83334 10.1667 9.0572 10.1667 9.33334C10.1667 9.60949 9.94281 9.83334 9.66667 9.83334H6.33333C6.05719 9.83334 5.83333 9.60949 5.83333 9.33334Z" />
+                </svg>
+              </label>
+            </div>
+          }
           @if (canWriteTitle) {
             <div class="settings-block">
               <div class="settings-block-label">Zobrazení mřížky</div>
@@ -57,14 +75,30 @@
               </span>
             </div>
             <div class="settings-block">
-              <label class="settings-block-label toggle-switch">
+              <div class="settings-block-label">Obrys vybraného výřezu</div>
+              <div class="sublabel">Tloušťka</div>
+              <span class="radios-wrapper">
+                @for (outlineWidth of outlineWidthDictKeys; track outlineWidth) {
+                  <label class="radio">
+                    <input
+                      type="radio"
+                      name="outline-width"
+                      [checked]="outlineWidth === edtSvc.outlineWidthLabel()"
+                      (change)="edtSvc.outlineRadio.set(outlineWidth)"
+                    />
+                    <span class="radio-value">{{ outlineWidth }}</span>
+                  </label>
+                }
+              </span>
+              <div class="sublabel last-sublabel">Typ</div>
+              <label class="settings-block-label toggle-switch outline-type">
                 <input
                   type="checkbox"
-                  [checked]="!edtSvc.outlineTransparent"
-                  (click)="edtSvc.toggleOutline()"
+                  [checked]="edtSvc.outlineDashed"
+                  (click)="edtSvc.toggleOutlineDashed()"
                 />
                 <span class="slider"></span>
-                Zobrazení obrysu vybraného výřezu
+                Čárkovaný
               </label>
             </div>
             <div class="settings-block">
@@ -84,6 +118,18 @@
               </span>
             </div>
           }
+          <div class="settings-block">
+            <label class="settings-block-label toggle-switch">
+              <input
+                type="checkbox"
+                [checked]="edtSvc.rememberLastSelectedImageOfLastOpenTitle"
+                (click)="edtSvc.toggleLastSelectedScan()"
+              />
+              <span class="slider"></span>
+              Zapamatovat si naposledy zobrazený sken u naposledy otevřeného titulu
+            </label>
+            <!-- <span class="description">Například: Prohlížíte si titul A a jste na skenu č. 26. Aplikaci zavřete. Pokud mezitím na tomto počítači nikdo neotevře žádný jiný titul, při dalším otevření titulu A se automaticky zobrazí opět sken č. 26.</span> -->
+          </div>
           <div class="settings-block last">
             <div class="settings-block-label">Aktivní filtry při startu aplikace</div>
             <div class="sublabel">Typ skenů</div>
@@ -138,12 +184,12 @@
             }
             @if (canWriteTitle) { <tr><th>Přiblížit / oddálit / vybraný výřez / reset</th><td>Q, W, E, R</td></tr> }
             @else { <tr><th>Přiblížit / oddálit / reset</th><td>Q, W, R</td></tr> }
-            <tr><th>Předchozí / další sken</th><td>←, ↑, PageDown / Enter, →, ↓, PageUp</td></tr>
+            <tr><th>Předchozí / další sken</th><td>←, ↑, PageDown / Enter, →, ↓, PageUp, B</td></tr>
             <tr><th>Přepnout filter</th><td>F1, F2, F3, F4</td></tr>
             <tr><th>Přepnout filter počet výřezů</th><td>Alt / Cmd + 1, 2</td></tr>
             @if (canWriteTitle) {
               <tr><th>Reset mých změn ve skenu</th><td>Ctrl / Cmd + R</td></tr>
-              <tr><th>Dokončit</th><td>Ctrl / Cmd + Enter</td></tr>
+              <tr><th>Uložit vše</th><td>Ctrl / Cmd + Enter</td></tr>
             }
             <tr><th>Zobrazit klávesové zkratky</th><td>K</td></tr>
           </table>
@@ -194,19 +240,37 @@
             </div>
           </div>
 
-          <div class="block">
-            <label class="above-input select">
-              AI MODEL
-              <app-select
-                [(ngModel)]="dashSvc.selectedModel"
-                [inputName]="'group-model'"
-                location="dialog"
-                [maxDropdownHeight]="192"
-                [options]="dashSvc.availableModels()"
-                [usedIn]="dashSvc.selectedModelUsed()"
-                (usedOut)="dashSvc.onSelectModelUsed($event)"
-              ></app-select>
-            </label>
+          <div class="many-blocks-horizontal">
+            <div class="block">
+              <label class="above-input select">
+                OŘEZOVÝ MODEL
+                <app-select
+                  [(ngModel)]="dashSvc.selectedCropModel"
+                  [inputName]="'group-crop-model'"
+                  location="dialog"
+                  [width]="264"
+                  [maxDropdownHeight]="192"
+                  [options]="dashSvc.availableCropModels()"
+                  [usedIn]="dashSvc.selectedCropModelUsed()"
+                  (usedOut)="dashSvc.onSelectCropModelUsed($event)"
+                ></app-select>
+              </label>
+            </div>
+            <div class="block">
+              <label class="above-input select">
+                ROTAČNÍ MODEL
+                <app-select
+                  [(ngModel)]="dashSvc.selectedRotationModel"
+                  [inputName]="'group-rotation-model'"
+                  location="dialog"
+                  [width]="264"
+                  [maxDropdownHeight]="192"
+                  [options]="dashSvc.availableRotationModels()"
+                  [usedIn]="dashSvc.selectedRotationModelUsed()"
+                  (usedOut)="dashSvc.onSelectRotationModelUsed($event)"
+                ></app-select>
+              </label>
+            </div>
           </div>
 
           @if (dialogContentType === 'new-group') {
@@ -410,30 +474,48 @@
             }
           </div>
 
-          <div class="block">
-            <label class="above-input select">
-              AI MODEL
-              <app-select
-                [(ngModel)]="dashSvc.selectedModel"
-                [inputName]="'title-model'"
-                location="dialog"
-                [maxDropdownHeight]="dialogContentType === 'edit-title' ? 144 : 240"
-                [options]="dashSvc.availableModels()"
-                [usedIn]="dashSvc.selectedModelUsed()"
-                (usedOut)="dashSvc.onSelectModelUsed($event)"
-              ></app-select>
-            </label>
-            @if (dialogContentType === 'edit-title') {
-              <div class="warning">
-                <svg width="24" height="24" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M1.25 12C1.25 6.08579 6.08579 1.25 12 1.25C17.9142 1.25 22.75 6.08579 22.75 12C22.75 17.9142 17.9142 22.75 12 22.75C6.08579 22.75 1.25 17.9142 1.25 12ZM12 2.75C6.91421 2.75 2.75 6.91421 2.75 12C2.75 17.0858 6.91421 21.25 12 21.25C17.0858 21.25 21.25 17.0858 21.25 12C21.25 6.91421 17.0858 2.75 12 2.75Z" />
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M12 7.25C12.4142 7.25 12.75 7.58579 12.75 8V13C12.75 13.4142 12.4142 13.75 12 13.75C11.5858 13.75 11.25 13.4142 11.25 13V8C11.25 7.58579 11.5858 7.25 12 7.25Z" />
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M10.9941 16C10.9941 15.4477 11.4419 15 11.9941 15H12.0031C12.5554 15 13.0031 15.4477 13.0031 16C13.0031 16.5523 12.5554 17 12.0031 17H11.9941C11.4419 17 10.9941 16.5523 10.9941 16Z" />
-                </svg>
-                <span class="text">Změnou modelu ztratíte všechny úpravy.</span>
-              </div>
-            }
+          <div class="many-blocks-horizontal">
+            <div class="block">
+              <label class="above-input select">
+                OŘEZOVÝ MODEL
+                <app-select
+                  [(ngModel)]="dashSvc.selectedCropModel"
+                  [inputName]="'title-crop-model'"
+                  location="dialog"
+                  [width]="264"
+                  [maxDropdownHeight]="dialogContentType === 'edit-title' ? 144 : 240"
+                  [options]="dashSvc.availableCropModels()"
+                  [usedIn]="dashSvc.selectedCropModelUsed()"
+                  (usedOut)="dashSvc.onSelectCropModelUsed($event)"
+                ></app-select>
+              </label>
+            </div>
+            <div class="block">
+              <label class="above-input select">
+                ROTAČNÍ MODEL
+                <app-select
+                  [(ngModel)]="dashSvc.selectedRotationModel"
+                  [inputName]="'title-rotation-model'"
+                  location="dialog"
+                  [width]="264"
+                  [maxDropdownHeight]="dialogContentType === 'edit-title' ? 144 : 240"
+                  [options]="dashSvc.availableRotationModels()"
+                  [usedIn]="dashSvc.selectedRotationModelUsed()"
+                  (usedOut)="dashSvc.onSelectRotationModelUsed($event)"
+                ></app-select>
+              </label>
+            </div>
           </div>
+          @if (dialogContentType === 'edit-title') {
+            <div class="warning">
+              <svg width="24" height="24" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M1.25 12C1.25 6.08579 6.08579 1.25 12 1.25C17.9142 1.25 22.75 6.08579 22.75 12C22.75 17.9142 17.9142 22.75 12 22.75C6.08579 22.75 1.25 17.9142 1.25 12ZM12 2.75C6.91421 2.75 2.75 6.91421 2.75 12C2.75 17.0858 6.91421 21.25 12 21.25C17.0858 21.25 21.25 17.0858 21.25 12C21.25 6.91421 17.0858 2.75 12 2.75Z" />
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 7.25C12.4142 7.25 12.75 7.58579 12.75 8V13C12.75 13.4142 12.4142 13.75 12 13.75C11.5858 13.75 11.25 13.4142 11.25 13V8C11.25 7.58579 11.5858 7.25 12 7.25Z" />
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M10.9941 16C10.9941 15.4477 11.4419 15 11.9941 15H12.0031C12.5554 15 13.0031 15.4477 13.0031 16C13.0031 16.5523 12.5554 17 12.0031 17H11.9941C11.4419 17 10.9941 16.5523 10.9941 16Z" />
+              </svg>
+              <span class="text">Změnou kteréhokoliv modelu ztratíte všechny úpravy.</span>
+            </div>
+          }
 
           @if (dialogContentType === 'new-title') {
             <div class="block">
@@ -773,7 +855,7 @@
           [class.tertiary]="!btn.primary"
           [class.primary]="btn.primary"
           [class.destructive]="btn.destructive"
-          [class.disabled]="(btn.primary && uiSvc.dialogContentType() === 'edit-title' && !dashSvc.titleChanged()) || uiSvc.confirmBtnDisabled()"
+          [class.disabled]="(btn.primary && uiSvc.dialogContent() && uiSvc.dialogContentType() === 'edit-title' && !dashSvc.titleChanged()) || uiSvc.confirmBtnDisabled()"
           (click)="btn.action ? btn.action() : close()"
           (keydown.space)="btn.action ? btn.action() : close()"
           (keydown.enter)="btn.action ? btn.action() : close()"

@@ -5,7 +5,8 @@ export type DashboardPage = 'groups' | 'titles' | 'users';
 export type PermissionType = 'read_group' | 'read_title' | 'write' | 'upload';
 
 export interface Models {
-  available_models: string[];
+  crop_models: string[];
+  rotation_models: string[];
 }
 
 export interface Group {
@@ -13,7 +14,10 @@ export interface Group {
   name: string;
   api_key?: ApiKey;
   description: string;
-  default_model: string;
+  default_settings: {
+    crop_model: string;
+    rotation_model: string;
+  };
   created_at: string;
   modified_at: string;
   title_count: number;
@@ -25,7 +29,10 @@ export interface GroupPage {
   _id: string;
   name: string;
   description: string;
-  default_model: string;
+  default_settings: {
+    crop_model: string;
+    rotation_model: string;
+  };
   created_at: string;
   modified_at: string;
   titles: Title[];
@@ -44,7 +51,10 @@ export interface ApiKey {
 export interface Title {
   _id: string;
   external_id?: string;
-  model?: string;
+  settings?: {
+    crop_model: string;
+    rotation_model: string;
+  };
   created_at: string;
   modified_at: string;
   state: TitleState;
@@ -52,6 +62,7 @@ export interface Title {
 
 export interface TitleDetail {
   _id: string;
+  external_id?: string;
   crop_method: string;
   created_at: string;
   modified_at: string;
@@ -105,7 +116,7 @@ export interface Position {
 }
 
 // Sort
-export type SortField = 'created_at' | 'modified_at' | null;
+export type SortField = 'created_at' | 'modified_at' | 'external_id' | null;
 export type SortDirection = 'asc' | 'desc' | null;
 export interface SortState {
   field: SortField;
@@ -134,6 +145,7 @@ export interface Page {
 
 export interface ImageItem {
   _id: string;
+  scan_name?: string;
   url?: string;
   thumbnailUrl?: string;
   edited: boolean;
@@ -153,8 +165,9 @@ export type PageNumberType = 'all' | 'single' | 'double';
 export type InputType = 'left' | 'top' | 'width' | 'height' | 'angle';
 export type Role = 'admin' | 'user';
 export type GridMode = 'always' | 'never' | 'when-rotating';
-export type DimColor = 'Černá' | 'Červená' | 'Bílá';
-export type TitleState = 'new' | 'scheduled' | 'in_progress' | 'failed' | 'ready' | 'user_approved' | 'completed';
+export type OutlineWidthLabel = 'Silný' | 'Střední' | 'Tenký' | 'Žádný';
+export type DimColor = 'Černá' | 'Červená' | 'Bílá' | 'Žádná';
+export type TitleState = 'new' | 'scheduled' | 'in_progress' | 'failed' | 'ready' | 'user_approved' | 'retrain' | 'completed';
 
 // Cursors
 export type MousePos = { x: number, y: number };

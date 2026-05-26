@@ -1,7 +1,7 @@
 import { Component, effect, inject, input, output } from '@angular/core';
-import { DimColor, GridMode, PageNumberType, ScanType } from '../../app.types';
+import { DimColor, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
 import { EditorService } from '../../services/editor.service';
-import { dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridModeDict } from '../../app.config';
+import { dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridModeDict, outlineWidthDict } from '../../app.config';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../services/dashboard.service';
 import { AuthService } from '../../services/auth.service';
@@ -43,6 +43,9 @@ export class DialogComponent {
 
   gridModeDict: Record<GridMode, string> = gridModeDict;
   gridModeDictKeys = Object.keys(gridModeDict) as GridMode[];
+
+  outlineWidthDict: Record<OutlineWidthLabel, number> = outlineWidthDict;
+  outlineWidthDictKeys = Object.keys(outlineWidthDict) as OutlineWidthLabel[];
   
   dimColorDict: Record<DimColor, string> = dimColorDict;
   dimColorDictKeys = Object.keys(dimColorDict) as DimColor[];
@@ -72,7 +75,7 @@ export class DialogComponent {
     this.backdropClick.emit();
     this.close();
 
-    const edtSvc = this.edtSvc;
-    if (this.uiSvc.dialogTitle() === 'Nastavení') this.edtSvc.gridRadio.set(edtSvc.gridMode());
+    if (this.uiSvc.dialogTitle() === 'Nastavení') this.edtSvc.gridRadio.set(this.edtSvc.gridMode());
+    if (['Úprava titulu', 'Smazat titul'].includes(this.uiSvc.dialogTitle())) this.dashSvc.selectedTitle.set(null);
   }
 }

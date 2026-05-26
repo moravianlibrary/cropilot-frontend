@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { catchError, forkJoin, from, map, mergeMap, Observable, of, switchMap, tap, toArray } from 'rxjs';
+import { catchError, forkJoin, from, map, mergeMap, Observable, of, switchMap, tap, throwError, toArray } from 'rxjs';
 import { AuthService } from './auth.service';
 import { ChangedGroupMember, DashboardPage, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Permission, PermissionType, SelectOption, Title, User, UserInGroup } from '../app.types';
 import { Router } from '@angular/router';
@@ -13,8 +13,8 @@ import { UiService } from './ui.service';
 })
 export class DashboardService {
   private http = inject(HttpClient);
-  private authSvc = inject(AuthService);
-  private uiSvc = inject(UiService);
+  private auth = inject(AuthService);
+  private ui = inject(UiService);
   private router = inject(Router);
 
   dashboardPage = signal<DashboardPage>('groups');
@@ -50,7 +50,7 @@ export class DashboardService {
 
     const nameChanged = group.name !== this.groupName();
     const descriptionChanged = group.description !== this.groupDescription();
-    const modelChanged = group.default_model !== this.selectedModel();
+    const modelChanged = group.default_settings.crop_model !== this.selectedCropModel();
 
     return nameChanged || descriptionChanged || modelChanged;
   });
@@ -102,20 +102,25 @@ export class DashboardService {
   selectedTitle = signal<Title | null>(null);
   titleName = signal<string>('');
   titleNameError = signal<string>('');
-  availableModels = signal<SelectOption[]>([]);
-  selectedModel = signal<string>('');
-  selectedModelUsed = signal<boolean>(false);
+  availableCropModels = signal<SelectOption[]>([]);
+  selectedCropModel = signal<string>('');
+  selectedCropModelUsed = signal<boolean>(false);
+  availableRotationModels = signal<SelectOption[]>([]);
+  selectedRotationModel = signal<string>('');
+  selectedRotationModelUsed = signal<boolean>(false);
   files = signal<File[]>([]);
   uploadFilesError = signal<string>('');
-  modelChanged = computed<boolean>(() => this.selectedTitle()?.model !== this.selectedModel());
+  cropModelChanged = computed<boolean>(() => this.selectedTitle()?.settings?.crop_model !== this.selectedCropModel());
+  rotationModelChanged = computed<boolean>(() => this.selectedTitle()?.settings?.rotation_model !== this.selectedRotationModel());
   titleChanged = computed<boolean>(() => {
     const title = this.selectedTitle();
     if (!title) return false;
     
     const titleNameChanged = title.external_id !== this.titleName();
-    const modelChanged = this.modelChanged();
+    const cropModelChanged = this.cropModelChanged();
+    const rotationModelChanged = this.rotationModelChanged();
     
-    return titleNameChanged || modelChanged;
+    return titleNameChanged || cropModelChanged || rotationModelChanged;
   });
 
   // Users
@@ -159,71 +164,80 @@ export class DashboardService {
   ------------------------------ */
   // Groups
   fetchGroups(): Observable<Group[]> {
-    return this.http.get<Group[]>(`${this.authSvc.apiUrl}/groups`, { headers: this.authSvc.authHeaders() });
+    return this.http.get<Group[]>(`${this.auth.apiUrl}/groups`, { headers: this.auth.authHeaders() });
   }
 
   createGroup(): Observable<NewGroup> {
     const payload = {
       name: this.groupName(),
       description: this.groupDescription(),
-      default_model: this.selectedModel()
+      default_settings: {
+        crop_model: this.selectedCropModel(),
+        rotation_model: this.selectedRotationModel()
+      }
     };
-    return this.http.post<NewGroup>(`${this.authSvc.apiUrl}/groups`, payload, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.post<NewGroup>(`${this.auth.apiUrl}/groups`, payload, { headers: this.auth.authHeaders('json', true) });
   }
 
   deleteGroup(groupId: string): Observable<void> {
-    return this.http.delete<void>(`${this.authSvc.apiUrl}/groups/${groupId}`, { headers: this.authSvc.authHeaders() });
+    return this.http.delete<void>(`${this.auth.apiUrl}/groups/${groupId}`, { headers: this.auth.authHeaders() });
   }
 
   updateGroup(groupId: string): Observable<void> {
     const payload = {
       name: this.groupName(),
       description: this.groupDescription(),
-      default_model: this.selectedModel()
+      default_settings: {
+        crop_model: this.selectedCropModel(),
+        rotation_model: this.selectedRotationModel()
+      }
     };
 
-    return this.http.patch<void>(`${this.authSvc.apiUrl}/groups/${groupId}`, payload, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.patch<void>(`${this.auth.apiUrl}/groups/${groupId}`, payload, { headers: this.auth.authHeaders('json', true) });
   }
 
   bulkAddGroupMembers(groupId: string): Observable<void> {
     const payload = this.membersAdded();
-    return this.http.post<void>(`${this.authSvc.apiUrl}/groups/${groupId}/members`, payload, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.post<void>(`${this.auth.apiUrl}/groups/${groupId}/members`, payload, { headers: this.auth.authHeaders('json', true) });
   }
 
   bulkUpdateGroupMembers(groupId: string): Observable<void> {
     const payload = this.membersUpdated();
-    return this.http.patch<void>(`${this.authSvc.apiUrl}/groups/${groupId}/members`, payload, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.patch<void>(`${this.auth.apiUrl}/groups/${groupId}/members`, payload, { headers: this.auth.authHeaders('json', true) });
   }
 
   bulkRemoveGroupMembers(groupId: string): Observable<void> {
     const payload = this.membersRemoved();
-    return this.http.delete<void>(`${this.authSvc.apiUrl}/groups/${groupId}/members`, {
-      headers: this.authSvc.authHeaders('json', true),
+    return this.http.delete<void>(`${this.auth.apiUrl}/groups/${groupId}/members`, {
+      headers: this.auth.authHeaders('json', true),
       body: payload
     });
   }
 
   // Titles
   fetchTitles(groupId: string): Observable<GroupPage> {
-    return this.http.get<GroupPage>(`${this.authSvc.apiUrl}/groups/${groupId}`, { headers: this.authSvc.authHeaders() });
+    return this.http.get<GroupPage>(`${this.auth.apiUrl}/groups/${groupId}`, { headers: this.auth.authHeaders() });
   }
 
   fetchModels(): Observable<Models> {
-    return this.http.get<Models>(`${this.authSvc.apiUrl}/models`, { headers: this.authSvc.authHeaders() });
+    return this.http.get<Models>(`${this.auth.apiUrl}/models`, { headers: this.auth.authHeaders() });
   }
 
   createTitle(groupId: string): Observable<{ id: string }> {
     const payload = {
       external_id: this.titleName(),
-      model: this.selectedModel()
+      settings: {
+        crop_model: this.selectedCropModel(),
+        rotation_model: this.selectedRotationModel()
+      }
     };
-    return this.http.post<{ id: string }>(`${this.authSvc.apiUrl}/create?group_id=${groupId}`, payload, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.post<{ id: string }>(`${this.auth.apiUrl}/create?group_id=${groupId}`, payload, { headers: this.auth.authHeaders('json', true) });
   }
 
   uploadScan(titleId: string, file: File): Observable<void> {
     const form = new FormData();
     form.append('scan_data', file, file.name);
-    return this.http.post<void>(`${this.authSvc.apiUrl}/${titleId}/upload-scan`, form, { headers: this.authSvc.authHeaders() });
+    return this.http.post<void>(`${this.auth.apiUrl}/${titleId}/upload-scan`, form, { headers: this.auth.authHeaders() });
   }
 
   uploadAllScans(titleId: string, files: File[], concurrency: number = 5): Observable<string> {
@@ -235,24 +249,29 @@ export class DashboardService {
   }
 
   processTitle(titleId: string): Observable<void> {
-    return this.http.post<void>(`${this.authSvc.apiUrl}/${titleId}/process`, {}, { headers: this.authSvc.authHeaders() });
+    return this.http.post<void>(`${this.auth.apiUrl}/${titleId}/process`, {}, { headers: this.auth.authHeaders() });
   }
 
   updateTitle(titleId: string): Observable<Title> {
+    const cropModelChanged = this.cropModelChanged();
+    const rotationModelChanged = this.rotationModelChanged();
     const payload = {
       external_id: this.titleName(),
-      ...(this.modelChanged() && { model: this.selectedModel() })
+      ...((cropModelChanged || rotationModelChanged) && { settings: {
+        crop_model: this.selectedCropModel(),
+        rotation_model: this.selectedRotationModel()
+      } })
     };
-    return this.http.patch<Title>(`${this.authSvc.apiUrl}/${titleId}`, payload, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.patch<Title>(`${this.auth.apiUrl}/${titleId}`, payload, { headers: this.auth.authHeaders('json', true) });
   }
 
   deleteTitle(titleId: string): Observable<void> {
-    return this.http.delete<void>(`${this.authSvc.apiUrl}/${titleId}`, { headers: this.authSvc.authHeaders() });
+    return this.http.delete<void>(`${this.auth.apiUrl}/${titleId}`, { headers: this.auth.authHeaders() });
   }
 
   // Users
   fetchUsers(groupId?: string): Observable<User[]> {
-    return this.http.get<User[]>(`${this.authSvc.apiUrl}/users${groupId ? `?group_id=${groupId}` : ''}`, { headers: this.authSvc.authHeaders() });
+    return this.http.get<User[]>(`${this.auth.apiUrl}/users${groupId ? `?group_id=${groupId}` : ''}`, { headers: this.auth.authHeaders() });
   }
 
   createUser(): Observable<NewUser> {
@@ -263,11 +282,11 @@ export class DashboardService {
       ...(permissions && { permissions: permissions })
     };
 
-    return this.http.post<NewUser>(`${this.authSvc.apiUrl}/users/register`, payload, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.post<NewUser>(`${this.auth.apiUrl}/users/register`, payload, { headers: this.auth.authHeaders('json', true) });
   }
 
   deleteUser(userId: string): Observable<void> {
-    return this.http.delete<void>(`${this.authSvc.apiUrl}/users/${userId}`, { headers: this.authSvc.authHeaders() });
+    return this.http.delete<void>(`${this.auth.apiUrl}/users/${userId}`, { headers: this.auth.authHeaders() });
   }
 
   updateUser(userId: string): Observable<User> {
@@ -277,11 +296,11 @@ export class DashboardService {
       permissions: this.userPermissions()
     };
 
-    return this.http.patch<User>(`${this.authSvc.apiUrl}/users/${userId}`, payload, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.patch<User>(`${this.auth.apiUrl}/users/${userId}`, payload, { headers: this.auth.authHeaders('json', true) });
   }
 
   resetPassword(userId: string): Observable<NewPassword> {
-    return this.http.patch<NewPassword>(`${this.authSvc.apiUrl}/users/${userId}/reset-password`, {}, { headers: this.authSvc.authHeaders() });
+    return this.http.patch<NewPassword>(`${this.auth.apiUrl}/users/${userId}/reset-password`, {}, { headers: this.auth.authHeaders() });
   }
 
 
@@ -301,7 +320,7 @@ export class DashboardService {
   }
 
   openTitle(bookId: string): void {
-    window.location.href = `${this.authSvc.baseUri}/book/${bookId}`;
+    window.location.href = `${this.auth.baseUri}/book/${bookId}`;
   }
 
   navigateToUsers(): void {
@@ -316,13 +335,13 @@ export class DashboardService {
   ------------------------------ */
   // Group
   createGroupDialog(): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     
-    uiSvc.dialogWidth.set(593);
-    uiSvc.dialogTitle.set('Nová skupina');
-    uiSvc.dialogContent.set(true);
-    uiSvc.dialogContentType.set('new-group');
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(593);
+    ui.dialogTitle.set('Nová skupina');
+    ui.dialogContent.set(true);
+    ui.dialogContentType.set('new-group');
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Vytvořit',
@@ -352,18 +371,24 @@ export class DashboardService {
             return;
           }
 
-          uiSvc.closeDialog();
+          ui.closeDialog();
           
           return this.createGroup().pipe(
             switchMap((res: NewGroup) => this.membersAdded().length
-              ? this.bulkAddGroupMembers(res.id).pipe(map(() => res))
+              ? this.bulkAddGroupMembers(res.id).pipe(
+                  map(() => res),
+                  catchError(err => {
+                    this.ui.showToast('Při přidávání členů do skupiny se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+                    console.error(err);
+                    return throwError(() => err);
+                  })
+                )
               : of(res)
             ),
             tap((res: NewGroup) => {
               const now = Date();
-              const user = this.authSvc.user();
               const permissions = ['read_group', 'read_title', 'write', 'upload'] as PermissionType[];
-              const newGroup = {
+              const newGroup: Group = {
                 _id: res.id,
                 name: groupName,
                 api_key: {
@@ -371,7 +396,10 @@ export class DashboardService {
                   created_at: now  
                 },
                 description: this.groupDescription(),
-                default_model: this.selectedModel(),
+                default_settings: { 
+                  crop_model: this.selectedCropModel(),
+                  rotation_model: this.selectedRotationModel()
+                },
                 created_at: now,
                 modified_at: now,
                 title_count: 0,
@@ -388,9 +416,9 @@ export class DashboardService {
               this.groupNameError.set('');
             }),
             catchError(err => {
-              this.uiSvc.showToast('Při vytváření skupiny se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+              this.ui.showToast('Při vytváření skupiny se něco pokazilo. Zkuste to znovu.', { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe(() => this.openGroupDetail(this.selectedGroupDetail()))
         }
@@ -403,16 +431,25 @@ export class DashboardService {
 
     this.fetchModels().pipe(
       tap((res: Models) => {
-        this.availableModels.set(res.available_models.map(m => ({ value: m, label: m })));
-        this.selectedModel.set(res.available_models[0]);
-        this.selectedModelUsed.set(false);
+        this.availableCropModels.set(res.crop_models.map(m => ({ value: m, label: m })));
+        this.selectedCropModel.set(res.crop_models[0]);
+        this.selectedCropModelUsed.set(false);
+        this.availableRotationModels.set(res.rotation_models.map(m => ({ value: m, label: m })));
+        this.selectedRotationModel.set(res.rotation_models[1]);
+        this.selectedRotationModelUsed.set(false);
       }),
-      switchMap(() => this.fetchUsers()),
       catchError(err => {
-        this.uiSvc.showToast('Nepodařilo se načíst uživatele. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        this.ui.showToast('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
         console.error(err);
-        throw err;
-      })
+        return throwError(() => err);
+      }),
+      switchMap(() => this.fetchUsers().pipe(
+        catchError(err => {
+          this.ui.showToast('Nepodařilo se načíst uživatele. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+          console.error(err);
+          return throwError(() => err);
+        })
+      )),
     ).subscribe((res: User[]) => {
       this.users.set(res);
       this.availableUsers.set(res.filter(u => u.role !== 'admin').map(u => ({ value: u._id, label: u.full_name })));
@@ -420,30 +457,25 @@ export class DashboardService {
       this.groupPermissions.set([]);
       this.userPermissionsError = {};
       this.closeDrawer();
-      uiSvc.openDialog();
+      ui.openDialog();
     });
   }
 
   editGroupDialog(): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     const group = this.selectedGroupDetail();
     if (!group) return;
     
-    uiSvc.dialogWidth.set(360);
-    uiSvc.dialogTitle.set('Úprava skupiny');
-    uiSvc.dialogContent.set(true);
-    uiSvc.dialogContentType.set('edit-group');
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(593);
+    ui.dialogTitle.set('Úprava skupiny');
+    ui.dialogContent.set(true);
+    ui.dialogContentType.set('edit-group');
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Upravit',
         primary: true,
         action: () => {
-          if (!this.groupNonmembersDataChanged()) {
-            uiSvc.closeDialog();
-            return;
-          }
-
           const groupName = this.groupName();
 
           if (!groupName) {
@@ -460,21 +492,23 @@ export class DashboardService {
             return;
           }
 
-          uiSvc.closeDialog();
+          ui.closeDialog();
           
           return this.updateGroup(group._id).pipe(
             catchError(err => {
-              this.uiSvc.showToast('Nepodařilo se upravit skupinu. Zkuste to znovu.', { type: 'error' });
+              this.ui.showToast('Nepodařilo se upravit skupinu. Zkuste to znovu.', { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe(() => {
-            // this.searchGroups.set('');
-            const updatedGroup = {
+            const updatedGroup: Group = {
               ...group,
               name: this.groupName(),
               description: this.groupDescription(),
-              default_model: this.selectedModel()
+              default_settings: { 
+                crop_model: this.selectedCropModel(),
+                rotation_model: this.selectedRotationModel()
+              },
             };
             this.groups.update(prev => prev.map(g => g._id === group?._id ? updatedGroup : g))
             this.displayedGroups.set(this.groups());
@@ -491,27 +525,30 @@ export class DashboardService {
 
     this.fetchModels().pipe(
       catchError(err => {
-        this.uiSvc.showToast('Nepodařilo se načíst dostupné AI modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        this.ui.showToast('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
         console.error(err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: Models) => {
-      this.availableModels.set(res.available_models.map(m => ({ value: m, label: m })));
-      this.selectedModel.set(group.default_model);
-      this.selectedModelUsed.set(false);
-      uiSvc.openDialog();
+      this.availableCropModels.set(res.crop_models.map(m => ({ value: m, label: m })));
+      this.selectedCropModel.set(group.default_settings.crop_model);
+      this.selectedCropModelUsed.set(false);
+      this.availableRotationModels.set(res.rotation_models.map(m => ({ value: m, label: m })));
+      this.selectedRotationModel.set(group.default_settings.rotation_model);
+      this.selectedRotationModelUsed.set(false);
+      ui.openDialog();
     });
   }
 
   deleteGroupDialog(): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     const group = this.selectedGroupDetail();
     
-    uiSvc.dialogWidth.set(593);
-    uiSvc.dialogTitle.set('Smazat skupinu');
-    uiSvc.dialogDescription.set(`Opravdu chcete smazat skupinu${' ' + group?.name}?`);
-    uiSvc.dialogContent.set(false);
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(593);
+    ui.dialogTitle.set('Smazat skupinu');
+    ui.dialogDescription.set(`Opravdu chcete smazat skupinu${' ' + group?.name}?`);
+    ui.dialogContent.set(false);
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Smazat skupinu',
@@ -523,30 +560,30 @@ export class DashboardService {
             this.groups.set(updated);
             this.displayedGroups.set(updated);
             this.selectedGroupDetail.set(null);
-            uiSvc.closeDialog();
+            ui.closeDialog();
           }),
           catchError(err => {
-            this.uiSvc.showToast('Při mazání skupiny se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+            this.ui.showToast('Při mazání skupiny se něco pokazilo. Zkuste to znovu.', { type: 'error' });
             console.error(err);
-            throw err;
+            return throwError(() => err);
           })
         ).subscribe(() => this.closeDrawer())
       }
     ])
 
-    uiSvc.openDialog();
+    ui.openDialog();
   }
 
   // Title
   createTitleDialog(): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     this.files.set([]);
     
-    uiSvc.dialogWidth.set(593);
-    uiSvc.dialogTitle.set('Nový titul');
-    uiSvc.dialogContent.set(true);
-    uiSvc.dialogContentType.set('new-title');
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(593);
+    ui.dialogTitle.set('Nový titul');
+    ui.dialogContent.set(true);
+    ui.dialogContentType.set('new-title');
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Vytvořit',
@@ -568,7 +605,7 @@ export class DashboardService {
             return;
           }
 
-          uiSvc.closeDialog();
+          ui.closeDialog();
           
           return this.createTitle(this.selectedGroupPage()?._id ?? '').pipe(
             map(res => {
@@ -576,7 +613,10 @@ export class DashboardService {
               const newTitle: Title = {
                 _id: res.id,
                 external_id: titleName,
-                model: this.selectedModel(),
+                settings: { 
+                  crop_model: this.selectedCropModel(),
+                  rotation_model: this.selectedRotationModel()
+                },
                 created_at: now,
                 modified_at: now,
                 state: 'scheduled'
@@ -588,12 +628,24 @@ export class DashboardService {
 
               return res.id;
             }),
-            switchMap(id => this.uploadAllScans(id, this.files())),
-            switchMap(id => this.processTitle(id)),
+            switchMap(id => this.uploadAllScans(id, this.files()).pipe(
+              catchError(err => {
+                this.ui.showToast(`Při nahrávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.`, { type: 'error' });
+                console.error(err);
+                return throwError(() => err);
+              })
+            )),
+            switchMap(id => this.processTitle(id).pipe(
+              catchError(err => {
+                this.ui.showToast(`Při zpracovávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.`, { type: 'error' });
+                console.error(err);
+                return throwError(() => err);
+              })
+            )),
             catchError(err => {
-              this.uiSvc.showToast(`Při nahrávání skenů se něco pokazilo. Titul smažte a přidejte ji jako novou.`, { type: 'error' });
+              this.ui.showToast(`Při vytváření titulu se něco pokazilo. Titul smažte a přidejte ho jako nový.`, { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe();
         }
@@ -602,24 +654,31 @@ export class DashboardService {
 
     this.fetchModels().pipe(
       catchError(err => {
-        this.uiSvc.showToast('Nepodařilo se načíst dostupné AI modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        this.ui.showToast('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
         console.error(err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: Models) => {
       this.titleName.set('');
       this.titleNameError.set('');
       this.uploadFilesError.set('');
-      this.availableModels.set(res.available_models.map(m => ({ value: m, label: m })));
-      this.selectedModel.set(this.selectedGroupPage()?.default_model ?? res.available_models[0]);
-      this.selectedModelUsed.set(false);
+      this.availableCropModels.set(res.crop_models.map(m => ({ value: m, label: m })));
+      this.selectedCropModel.set(this.selectedGroupPage()?.default_settings.crop_model ?? res.crop_models[0]);
+      this.selectedCropModelUsed.set(false);
+      this.availableRotationModels.set(res.rotation_models.map(m => ({ value: m, label: m })));
+      this.selectedRotationModel.set(this.selectedGroupPage()?.default_settings.rotation_model ?? res.rotation_models[0]);
+      this.selectedRotationModelUsed.set(false);
       this.closeDrawer();
-      uiSvc.openDialog();
+      ui.openDialog();
     });
   }
 
-  onSelectModelUsed(used: boolean): void {
-    this.selectedModelUsed.set(used);
+  onSelectCropModelUsed(used: boolean): void {
+    this.selectedCropModelUsed.set(used);
+  }
+
+  onSelectRotationModelUsed(used: boolean): void {
+    this.selectedRotationModelUsed.set(used);
   }
 
   uploadFiles(files: FileList) {
@@ -627,13 +686,13 @@ export class DashboardService {
   }
 
   editTitleDialog(title: Title): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     
-    uiSvc.dialogWidth.set(360);
-    uiSvc.dialogTitle.set('Úprava titulu');
-    uiSvc.dialogContent.set(true);
-    uiSvc.dialogContentType.set('edit-title');
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(593);
+    ui.dialogTitle.set('Úprava titulu');
+    ui.dialogContent.set(true);
+    ui.dialogContentType.set('edit-title');
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Změnit',
@@ -652,16 +711,19 @@ export class DashboardService {
           
           return this.updateTitle(title._id).pipe(
             catchError(err => {
-              this.uiSvc.showToast(`Při ukládání změn se něco pokazilo. Zkuste to znovu.`, { type: 'error' });
+              this.ui.showToast(`Při ukládání změn se něco pokazilo. Zkuste to znovu.`, { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe((res: Title) => {
             const now = Date();
             const editedTitle: Title = {
               _id: res._id,
               external_id: titleName,
-              model: this.selectedModel(),
+              settings: { 
+                crop_model: this.selectedCropModel(),
+                rotation_model: this.selectedRotationModel()
+              },
               created_at: now,
               modified_at: now,
               state: res.state
@@ -671,7 +733,7 @@ export class DashboardService {
             this.titles.update(prev => prev.map(t => t._id === title._id ? editedTitle : t));
             this.displayedTitles.set(this.titles());
             
-            uiSvc.closeDialog();
+            ui.closeDialog();
           });
         }
       }
@@ -679,30 +741,33 @@ export class DashboardService {
 
     this.fetchModels().pipe(
       catchError(err => {
-        this.uiSvc.showToast('Nepodařilo se načíst dostupné AI modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        this.ui.showToast('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
         console.error(err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: Models) => {
       this.selectedTitle.set(title);
       this.titleName.set(title.external_id ?? '');
       this.titleNameError.set('');
-      this.availableModels.set(res.available_models.map(m => ({ value: m, label: m })));
-      this.selectedModel.set(title.model ?? res.available_models[0]);
-      this.selectedModelUsed.set(false);
+      this.availableCropModels.set(res.crop_models.map(m => ({ value: m, label: m })));
+      this.selectedCropModel.set(title.settings?.crop_model ?? res.crop_models[0]);
+      this.selectedCropModelUsed.set(false);
+      this.availableRotationModels.set(res.rotation_models.map(m => ({ value: m, label: m })));
+      this.selectedRotationModel.set(title.settings?.rotation_model ?? res.rotation_models[0]);
+      this.selectedRotationModelUsed.set(false);
       this.closeDrawer();
-      uiSvc.openDialog();
+      ui.openDialog();
     });
   }
 
   deleteTitleDialog(title: Title): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     
-    uiSvc.dialogWidth.set(593);
-    uiSvc.dialogTitle.set('Smazat titul');
-    uiSvc.dialogDescription.set(`Opravdu chcete smazat titul${' ' + title?.external_id}?`);
-    uiSvc.dialogContent.set(false);
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(593);
+    ui.dialogTitle.set('Smazat titul');
+    ui.dialogDescription.set(`Opravdu chcete smazat titul${' ' + title?.external_id}?`);
+    ui.dialogContent.set(false);
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Smazat titul',
@@ -712,29 +777,30 @@ export class DashboardService {
           tap(() => {
             this.titles.update(prev => prev.filter(t => t._id !== (title?._id ?? '')));
             this.displayedTitles.set(this.titles());
-            uiSvc.closeDialog();
+            ui.closeDialog();
           }),
           catchError(err => {
-            this.uiSvc.showToast('Nepodařilo se smazat titul. Zkuste to znovu.', { type: 'error' })
+            this.ui.showToast('Nepodařilo se smazat titul. Zkuste to znovu.', { type: 'error' })
             console.error(err);
-            throw err;
+            return throwError(() => err);
           })
         ).subscribe(() => this.closeDrawer())
       }
     ])
 
-    uiSvc.openDialog();
+    this.selectedTitle.set(title);
+    ui.openDialog();
   }
 
   // User
   createUserDialog(): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     
-    uiSvc.dialogWidth.set(593);
-    uiSvc.dialogTitle.set('Nový uživatel');
-    uiSvc.dialogContent.set(true);
-    uiSvc.dialogContentType.set('new-user');
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(593);
+    ui.dialogTitle.set('Nový uživatel');
+    ui.dialogContent.set(true);
+    ui.dialogContentType.set('new-user');
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Vytvořit',
@@ -803,26 +869,26 @@ export class DashboardService {
               this.userEmailError.set('');
               this.openUserDetail(this.selectedUser());
               
-              uiSvc.confirmBtnDisabledTimer = 0;
-              uiSvc.confirmBtnDisabled.set(true);
-              uiSvc.confirmBtnDisabledTimer = window.setTimeout(() => uiSvc.confirmBtnDisabled.set(false), 3000);
-              uiSvc.dialogWidth.set(593);
-              uiSvc.dialogTitle.set('Nový uživatel');
-              uiSvc.dialogContent.set(true);
-              uiSvc.dialogContentType.set('new-password');
-              uiSvc.dialogButtons.set([{
+              ui.confirmBtnDisabledTimer = 0;
+              ui.confirmBtnDisabled.set(true);
+              ui.confirmBtnDisabledTimer = window.setTimeout(() => ui.confirmBtnDisabled.set(false), 3000);
+              ui.dialogWidth.set(593);
+              ui.dialogTitle.set('Nový uživatel');
+              ui.dialogContent.set(true);
+              ui.dialogContentType.set('new-password');
+              ui.dialogButtons.set([{
                 label: 'Rozumím',
                 primary: true,
                 action: () => {
-                  if (uiSvc.confirmBtnDisabled()) return;
-                    uiSvc.closeDialog();
+                  if (ui.confirmBtnDisabled()) return;
+                    ui.closeDialog();
                   }
               }]);
             }),
             catchError(err => {
-              uiSvc.showToast('Nepodařilo se vytvořit uživatele. Zkuste to znovu.', { type: 'error' });
+              ui.showToast('Nepodařilo se vytvořit uživatele. Zkuste to znovu.', { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe();
         }
@@ -837,9 +903,9 @@ export class DashboardService {
 
     this.fetchGroups().pipe(
       catchError(err => {
-        this.uiSvc.showToast('Nepodařilo se načíst skupiny. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        this.ui.showToast('Nepodařilo se načíst skupiny. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
         console.error(err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: Group[]) => {
       this.groups.set(res);
@@ -848,25 +914,25 @@ export class DashboardService {
       this.userPermissions.set([]);
       this.groupPermissionsError = {};
       this.closeDrawer();
-      uiSvc.openDialog();
+      ui.openDialog();
     });
   }
 
   editUserDialog(): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     
-    uiSvc.dialogWidth.set(360);
-    uiSvc.dialogTitle.set('Změna údajů');
-    uiSvc.dialogContent.set(true);
-    uiSvc.dialogContentType.set('edit-user');
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(360);
+    ui.dialogTitle.set('Změna údajů');
+    ui.dialogContent.set(true);
+    ui.dialogContentType.set('edit-user');
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Uložit',
         primary: true,
         action: () => {
           if (!this.userNonmembersDataChanged()) {
-            uiSvc.closeDialog();
+            ui.closeDialog();
             return;
           }
 
@@ -908,14 +974,14 @@ export class DashboardService {
               this.users.update(prev => prev.map(u => u._id === res._id ? res : u));
               this.displayedUsers.set(this.users());
               this.selectedUser.set(res);
-              uiSvc.drawerTitle.set(userFullname);
+              ui.drawerTitle.set(userFullname);
             }),
             catchError(err => {
-              this.uiSvc.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
+              this.ui.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
-          ).subscribe(() => uiSvc.closeDialog());
+          ).subscribe(() => ui.closeDialog());
         }
       }
     ])
@@ -924,18 +990,18 @@ export class DashboardService {
     this.userEmail.set(this.userEmail());
     this.userNameError.set('');
     this.userEmailError.set('');
-    uiSvc.openDialog();
+    ui.openDialog();
   }
 
   deleteUserDialog(): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     const user = this.selectedUser();
     
-    uiSvc.dialogWidth.set(593);
-    uiSvc.dialogTitle.set('Smazat uživatele');
-    uiSvc.dialogDescription.set(`Opravdu chcete smazat uživatele${' ' + user?.full_name}?`);
-    uiSvc.dialogContent.set(false);
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(593);
+    ui.dialogTitle.set('Smazat uživatele');
+    ui.dialogDescription.set(`Opravdu chcete smazat uživatele${' ' + user?.full_name}?`);
+    ui.dialogContent.set(false);
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Smazat uživatele',
@@ -947,51 +1013,51 @@ export class DashboardService {
             this.users.set(updated);
             this.displayedUsers.set(updated);
             this.selectedUser.set(null);
-            uiSvc.closeDialog();
+            ui.closeDialog();
           }),
           catchError(err => {
-            this.uiSvc.showToast('Nepodařilo se smazat uživatele. Zkuste to znovu.', { type: 'error' });
+            this.ui.showToast('Nepodařilo se smazat uživatele. Zkuste to znovu.', { type: 'error' });
             console.error(err);
-            throw err;
+            return throwError(() => err);
           })
         ).subscribe(() => this.closeDrawer())
       }
     ])
 
-    uiSvc.openDialog();
+    ui.openDialog();
   }
 
   resetPasswordDialog(userId: string): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     
     this.resetPassword(userId).pipe(
       catchError(err => {
-        uiSvc.showToast('Při generování nového hesla se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+        ui.showToast('Při generování nového hesla se něco pokazilo. Zkuste to znovu.', { type: 'error' });
         console.error(err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: NewPassword) => {
       this.newPassword.set(res.new_password);
     
-      uiSvc.confirmBtnDisabledTimer = 0;
-      uiSvc.confirmBtnDisabled.set(true);
-      uiSvc.confirmBtnDisabledTimer = window.setTimeout(() => uiSvc.confirmBtnDisabled.set(false), 3000);
-      uiSvc.dialogWidth.set(593);
-      uiSvc.dialogTitle.set('Nové heslo');
-      uiSvc.dialogContent.set(true);
-      uiSvc.dialogContentType.set('edit-password');
-      uiSvc.dialogButtons.set([
+      ui.confirmBtnDisabledTimer = 0;
+      ui.confirmBtnDisabled.set(true);
+      ui.confirmBtnDisabledTimer = window.setTimeout(() => ui.confirmBtnDisabled.set(false), 3000);
+      ui.dialogWidth.set(593);
+      ui.dialogTitle.set('Nové heslo');
+      ui.dialogContent.set(true);
+      ui.dialogContentType.set('edit-password');
+      ui.dialogButtons.set([
         {
           label: 'Rozumím',
           primary: true,
           action: () => {
-            if (uiSvc.confirmBtnDisabled()) return;
-            uiSvc.closeDialog();
+            if (ui.confirmBtnDisabled()) return;
+            ui.closeDialog();
           }
         }
       ])
 
-      uiSvc.openDialog();
+      ui.openDialog();
     });
   }
 
@@ -1000,10 +1066,10 @@ export class DashboardService {
     DRAWER ACTIONS
   ------------------------------ */
   closeDrawer(): void {
-    this.uiSvc.closeDrawer();
+    this.ui.closeDrawer();
     
     defer(() => {
-      if (this.uiSvc.drawerOpen()) return;
+      if (this.ui.drawerOpen()) return;
       this.selectedGroupDetail.set(null);
       this.selectedUser.set(null);
     }, 300);
@@ -1011,27 +1077,27 @@ export class DashboardService {
 
   // Group
   openGroupDetail(group: Group | null): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     if (!group) return;
     
-    uiSvc.drawerTitle.set(group.name);
-    uiSvc.drawerContent.set(true);
-    uiSvc.drawerContentType.set('groups');
+    ui.drawerTitle.set(group.name);
+    ui.drawerContent.set(true);
+    ui.drawerContentType.set('groups');
     
     this.selectedGroupDetail.set(group);
     this.groupName.set(group.name);
     this.groupNameError.set('');
     this.groupDescription.set(group.description);
-    this.selectedModel.set(group.default_model);
+    this.selectedCropModel.set(group.default_settings.crop_model);
 
     this.selectedUserId.set('');
     this.groupPermissions.set(group.users);
 
     this.fetchUsers().pipe(
       catchError(err => {
-        this.uiSvc.showToast('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
+        this.ui.showToast('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
         console.error('Fetching users failed:', err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: User[]) => {
       this.users.set(res);
@@ -1041,8 +1107,8 @@ export class DashboardService {
         .map(u => ({ value: u._id, label: u.full_name })))
     });
     
-    if (this.authSvc.user()?.role === 'admin') {
-      uiSvc.drawerButtons.set([
+    if (this.auth.user()?.role === 'admin') {
+      ui.drawerButtons.set([
         {
           label: 'Zavřít',
           action: () => this.closeDrawer()
@@ -1080,9 +1146,9 @@ export class DashboardService {
                 this.selectedGroupDetail.set(null);
               }),
               catchError(err => {
-                this.uiSvc.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
+                this.ui.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
                 console.error(err);
-                throw err;
+                return throwError(() => err);
               })
             ).subscribe(() => this.closeDrawer());
           }
@@ -1090,7 +1156,7 @@ export class DashboardService {
       ]);
     }
 
-    uiSvc.openDrawer();
+    ui.openDrawer();
   }
 
   removeAllUsers(): void {
@@ -1148,7 +1214,7 @@ export class DashboardService {
   // User
   openUserDetail(user: User | null): void {
     if (!user) return;
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
 
     this.selectedUser.set(user);
     this.userNameError.set('');
@@ -1161,9 +1227,9 @@ export class DashboardService {
 
     this.fetchGroups().pipe(
       catchError(err => {
-        this.uiSvc.showToast('Při načítání skupin se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
+        this.ui.showToast('Při načítání skupin se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
         console.error('Fetching groups failed:', err);
-        throw err;
+        return throwError(() => err);
       })
     ).subscribe((res: Group[]) => {
       this.groups.set(res);
@@ -1172,13 +1238,13 @@ export class DashboardService {
         .map(g => ({ value: g._id, label: g.name })))
     });
 
-    uiSvc.drawerTitle.set(user.full_name);
-    uiSvc.drawerContent.set(true);
-    uiSvc.drawerContentType.set('users');
+    ui.drawerTitle.set(user.full_name);
+    ui.drawerContent.set(true);
+    ui.drawerContentType.set('users');
     this.userFullname.set(user.full_name);
     this.userEmail.set(user.email);
     
-    uiSvc.drawerButtons.set([
+    ui.drawerButtons.set([
       {
         label: 'Zavřít',
         action: () => this.closeDrawer()
@@ -1236,16 +1302,16 @@ export class DashboardService {
               this.selectedUser.set(null);
             }),
             catchError(err => {
-              this.uiSvc.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
+              this.ui.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
               console.error(err);
-              throw err;
+              return throwError(() => err);
             })
           ).subscribe(() => this.closeDrawer());
         }
       }
     ]);
 
-    uiSvc.openDrawer();
+    ui.openDrawer();
   }
 
   removeFromAllGroups(): void {
@@ -1360,8 +1426,8 @@ export class DashboardService {
   onKeyDown(event: KeyboardEvent): void {
     const key = event.key;
     if (!this.isHandledKey(key)) return;
-    const dialogOpen = this.uiSvc.dialogOpen();
-    const drawerOpen = this.uiSvc.drawerOpen();
+    const dialogOpen = this.ui.dialogOpen();
+    const drawerOpen = this.ui.drawerOpen();
     const dashboardPage = this.dashboardPage();
 
     const el = (event.target as HTMLElement);
@@ -1386,7 +1452,8 @@ export class DashboardService {
     // Close dialog or drawer
     if (key === 'Escape') {
       if (dialogOpen) {
-        this.uiSvc.closeDialog();
+        this.selectedTitle.set(null);
+        this.ui.closeDialog();
         return;
       }
 

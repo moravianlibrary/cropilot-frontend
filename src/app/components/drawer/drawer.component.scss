@@ -94,6 +94,10 @@
     .many-blocks {
       display: flex;
 
+      .many-blocks {
+        width: 50%;
+      }
+
       .block {
         &:first-of-type {
           width: 50%;

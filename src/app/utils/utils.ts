@@ -4,19 +4,19 @@ import { Page } from '../app.types';
 /* ------------------------------
   MATH
 ------------------------------ */
-export function degreeToRadian(angle: number): number {
+export const degreeToRadian = (angle: number): number => {
   return (angle * Math.PI) / 180;
 }
 
-export function radianToDegree(angle: number): number {
+export const radianToDegree = (angle: number): number => {
   return (angle * 180) / Math.PI;
 }
 
-export function roundToDecimals(value: number, decimals: number = 2): number {
+export const roundToDecimals = (value: number, decimals: number = 2): number => {
   return Number(value.toFixed(decimals));
 }
 
-export function clamp(value: number, min: number = 0, max: number = 1): number {
+export const clamp = (value: number, min: number = 0, max: number = 1): number => {
   return Math.min(max, Math.max(min, value));
 }
 
@@ -24,7 +24,7 @@ export function clamp(value: number, min: number = 0, max: number = 1): number {
 /* ------------------------------
   FORMATTING
 ------------------------------ */
-export function getDate(input: string): string[] {
+export const getDate = (input: string): string[] => {
   const date = new Date(input);
   return date
     .toLocaleString('cs-CZ', {
@@ -39,7 +39,7 @@ export function getDate(input: string): string[] {
     .split(' ');
 }
 
-export function checkEmailValidity(email: string): boolean {
+export const checkEmailValidity = (email: string): boolean => {
   if (!email) return false;
 
   const normalizedEmail = email.trim().toLowerCase();
@@ -53,11 +53,15 @@ export function checkEmailValidity(email: string): boolean {
 /* ------------------------------
   UI
 ------------------------------ */
-export function defer(fn: () => void, delay: number = 0) {
+export const defer = (fn: () => void, delay: number = 0) => {
   return setTimeout(fn, delay);
 }
 
-export function focusElement(el: HTMLElement, delay: number = 0, preventScroll: boolean = false): void {
+export const wait = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export const focusElement = (el: HTMLElement, delay: number = 0, preventScroll: boolean = false): void => {
   if (el) {
     if (delay < 0) {
       el.focus({ preventScroll: preventScroll });
@@ -68,12 +72,12 @@ export function focusElement(el: HTMLElement, delay: number = 0, preventScroll: 
   }
 }
 
-export function focusMainWrapper(): void {
+export const focusMainWrapper = (): void => {
   const el = document.querySelector('.main-wrapper') as HTMLElement;
   focusElement(el);
 }
 
-export function scrollToElement(el: HTMLElement, delay: number = 100): void {
+export const scrollToElement = (el: HTMLElement, delay: number = 100): void => {
   if (delay < 0 && el) {
     (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     return;
@@ -84,17 +88,17 @@ export function scrollToElement(el: HTMLElement, delay: number = 100): void {
   }, delay);
 }
 
-export function scrollToAndFocusElement(el: HTMLElement): void {
+export const scrollToAndFocusElement = (el: HTMLElement): void => {
   scrollToElement(el, -1);
   focusElement(el, -1, true);
 }
 
-export async function scrollToSelectedImage(imageId: string, delay: number = -1): Promise<void> {
+export const scrollToSelectedImage = async (imageId: string, delay: number = -1): Promise<void> => {
   const el = await waitForElement(`#thumbnail-wrapper-${imageId}`);
   scrollToElement(el, delay);
 }
 
-export function waitForElement(selector: string, root: ParentNode = document): Promise<HTMLElement> {
+export const waitForElement = (selector: string, root: ParentNode = document): Promise<HTMLElement> => {
   const el = root.querySelector(selector) as HTMLElement | null;
   if (el) return Promise.resolve(el);
 
@@ -118,7 +122,7 @@ export function waitForElement(selector: string, root: ParentNode = document): P
 /* ------------------------------
     PAGES
   ------------------------------ */
-export function getColor(page: Page): string {
+export const getColor = (page: Page): string => {
   if (page.edited) return editedColor;
 
   const errorFlags = [

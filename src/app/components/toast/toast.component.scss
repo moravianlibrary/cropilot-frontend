@@ -42,7 +42,7 @@
 
 /* Types */
 .toast--info {
-  border-left-color: #60a5fa;
+  border-left-color: var(--status-icon-info);
 }
 
 .toast--success {
