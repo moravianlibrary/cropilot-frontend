@@ -8,11 +8,12 @@ import { AuthService } from '../../services/auth.service';
 import { SelectComponent } from '../select/select.component';
 import { UploadComponent } from '../upload/upload.component';
 import { UiService } from '../../services/ui.service';
-import { defer, focusElement, waitForElement } from '../../utils/utils';
+import { focusElement, waitForElement } from '../../utils/utils';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-dialog',
-  imports: [FormsModule, SelectComponent, UploadComponent],
+  imports: [FormsModule, SelectComponent, UploadComponent, IconComponent],
   templateUrl: './dialog.component.html',
   styleUrl: './dialog.component.scss'
 })

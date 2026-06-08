@@ -23,8 +23,8 @@
     gap: var(--spacing-x2);
     @include styles.font(500, var(--font-size-x2), var(--spacing-x6), var(--text-secondary));
 
-    svg {
-      fill: var(--icon-dark);
+    .icon {
+      color: var(--icon-dark);
     }
 
     &:focus-visible {
@@ -40,8 +40,8 @@
       cursor: url('/assets/pointer-cursor.png') 6.5 0, pointer;
     }
     
-    svg {
-      fill: var(--icon-gray);
+    .icon {
+      color: var(--icon-gray);
     }
   }
 }
@@ -67,8 +67,8 @@
       cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
       color: var(--primary);
 
-      svg {
-        fill: var(--primary);
+      .icon {
+        color: var(--primary);
       }
     }
 
@@ -77,8 +77,8 @@
       border-radius: var(--spacing-x2);
     }
 
-    svg {
-      fill: var(--icon-gray);
+    .icon {
+      color: var(--icon-gray);
     }
   }
 
@@ -86,8 +86,8 @@
     color: var(--primary);
     font-weight: 500;
 
-    svg {
-      fill: var(--primary);
+    .icon {
+      color: var(--primary);
     }
   }
 }

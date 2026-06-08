@@ -31,8 +31,8 @@
     .menu {
       padding: var(--spacing-x2);
 
-      svg {
-        fill: var(--icon-dark);
+      .icon {
+        color: var(--icon-dark);
       }
     }
   }
@@ -56,8 +56,8 @@
     align-items: center;
     gap: var(--spacing-x2);
 
-    svg {
-      fill: var(--icon-black);
+    .icon {
+      color: var(--icon-black);
     }
   }
 
@@ -125,8 +125,8 @@
     cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
   }
 
-  svg {
-    fill: var(--icon-dark);
+  .icon {
+    color: var(--icon-dark);
   }
 }
 
@@ -138,8 +138,8 @@
     cursor: default;
   }
 
-  svg {
-    fill: var(--icon-disabled);
+  .icon {
+    color: var(--icon-disabled);
   }
 }
 
@@ -198,21 +198,21 @@
     position: absolute;
     display: inline-flex;
 
-    svg {
-      fill: var(--icon-dark);
+    .icon {
+      color: var(--icon-dark);
 
       &:hover {
         cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
-        fill: var(--primary);
+        color: var(--primary);
       }
     }
 
     .disabled {
-      fill: var(--border-tertiary-color);
+      color: var(--border-tertiary-color);
 
       &:hover {
         cursor: default;
-        fill: var(--border-tertiary-color);
+        color: var(--border-tertiary-color);
       }
     }
   }

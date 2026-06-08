@@ -3,10 +3,11 @@ import { Component, ElementRef, inject, input, viewChild } from '@angular/core';
 import { NgClass } from '../../../../node_modules/@angular/common';
 import { EditorService } from '../../services/editor.service';
 import { AuthService } from '../../services/auth.service';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-menu',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgClass],
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgClass, IconComponent],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
 })

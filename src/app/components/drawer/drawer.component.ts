@@ -6,10 +6,11 @@ import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { UiService } from '../../services/ui.service';
 import { SelectComponent } from '../select/select.component';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-drawer',
-  imports: [FormsModule, SelectComponent],
+  imports: [FormsModule, SelectComponent, IconComponent],
   templateUrl: './drawer.component.html',
   styleUrl: './drawer.component.scss',
   host: { '[class.open]': 'uiSvc.drawerOpen()' },

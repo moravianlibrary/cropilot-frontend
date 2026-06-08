@@ -8,10 +8,11 @@ import { clamp, defer, degreeToRadian, focusMainWrapper } from '../../utils/util
 import { MenuComponent } from '../../components/menu/menu.component';
 import { flagMessages } from '../../app.config';
 import { AuthService } from '../../services/auth.service';
+import { IconComponent } from '../../components/icon/icon.component';
 
 @Component({
   selector: 'app-right-panel-editor',
-  imports: [MenuComponent, DecimalPipe, FormsModule],
+  imports: [MenuComponent, DecimalPipe, FormsModule, IconComponent],
   templateUrl: './right-panel.component.html',
   styleUrl: './right-panel.component.scss'
 })

@@ -2,11 +2,12 @@ import { Component, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardService } from '../../services/dashboard.service';
 import { UiService } from '../../services/ui.service';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './upload.component.html',
   styleUrls: ['./upload.component.scss']
 })

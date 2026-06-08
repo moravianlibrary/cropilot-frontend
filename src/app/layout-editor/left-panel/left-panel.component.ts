@@ -9,10 +9,11 @@ import { AuthService } from '../../services/auth.service';
 import { DashboardService } from '../../services/dashboard.service';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { LocalStorageService } from '../../services/local-storage.service';
+import { IconComponent } from "../../components/icon/icon.component";
 
 @Component({
   selector: 'app-left-panel-editor',
-  imports: [LoaderComponent, NgClass, MenuComponent],
+  imports: [LoaderComponent, NgClass, MenuComponent, IconComponent],
   templateUrl: './left-panel.component.html',
   styleUrl: './left-panel.component.scss'
 })

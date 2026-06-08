@@ -5,13 +5,9 @@
       <!-- Back button -->
       @let canReadGroup = authSvc.canReadGroup();
       @if (canReadGroup.length) {
-        <svg 
-          width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg"
-          (click)="backToMyGroupsTitles(canReadGroup)"
-        >
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.73347 3.59957C6.92873 3.79483 6.92873 4.11142 6.73347 4.30668L3.04036 7.99979L6.73347 11.6929C6.92873 11.8882 6.92873 12.2048 6.73347 12.4C6.53821 12.5953 6.22163 12.5953 6.02637 12.4L1.9797 8.35335C1.88593 8.25958 1.83325 8.1324 1.83325 7.99979C1.83325 7.86718 1.88593 7.74001 1.9797 7.64624L6.02637 3.59957C6.22163 3.40431 6.53821 3.40431 6.73347 3.59957Z" />
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M1.94653 8C1.94653 7.72386 2.17039 7.5 2.44653 7.5H13.6665C13.9427 7.5 14.1665 7.72386 14.1665 8C14.1665 8.27614 13.9427 8.5 13.6665 8.5H2.44653C2.17039 8.5 1.94653 8.27614 1.94653 8Z" />
-        </svg>
+        <span class="icon">
+          <app-icon name="back" [size]="16" (click)="backToMyGroupsTitles(canReadGroup)" />
+        </span>
       }
       
       <!-- Title -->

@@ -4,10 +4,11 @@ import { SelectOption } from '../../app.types';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { scrollToElement, waitForElement } from '../../utils/utils';
 import { UiService } from '../../services/ui.service';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-select',
-  imports: [],
+  imports: [IconComponent],
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss'],
   providers: [

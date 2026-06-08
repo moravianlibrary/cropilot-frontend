@@ -4,34 +4,19 @@
     [class.disabled]="edtSvc.currentIndex() === 0 || !edtSvc.displayedImagesFinal().length"
     (click)="edtSvc.showPrevImage()"
   >
-    <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M6.73347 3.59957C6.92873 3.79483 6.92873 4.11142 6.73347 4.30668L3.04036 7.99979L6.73347 11.6929C6.92873 11.8882 6.92873 12.2048 6.73347 12.4C6.53821 12.5953 6.22163 12.5953 6.02637 12.4L1.9797 8.35335C1.88593 8.25958 1.83325 8.1324 1.83325 7.99979C1.83325 7.86718 1.88593 7.74001 1.9797 7.64624L6.02637 3.59957C6.22163 3.40431 6.53821 3.40431 6.73347 3.59957Z" />
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M1.94653 8C1.94653 7.72386 2.17039 7.5 2.44653 7.5H13.6665C13.9427 7.5 14.1665 7.72386 14.1665 8C14.1665 8.27614 13.9427 8.5 13.6665 8.5H2.44653C2.17039 8.5 1.94653 8.27614 1.94653 8Z" />
-    </svg>
+    <span class="icon">
+      <app-icon name="arrow-left" [size]="16" />
+    </span>
   </span>
   <span
     class="button secondary"
     [class.disabled]="edtSvc.currentIndex() === edtSvc.displayedImagesFinal().length - 1 || !edtSvc.displayedImagesFinal().length"
     (click)="edtSvc.showNextImage()"
   >
-    <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M9.26616 3.59957C9.46142 3.40431 9.778 3.40431 9.97326 3.59957L14.0199 7.64624C14.1137 7.74001 14.1664 7.86718 14.1664 7.99979C14.1664 8.1324 14.1137 8.25958 14.0199 8.35335L9.97326 12.4C9.778 12.5953 9.46142 12.5953 9.26616 12.4C9.0709 12.2048 9.0709 11.8882 9.26616 11.6929L12.9593 7.99979L9.26616 4.30668C9.0709 4.11142 9.0709 3.79483 9.26616 3.59957Z" />
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M1.83325 8C1.83325 7.72386 2.05711 7.5 2.33325 7.5H13.5533C13.8294 7.5 14.0533 7.72386 14.0533 8C14.0533 8.27614 13.8294 8.5 13.5533 8.5H2.33325C2.05711 8.5 1.83325 8.27614 1.83325 8Z" />
-    </svg>
-  </span>
-  <!-- @if (edtSvc.selectedFilter === 'flagged') {
-    <span
-      class="button secondary mark-ok"
-      [class.disabled]="wasAnyPageEdited || edtSvc.imgWasEdited() || !edtSvc.displayedImagesFinal().length"
-      (click)="edtSvc.markImageOK()"
-      title="Přesune sken do OK. Použijte v případě, že by sken neměl být podezřelý. Sken je možné přesunout pouze bez jakýchkoliv uživatelských úprav."
-    >
-      Přesunout sken do OK
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"  aria-hidden="true">
-        <path d="M13.78 4.72a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 1 1 1.06-1.06l2.47 2.47 5.47-5.47a.75.75 0 0 1 1.06 0Z" />
-      </svg>
+    <span class="icon">
+      <app-icon name="arrow-right" [size]="16" />
     </span>
-  } -->
+  </span>
 </div>
 
 <div class="middle-part button-group">
@@ -40,37 +25,26 @@
     [class.disabled]="edtSvc.viewport.scale === edtSvc.maxZoom"
     (click)="edtSvc.zoom('in')"
   >
-    <!-- (click)="edtSvc.isShiftActive ? edtSvc.zoomSnap('in') : edtSvc.zoom('in')" -->
-    <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M5.63338 7.80017C5.63338 7.52403 5.85724 7.30017 6.13338 7.30017H9.46672C9.74286 7.30017 9.96672 7.52403 9.96672 7.80017C9.96672 8.07631 9.74286 8.30017 9.46672 8.30017H6.13338C5.85724 8.30017 5.63338 8.07631 5.63338 7.80017Z" />
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.80005 5.6335C8.07619 5.6335 8.30005 5.85736 8.30005 6.1335V9.46684C8.30005 9.74298 8.07619 9.96684 7.80005 9.96684C7.52391 9.96684 7.30005 9.74298 7.30005 9.46684V6.1335C7.30005 5.85736 7.52391 5.6335 7.80005 5.6335Z" />
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.66659 1.83337C4.44492 1.83337 1.83325 4.44505 1.83325 7.66671C1.83325 10.8884 4.44492 13.5 7.66659 13.5C10.8882 13.5 13.4999 10.8884 13.4999 7.66671C13.4999 4.44505 10.8882 1.83337 7.66659 1.83337ZM0.833252 7.66671C0.833252 3.89276 3.89264 0.833374 7.66659 0.833374C11.4405 0.833374 14.4999 3.89276 14.4999 7.66671C14.4999 11.4407 11.4405 14.5 7.66659 14.5C3.89264 14.5 0.833252 11.4407 0.833252 7.66671Z" />
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M12.9797 12.9798C13.175 12.7846 13.4915 12.7846 13.6868 12.9798L15.0201 14.3132C15.2154 14.5084 15.2154 14.825 15.0201 15.0203C14.8249 15.2155 14.5083 15.2155 14.313 15.0203L12.9797 13.6869C12.7844 13.4917 12.7844 13.1751 12.9797 12.9798Z" />
-    </svg>
+    <span class="icon">
+      <app-icon name="zoom-in" [size]="16" />
+    </span>
   </span>
   <span
     class="button secondary"
     [class.disabled]="edtSvc.viewport.scale === 1"
     (click)="edtSvc.zoom('out')"
   >
-    <!-- (click)="edtSvc.isShiftActive ? edtSvc.zoomSnap('out') : edtSvc.zoom('out')" -->
-    <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M5.49992 7.80017C5.49992 7.52403 5.72378 7.30017 5.99992 7.30017H9.33325C9.6094 7.30017 9.83325 7.52403 9.83325 7.80017C9.83325 8.07631 9.6094 8.30017 9.33325 8.30017H5.99992C5.72378 8.30017 5.49992 8.07631 5.49992 7.80017Z" />
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.66659 1.83337C4.44492 1.83337 1.83325 4.44505 1.83325 7.66671C1.83325 10.8884 4.44492 13.5 7.66659 13.5C10.8882 13.5 13.4999 10.8884 13.4999 7.66671C13.4999 4.44505 10.8882 1.83337 7.66659 1.83337ZM0.833252 7.66671C0.833252 3.89276 3.89264 0.833374 7.66659 0.833374C11.4405 0.833374 14.4999 3.89276 14.4999 7.66671C14.4999 11.4407 11.4405 14.5 7.66659 14.5C3.89264 14.5 0.833252 11.4407 0.833252 7.66671Z" />
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M12.9797 12.9798C13.175 12.7846 13.4915 12.7846 13.6868 12.9798L15.0201 14.3132C15.2154 14.5084 15.2154 14.825 15.0201 15.0203C14.8249 15.2155 14.5083 15.2155 14.313 15.0203L12.9797 13.6869C12.7844 13.4917 12.7844 13.1751 12.9797 12.9798Z" />
-    </svg>
+    <span class="icon">
+      <app-icon name="zoom-out" [size]="16" />
+    </span>
   </span>
   <span
     class="button secondary"
     [class.disabled]="edtSvc.viewport.scale === 1"
     (click)="edtSvc.resetZoom()"
   >
-    <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 14.6666C1.5 14.3904 1.72386 14.1666 2 14.1666H14C14.2761 14.1666 14.5 14.3904 14.5 14.6666C14.5 14.9427 14.2761 15.1666 14 15.1666H2C1.72386 15.1666 1.5 14.9427 1.5 14.6666Z" />
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 1.33325C1.5 1.05711 1.72386 0.833252 2 0.833252H14C14.2761 0.833252 14.5 1.05711 14.5 1.33325C14.5 1.60939 14.2761 1.83325 14 1.83325H2C1.72386 1.83325 1.5 1.60939 1.5 1.33325Z" />
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M8 3.49992C8.27614 3.49992 8.5 3.72378 8.5 3.99992V11.9999C8.5 12.2761 8.27614 12.4999 8 12.4999C7.72386 12.4999 7.5 12.2761 7.5 11.9999V3.99992C7.5 3.72378 7.72386 3.49992 8 3.49992Z" />
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.64639 2.90613C7.84166 2.71087 8.15824 2.71087 8.3535 2.90613L10.2402 4.7928C10.4354 4.98806 10.4354 5.30464 10.2402 5.4999C10.0449 5.69517 9.72832 5.69517 9.53306 5.4999L7.99995 3.96679L6.46684 5.4999C6.27157 5.69517 5.95499 5.69517 5.75973 5.4999C5.56447 5.30464 5.56447 4.98806 5.75973 4.7928L7.64639 2.90613Z" />
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M5.75973 10.2395C5.95499 10.0442 6.27157 10.0442 6.46684 10.2395L7.99995 11.7726L9.53306 10.2395C9.72832 10.0442 10.0449 10.0442 10.2402 10.2395C10.4354 10.4347 10.4354 10.7513 10.2402 10.9466L8.3535 12.8332C8.15824 13.0285 7.84166 13.0285 7.64639 12.8332L5.75973 10.9466C5.56447 10.7513 5.56447 10.4347 5.75973 10.2395Z" />
-    </svg>
+    <span class="icon">
+      <app-icon name="fit-to-screen" [size]="16" />
+    </span>
   </span>
 </div>

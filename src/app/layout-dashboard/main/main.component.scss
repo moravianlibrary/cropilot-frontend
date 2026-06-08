@@ -52,8 +52,8 @@
     label {
       position: relative;
 
-      svg {
-        fill: var(--icon-dark);
+      .icon {
+        color: var(--icon-dark);
         position: absolute;
         top: var(--spacing-x3);
         left: var(--spacing-x4);
@@ -157,7 +157,7 @@
             .filter-icon {
               font-size: 10px;
               transition: transform 0.2s ease;
-              fill: var(--primary);
+              color: var(--primary);
             }
 
             .active {
@@ -183,27 +183,27 @@
             &:hover {
               cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
 
-              .icon {
+              .icon-wrapper {
                 background-color: #8099B31A;
 
-                svg {
-                  fill: var(--primary-hover) !important;
+                .icon {
+                  color: var(--primary-hover) !important;
                 }
               }
             }
 
-            .icon {
+            .icon-wrapper {
               display: flex;
               justify-content: center;
               align-items: center;
               border-radius: var(--spacing-x2);
 
-              svg {
-                fill: var(--icon-inactive);
-                transition: transform .2s ease, fill .2s ease;
+              .icon {
+                color: var(--icon-inactive);
+                transition: transform .2s ease, color .2s ease;
 
                 &.active {
-                  fill: var(--primary);
+                  color: var(--primary);
                 }
 
                 &.oldest {
@@ -268,8 +268,8 @@
               gap: var(--spacing-x2);
               @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
 
-              svg {
-                fill: var(--primary);
+              .icon {
+                color: var(--primary);
               }
             }
 
@@ -310,8 +310,8 @@
               color: #08203C;
               background-color: #007BFF1A;
 
-              svg {
-                fill: #0C3D77;
+              .icon {
+                color: #0C3D77;
               }
             }
 
@@ -319,8 +319,8 @@
               color: #00310D;
               background-color: #34C7591A;
 
-              svg {
-                fill: #3F764D;
+              .icon {
+                color: #3F764D;
               }
             }
             
@@ -328,8 +328,8 @@
               color: #362000;
               background-color: #FF95001A;
 
-              svg {
-                fill: #775A32;
+              .icon {
+                color: #775A32;
               }
             }
 
@@ -337,8 +337,8 @@
               color: #390400;
               background-color: #FF3A301A;
 
-              svg {
-                fill: #853D38;
+              .icon {
+                color: #853D38;
               }
             }
 
@@ -400,8 +400,8 @@
                 border-color: var(--border-tertiary-hover);
                 outline: 5px solid var(--border-light);
 
-                svg {
-                  fill: var(--primary);
+                .icon {
+                  color: var(--primary);
                 }
               }
             }

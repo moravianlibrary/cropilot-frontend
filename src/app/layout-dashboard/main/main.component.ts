@@ -16,10 +16,11 @@ import { UiService } from '../../services/ui.service';
 import { TagsOverflowComponent } from '../../components/tags-overflow/tags-overflow.component';
 import { ThTooltipDirective } from '../../directives/th-tooltip.directive';
 import { LocalStorageService } from '../../services/local-storage.service';
+import { IconComponent } from '../../components/icon/icon.component';
 
 @Component({
   selector: 'app-main-dashboard',
-  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent, TagsOverflowComponent, ThTooltipDirective],
+  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent, TagsOverflowComponent, ThTooltipDirective, IconComponent],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
 })
