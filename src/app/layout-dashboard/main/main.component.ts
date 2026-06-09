@@ -42,9 +42,7 @@ export class MainComponent {
   private osInstance?: ReturnType<typeof OverlayScrollbars>;
 
 
-  /* ------------------------------
-    DIFFERENT PAGES INITIAL FETCHES
-  ------------------------------ */
+  // ========== DIFFERENT PAGES INITIAL FETCHES ==========
   ngOnInit() {
     
     // Subscribe to params
@@ -149,9 +147,7 @@ export class MainComponent {
   }
 
 
-  /* ------------------------------
-    SORT
-  ------------------------------ */
+  // ========== SORT ==========
   sortState: SortState = {
     field: null,
     direction: null,
@@ -207,9 +203,7 @@ export class MainComponent {
   }
 
 
-  /* ------------------------------
-    GROUPS
-  ------------------------------ */
+  // ========== GROUPS ==========
   permissionDict = permissionDict;
   
   get totalGroupsLabel(): string {
@@ -252,9 +246,7 @@ export class MainComponent {
   }
 
 
-  /* ------------------------------
-    TITLES
-  ------------------------------ */
+  // ========== TITLES ==========
   titleStateDict = titleStateDict;
 
   get totalTitlesLabel(): string {
@@ -359,9 +351,7 @@ export class MainComponent {
   }
 
 
-  /* ------------------------------
-    USERS
-  ------------------------------ */
+  // ========== USERS ==========
   get totalUsersLabel(): string {
     const length = this.dashboard.displayedUsers().length;
     return `Celkem ${length} uživatel${[2, 3, 4].includes(length) ? 'é' : 'ů' }`;

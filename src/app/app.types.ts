@@ -1,6 +1,4 @@
-/* ------------------------------
-    DASHBOARD
-  ------------------------------ */
+// ========== DASHBOARD ==========
 export type DashboardPage = 'groups' | 'titles' | 'users';
 export type PermissionType = 'read_group' | 'read_title' | 'write' | 'upload';
 
@@ -125,9 +123,7 @@ export interface SortState {
 
 
 
-/* ------------------------------
-    EDITOR
-  ------------------------------ */
+// ========== EDITOR ==========
 export interface Page {
   _id: string;
   xc: number;
@@ -192,9 +188,7 @@ export interface Viewport {
 
 
 
-/* ------------------------------
-    UI
-  ------------------------------ */
+// ========== UI ==========
 
 // Drawer
 export type DrawerContentType = 'groups' | 'titles' | 'users';

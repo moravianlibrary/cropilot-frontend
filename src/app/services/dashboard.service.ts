@@ -159,9 +159,7 @@ export class DashboardService {
   });
 
 
-  /* ------------------------------
-    API
-  ------------------------------ */
+  // ========== API ==========
   // Groups
   fetchGroups(): Observable<Group[]> {
     return this.http.get<Group[]>(`${this.auth.apiUrl}/groups`, { headers: this.auth.authHeaders() });
@@ -304,9 +302,7 @@ export class DashboardService {
   }
 
 
-  /* ------------------------------
-    DASHBOARD PAGES
-  ------------------------------ */
+  // ========== DASHBOARD PAGES ==========
   navigateToGroups(): void {
     this.closeDrawer();
     this.dashboardPage.set('groups');
@@ -330,9 +326,7 @@ export class DashboardService {
   }
 
 
-  /* ------------------------------
-    DIALOGS
-  ------------------------------ */
+  // ========== DIALOGS ==========
   // Group
   createGroupDialog(): void {
     const ui = this.ui;
@@ -1062,9 +1056,7 @@ export class DashboardService {
   }
 
 
-  /* ------------------------------
-    DRAWER ACTIONS
-  ------------------------------ */
+  // ========== DRAWER ACTIONS ==========
   closeDrawer(): void {
     this.ui.closeDrawer();
     
@@ -1365,9 +1357,7 @@ export class DashboardService {
   }
 
 
-  /* ------------------------------
-    INPUT INLINE VALIDATION
-  ------------------------------ */
+  // ========== INPUT INLINE VALIDATION ==========
   // Group
   checkGroupNameUniqueness(): void {
     this.groupNameError.set(this.groups()
@@ -1411,9 +1401,7 @@ export class DashboardService {
   }
 
 
-  /* ------------------------------
-    KEYBOARD SHORTCUTS
-  ------------------------------ */
+  // ========== KEYBOARD SHORTCUTS ==========
   private isHandledKey(key: string): boolean {
     return [
       '+', 'ě', 'Ě', '1', '2',                              // Open groups or users

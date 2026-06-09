@@ -22,9 +22,7 @@ export class EditorService {
   private get apiUrl(): string { return this.envService.get('serverBaseUrl') };
 
 
-  /* ------------------------------
-    STATE
-  ------------------------------ */
+  // ========== STATE ==========
   book = signal<string>('');
   selectedFilter: ScanType | null = 'all';
   selectedPageNumberFilter = signal<PageNumberType | null>(null);
@@ -128,18 +126,14 @@ export class EditorService {
   lastSelectedImageId: string = '';
 
 
-  /* ------------------------------
-    DERIVED STATE
-  ------------------------------ */
+  // ========== DERIVED STATE ==========
   flaggedImages = computed<ImageItem[]>(() => this.images().filter(img => !img.edited && img.flags.length));
   notFlaggedImages = computed<ImageItem[]>(() => this.images().filter(img => !img.edited && !img.flags.length));
   editedImages = computed<ImageItem[]>(() => this.images().filter(img => img.edited));
   displayedImagesFinal = computed<ImageItem[]>(() => this.selectedPageNumberFilter() ? this.displayedImagesPages() : this.displayedImages());
 
 
-  /* ------------------------------
-    API
-  ------------------------------ */
+  // ========== API ==========
   fetchScans(id: string): Observable<TitleDetail> {
     return this.http.get<TitleDetail>(`${this.apiUrl}/${id}/scans`, { headers: this.authSvc.authHeaders('json', true) });
   }
@@ -171,9 +165,7 @@ export class EditorService {
   }
 
 
-  /* ------------------------------
-    API ACTIONS
-  ------------------------------ */
+  // ========== API ACTIONS ==========
   saveChanges(): void {
     if (!this.authSvc.canWriteTitle()) return;
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
@@ -248,9 +240,7 @@ export class EditorService {
   }
 
 
-  /* ------------------------------
-    LEFT PANEL
-  ------------------------------ */
+  // ========== LEFT PANEL ==========
   setDisplayedImages(): void {
     switch (this.selectedFilter) {
       case 'all':
@@ -326,9 +316,7 @@ export class EditorService {
   }
 
 
-  /* ------------------------------
-    MAIN IMAGE LOGIC & DRAWING
-  ------------------------------ */
+  // ========== MAIN IMAGE LOGIC & DRAWING ==========
   setMainImage(img: ImageItem): void {
     this.loadingMain.set(true);
     this.loadingFirstCurrentPage.set(true);
@@ -640,9 +628,7 @@ export class EditorService {
   }
 
 
-  /* ------------------------------
-    ZOOMING
-  ------------------------------ */
+  // ========== ZOOMING ==========
   private applyViewportTransform(ctx: CanvasRenderingContext2D): void {
     const { x, y, scale } = this.viewport;
     ctx.setTransform(scale, 0, 0, scale, x, y);
@@ -907,9 +893,7 @@ export class EditorService {
   }
 
 
-  /* ------------------------------
-    PREV / NEXT IMAGE
-  ------------------------------ */
+  // ========== PREV / NEXT IMAGE ==========
   async showPrevImage(): Promise<void> {
     if (this.currentIndex() === 0 || !this.displayedImagesFinal().length) return;
     this.updateImagesByCurrentPages();
@@ -945,9 +929,7 @@ export class EditorService {
   }
 
 
-  /* ------------------------------
-    PAGE LOGIC
-  ------------------------------ */
+  // ========== PAGE LOGIC ==========
   pageIdCursorInside(): string {
     const pos = this.mousePos;
     if (!pos) return '';
@@ -1276,9 +1258,7 @@ export class EditorService {
   }
 
 
-  /* ------------------------------
-    DIALOG ACTIONS
-  ------------------------------ */
+  // ========== DIALOG ACTIONS ==========
   gridRadio = signal<GridMode>('when-rotating');
   outlineRadio = signal<OutlineWidthLabel>('Silný');
   dimRadio = signal<DimColor>('Černá');
@@ -1442,9 +1422,7 @@ export class EditorService {
   }
 
 
-  /* ------------------------------
-    KEYBOARD SHORTCUTS
-  ------------------------------ */
+  // ========== KEYBOARD SHORTCUTS ==========
   private isHandledKey(key: string): boolean {
     return [
       '+', 'ě', 'Ě', '1', '2',                              // Select left / right page OR + Alt / Cmd = filters number of pages

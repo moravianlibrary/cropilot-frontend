@@ -25,9 +25,7 @@ export class RightPanelComponent {
   private holdInterval: any;
 
 
-  /* ------------------------------
-    HEADER
-  ------------------------------ */
+  // ========== HEADER ==========
   get currentIndexImage(): number {
     const images = this.edtSvc.displayedImagesFinal();
     const current = this.edtSvc.mainImageItem();
@@ -39,9 +37,7 @@ export class RightPanelComponent {
   }
 
 
-  /* ------------------------------
-    INPUTS
-  ------------------------------ */
+  // ========== INPUTS ==========
   changeInputValue(type: InputType, event: any): void {
     const edtSvc = this.edtSvc;
     const page = edtSvc.selectedPage;

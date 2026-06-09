@@ -17,9 +17,7 @@ export class MenuComponent {
   type = input('menu-primary');
 
 
-  /* ------------------------------
-    TOGGLE BEHAVIOR
-  ------------------------------ */
+  // ========== TOGGLE BEHAVIOR ==========
   menu = viewChild<ElementRef<HTMLElement>>('menu');
   show = false;
 

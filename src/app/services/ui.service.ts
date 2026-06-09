@@ -12,9 +12,7 @@ export class UiService {
   lastFocusedElement!: Element | null;
 
 
-  /* ------------------------------
-    WAIT FOR SIGNAL
-  ------------------------------ */
+  // ========== WAIT FOR SIGNAL ==========
   private injector = inject(Injector);
 
   waitForFalse(sig: Signal<boolean>): Promise<void> {
@@ -31,9 +29,7 @@ export class UiService {
   }
 
   
-  /* ------------------------------
-    TOAST MESSAGES
-  ------------------------------ */
+  // ========== TOAST MESSAGES ==========
   toasts = signal<Toast[]>([]);
   private toastDuration: number = 3000;
   private toastErrorDuration: number = 300000;
@@ -63,9 +59,7 @@ export class UiService {
   }
 
 
-  /* ------------------------------
-    DIALOG
-  ------------------------------ */
+  // ========== DIALOG ==========
   dialogOpened: boolean = false;
   dialogOpen = signal<boolean>(false);
   dialogWidth = signal<number | null>(null);
@@ -103,9 +97,7 @@ export class UiService {
   }
 
 
-  /* ------------------------------
-    DRAWER
-  ------------------------------ */
+  // ========== DRAWER ==========
   drawerOpen = signal<boolean>(false);
   drawerTitle = signal<string>('');
   drawerContent = signal<boolean>(false);

@@ -123,9 +123,7 @@ html, body {
 }
 
 
-/* ------------------------------
-  BUTTONS
------------------------------- */
+// ========== BUTTONS ==========
 .button-group {
   display: flex;
   gap: var(--spacing-x2);
@@ -324,9 +322,7 @@ html, body {
 }
 
 
-/* ------------------------------
-  RADIO BUTTONS
------------------------------- */
+// ========== RADIO BUTTONS ==========
 .radios-wrapper {
   display: flex;
   flex-direction: column;
@@ -386,9 +382,7 @@ html, body {
 }
 
 
-/* ------------------------------
-  SCROLLBAR
------------------------------- */
+// ========== SCROLLBAR ==========
 .os-theme-orezy {
   --os-size: var(--spacing-x3);
   --os-padding-perpendicular: var(--spacing-x1);
@@ -460,9 +454,7 @@ html, body {
 }
 
 
-/* ------------------------------
-  TH TOOLTIP DIRECTIVE
------------------------------- */
+// ========== TH TOOLTIP DIRECTIVE ==========
 .th-tooltip {
   position: absolute;
   z-index: 512;

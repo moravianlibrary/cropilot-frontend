@@ -27,9 +27,7 @@ export class LeftPanelComponent {
   private osInstance?: ReturnType<typeof OverlayScrollbars>;
 
 
-  /* ------------------------------
-    LAZY IMAGES LOADING
-  ------------------------------ */
+  // ========== LAZY IMAGES LOADING ==========
   images = viewChildren<ElementRef<HTMLImageElement>>('lazyImg');
 
   private observer = new IntersectionObserver(entries => {
@@ -94,9 +92,7 @@ export class LeftPanelComponent {
   }
 
 
-  /* ------------------------------
-    CLICKS
-  ------------------------------ */
+  // ========== CLICKS ==========
   backToMyGroupsTitles(groupId: string): void {
     this.dashSvc.dashboardPage.set('titles');
     window.location.href = `${this.authSvc.baseUri}/group/${groupId}`;

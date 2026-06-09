@@ -80,9 +80,7 @@
 }
 
 
-/* ------------------------------
-  SETTINGS DIALOG
------------------------------- */
+// ========== SETTINGS DIALOG ==========
 .settings-content-wrapper {
   display: flex;
   flex-direction: column;
@@ -178,9 +176,7 @@
 }
 
 
-/* ------------------------------
-  SHORTCUTS DIALOG
------------------------------- */
+// ========== SHORTCUTS DIALOG ==========
 .shortcuts-content-wrapper {
   height: 100%;
   padding: var(--spacing-x4);
@@ -214,9 +210,7 @@
 }
 
 
-/* ------------------------------
-  NEW GROUP & TITLE & USER DIALOG
------------------------------- */
+// ========== NEW GROUP & TITLE & USER DIALOG ==========
 .new-edit-content-wrapper {
   display: flex;
   flex-direction: column;

@@ -406,9 +406,7 @@ export class MainComponent {
   }
 
   
-  /* ------------------------------
-    PAGE LOGIC
-  ------------------------------ */
+  // ========== PAGE LOGIC ==========
   private pageIdCursorInside(e: MouseEvent): string {
     const edtSvc = this.edtSvc;
     const pos = this.getMousePos(e);
