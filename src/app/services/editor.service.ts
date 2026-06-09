@@ -929,6 +929,13 @@ export class EditorService {
   }
 
 
+  // ========== ROTATING ==========
+  rotate(direction: 'left' | 'right'): void {
+    
+  }
+
+
+
   // ========== PAGE LOGIC ==========
   pageIdCursorInside(): string {
     const pos = this.mousePos;
