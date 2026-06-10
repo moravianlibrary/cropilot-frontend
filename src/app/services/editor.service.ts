@@ -400,57 +400,12 @@ export class EditorService {
     // Predicted pages
     if (this.showPredictions) {
       this.currentPredictedPages = [];
+
       this.predictedImages()
         .find(img => img._id === imgItem._id)
         ?.pages
-        ?.forEach(p => {
-          const { left, right, top, bottom } = this.computeBounds(p.xc, p.yc, p.width, p.height, p.angle);
-          
-          // Correction of edges going outside canvas (should be done on BE)
-          let correctXc = p.xc;
-          let correctYc = p.yc;
-          let correctWidth = p.width;
-          let correctHeight = p.height;
-          let correctLeft = left;
-          let correctRight = right;
-          let correctTop = top;
-          let correctBottom = bottom;
-          
-          if (left < 0) {
-            correctLeft = 0;
-            correctXc += Math.abs(left / 2);
-            correctWidth -= Math.abs(left);
-          }
-
-          if (right > 1) {
-            correctRight = 1;
-            correctXc -= Math.abs((right - 1) / 2);
-            correctWidth -= right - 1;
-          }
-
-          if (top < 0) {
-            correctTop = 0;
-            correctYc += Math.abs(top / 2);
-            correctHeight -= Math.abs(top);
-          }
-
-          if (bottom > 1) {
-            correctBottom = 1;
-            correctYc -= Math.abs((bottom - 1) / 2);
-            correctHeight -= bottom - 1;
-          }
-          
-          const updatedPage = {
-            ...p,
-            xc: roundToDecimals(correctXc, 4),
-            yc: roundToDecimals(correctYc, 4),
-            width: roundToDecimals(correctWidth, 4),
-            height: roundToDecimals(correctHeight, 4),
-            left: roundToDecimals(correctLeft, 4),
-            right: roundToDecimals(correctRight, 4),
-            top: roundToDecimals(correctTop, 4),
-            bottom: roundToDecimals(correctBottom, 4)
-          }
+        ?.forEach(page => {
+          const updatedPage = this.correctPageBounds(page);
 
           this.currentPredictedPages.push(updatedPage);
           this.drawPagePredicted(updatedPage);
@@ -459,58 +414,13 @@ export class EditorService {
 
     // Pages
     this.currentPages = [];
+
     this.images()
       .find(img => img._id === imgItem._id)
       ?.pages
-      ?.forEach(p => {
-        const { left, right, top, bottom } = this.computeBounds(p.xc, p.yc, p.width, p.height, p.angle);
-        
-        // Correction of edges going outside canvas (should be done on BE)
-        let correctXc = p.xc;
-        let correctYc = p.yc;
-        let correctWidth = p.width;
-        let correctHeight = p.height;
-        let correctLeft = left;
-        let correctRight = right;
-        let correctTop = top;
-        let correctBottom = bottom;
-        
-        if (left < 0) {
-          correctLeft = 0;
-          correctXc += Math.abs(left / 2);
-          correctWidth -= Math.abs(left);
-        }
+      ?.forEach(page => {
+        const updatedPage = this.correctPageBounds(page);
 
-        if (right > 1) {
-          correctRight = 1;
-          correctXc -= Math.abs((right - 1) / 2);
-          correctWidth -= right - 1;
-        }
-
-        if (top < 0) {
-          correctTop = 0;
-          correctYc += Math.abs(top / 2);
-          correctHeight -= Math.abs(top);
-        }
-
-        if (bottom > 1) {
-          correctBottom = 1;
-          correctYc -= Math.abs((bottom - 1) / 2);
-          correctHeight -= bottom - 1;
-        }
-        
-        const updatedPage = {
-          ...p,
-          xc: roundToDecimals(correctXc, 4),
-          yc: roundToDecimals(correctYc, 4),
-          width: roundToDecimals(correctWidth, 4),
-          height: roundToDecimals(correctHeight, 4),
-          left: roundToDecimals(correctLeft, 4),
-          right: roundToDecimals(correctRight, 4),
-          top: roundToDecimals(correctTop, 4),
-          bottom: roundToDecimals(correctBottom, 4)
-        }
-        
         this.currentPages.push(updatedPage);
         this.drawPageInitial(updatedPage);
         this.loadingFirstCurrentPage.set(false);
@@ -526,6 +436,73 @@ export class EditorService {
     ) {
       this.updateImagesByEdited(lastMainImageItemName);
     }
+  }
+
+  private correctPageBounds<T extends {
+    xc: number;
+    yc: number;
+    width: number;
+    height: number;
+    angle: number;
+  }>(page: T): T & {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+  } {
+    const { left, right, top, bottom } = this.computeBounds(
+      page.xc,
+      page.yc,
+      page.width,
+      page.height,
+      page.angle
+    );
+
+    let xc = page.xc;
+    let yc = page.yc;
+    let width = page.width;
+    let height = page.height;
+
+    let correctedLeft = left;
+    let correctedRight = right;
+    let correctedTop = top;
+    let correctedBottom = bottom;
+
+    if (left < 0) {
+      correctedLeft = 0;
+      xc += Math.abs(left / 2);
+      width -= Math.abs(left);
+    }
+
+    if (right > 1) {
+      correctedRight = 1;
+      xc -= Math.abs((right - 1) / 2);
+      width -= right - 1;
+    }
+
+    if (top < 0) {
+      correctedTop = 0;
+      yc += Math.abs(top / 2);
+      height -= Math.abs(top);
+    }
+
+    if (bottom > 1) {
+      correctedBottom = 1;
+      yc -= Math.abs((bottom - 1) / 2);
+      height -= bottom - 1;
+    }
+
+    return {
+      ...page,
+      xc: roundToDecimals(xc, 4),
+      yc: roundToDecimals(yc, 4),
+      width: roundToDecimals(width, 4),
+      height: roundToDecimals(height, 4),
+      left: roundToDecimals(correctedLeft, 4),
+      right: roundToDecimals(correctedRight, 4),
+      top: roundToDecimals(correctedTop, 4),
+      bottom: roundToDecimals(correctedBottom, 4),
+    };
   }
 
   drawPagePredicted(p: Page): void {
