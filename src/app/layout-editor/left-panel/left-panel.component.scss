@@ -109,15 +109,19 @@
 }
 
 .thumbnail-wrapper {
+  --thumbnail-height: 100px;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100px;
+  height: var(--thumbnail-height);
   width: 100%;
   background-color: var(--bg-main-bright);
   border: 1px solid var(--border-color);
   border-radius: var(--spacing-x2);
   position: relative;
+  overflow: hidden;
+  container-type: inline-size;
 
   &:hover {
     cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
@@ -127,6 +131,12 @@
   img {
     max-height: 100%;
     max-width: 100%;
+    transform-origin: center;
+
+    &.rotated-quarter {
+      max-width: var(--thumbnail-height);
+      max-height: 100cqw;
+    }
   }
 
   .status-icon {

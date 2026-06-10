@@ -91,6 +91,20 @@ export class LeftPanelComponent {
     this.images().forEach(img => this.observer.observe(img.nativeElement));
   }
 
+  thumbnailTransform(image: ImageItem): string {
+    return `rotate(${this.normalizeOrientation(image.orientation)}deg)`;
+  }
+
+  isThumbnailQuarterTurn(image: ImageItem): boolean {
+    const orientation = this.normalizeOrientation(image.orientation);
+    return orientation === 90 || orientation === 270;
+  }
+
+  private normalizeOrientation(orientation?: number): number {
+    const normalized = ((orientation ?? 0) % 360 + 360) % 360;
+    return [0, 90, 180, 270].includes(normalized) ? normalized : 0;
+  }
+
 
   // ========== CLICKS ==========
   backToMyGroupsTitles(groupId: string): void {

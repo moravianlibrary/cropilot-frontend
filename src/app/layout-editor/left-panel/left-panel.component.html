@@ -84,7 +84,12 @@
           [class.selected]="mainImageItem._id === image._id"
           (click)="clickThumbnail(image)"
         >
-          <img #lazyImg [attr.data-id]="image._id" />
+          <img
+            #lazyImg
+            [attr.data-id]="image._id"
+            [class.rotated-quarter]="isThumbnailQuarterTurn(image)"
+            [style.transform]="thumbnailTransform(image)"
+          />
           <span
             class="status-icon"
             [ngClass]="getStatus(image)"

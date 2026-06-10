@@ -52,55 +52,7 @@ export class MainComponent {
 
           this.rafId = requestAnimationFrame(() => {
             this.ngZone.run(() => {
-              const { c, mainImage: img } = edtSvc;
-
-              const appMain = document.querySelector('app-main-editor') as HTMLElement;
-              const appStyle = getComputedStyle(appMain);
-              const appRect = appMain.getBoundingClientRect();
-
-              const widthAvail =
-                appRect.width -
-                (parseFloat(appStyle.paddingLeft) +
-                  parseFloat(appStyle.paddingRight) +
-                  parseFloat(appStyle.borderLeftWidth) +
-                  parseFloat(appStyle.borderRightWidth));
-
-              const heightAvail =
-                appRect.height -
-                (parseFloat(appStyle.paddingTop) +
-                  parseFloat(appStyle.paddingBottom) +
-                  parseFloat(appStyle.borderTopWidth) +
-                  parseFloat(appStyle.borderBottomWidth));
-
-              c.width = widthAvail;
-              c.height = heightAvail;
-
-              if (img) {
-                const imgRatio = img.width / img.height;
-                const canvasRatio = c.width / c.height;
-
-                let drawWidth: number = c.width;
-                let drawHeight: number = c.height;
-
-                imgRatio > canvasRatio
-                  ? drawHeight = c.width / imgRatio
-                  : drawWidth = c.height * imgRatio;
-
-                const offsetX = (c.width - drawWidth) / 2;
-                const offsetY = (c.height - drawHeight) / 2;
-
-                // Store rect for pages / hit-testing:
-                edtSvc.imageRect = {
-                  x: offsetX,
-                  y: offsetY,
-                  width: drawWidth,
-                  height: drawHeight,
-                };
-
-                edtSvc.redrawImageOnCanvas();
-                if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
-                edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
-              }
+              if (edtSvc.mainImage) edtSvc.refitMainImageToCanvas();
             });
           });
         });
@@ -300,7 +252,6 @@ export class MainComponent {
     if (canWriteTitle && hit.area === 'inside' || edtSvc.isDragging) {
       if (ev.type === 'mousedown' && btn === 0 && hitPage) {
         edtSvc.isDragging = true;
-        // imgSvc.dragStartMouse = { x: ev.clientX, y: ev.clientY };
         edtSvc.dragStartMouse = this.getMousePos(ev);
         edtSvc.dragStartPage = structuredClone(hitPage);
         return;
@@ -332,16 +283,6 @@ export class MainComponent {
     {
       if (ev.type === 'mousedown' && btn === 0 && hit.area === 'rotate' && hitPage) {
         edtSvc.startHit = hit;
-
-        const rect = el.getBoundingClientRect();
-        // const cx = imgSvc.c.width * hitPage.xc;
-        // const cy = imgSvc.c.height * hitPage.yc;
-        // const { x, y, width, height } = imgSvc.imageRect;
-        // const cx = x + width * hitPage.xc;
-        // const cy = y + height * hitPage.yc;
-
-        // const dx = ev.clientX - rect.left - cx;
-        // const dy = ev.clientY - rect.top - cy;
 
         const { centerX, centerY } = edtSvc.getPageRectPx(hitPage);
         const mouse = this.getMousePos(ev);
@@ -442,9 +383,6 @@ export class MainComponent {
 
   private hitTestPage(x: number, y: number, p: Page): HitInfo {
     const edtSvc = this.edtSvc;
-    // const c = imgSvc.c;
-    // const [centerX, centerY] = [c.width * p.xc, c.height * p.yc];
-    // const [width, height] = [c.width * p.width, c.height * p.height];
     const { centerX, centerY, width, height } = edtSvc.getPageRectPx(p);
     const angle = degreeToRadian(p.angle);
 
@@ -639,8 +577,6 @@ export class MainComponent {
     if (!start || !mousePos || !edtSvc.dragStartMouse) return;
     const page = edtSvc.selectedPage;
 
-    // const dx = (e.clientX - imgSvc.dragStartMouse.x) / width;
-    // const dy = (e.clientY - imgSvc.dragStartMouse.y) / height;
     const dx = (mousePos.x - edtSvc.dragStartMouse.x) / width;
     const dy = (mousePos.y - edtSvc.dragStartMouse.y) / height;
 
@@ -707,25 +643,6 @@ export class MainComponent {
     el.style.cursor = cursor;
     
     const startPage = edtSvc.rotationStartPage;
-    
-    // const rect = el.getBoundingClientRect();
-    // const cx = imgSvc.c.width * startPage.xc;
-    // const cy = imgSvc.c.height * startPage.yc;
-
-    // const dx = ev.clientX - rect.left - cx;
-    // const dy = ev.clientY - rect.top - cy;
-
-    // const rect = el.getBoundingClientRect();
-    // const { x: ix, y: iy, width: iw, height: ih } = imgSvc.imageRect;
-
-    // const cx = ix + iw * startPage.xc;
-    // const cy = iy + ih * startPage.yc;
-
-    // const mouseX = ev.clientX - rect.left;
-    // const mouseY = ev.clientY - rect.top;
-
-    // const dx = mouseX - cx;
-    // const dy = mouseY - cy;
 
     const { centerX, centerY } = edtSvc.getPageRectPx(startPage);
     const mouse = this.getMousePos(ev);
@@ -808,9 +725,6 @@ export class MainComponent {
   }
 
   private applyEdgeResize(p: Page, start: Page, userSide: EdgeSide, ev: MouseEvent) {
-    // const c = this.imagesService.c;
-    // const cw = c.width;
-    // const ch = c.height;
     const rect = this.edtSvc.imageRect;
     const cw = rect.width;
     const ch = rect.height;
@@ -1610,9 +1524,6 @@ export class MainComponent {
   }
 
   private applyCornerResize(p: Page, start: Page, userCorner: CornerName, ev: MouseEvent) {
-    // const c = this.imagesService.c;
-    // const cw = c.width;
-    // const ch = c.height;
     const rect = this.edtSvc.imageRect;
     const cw = rect.width;
     const ch = rect.height;

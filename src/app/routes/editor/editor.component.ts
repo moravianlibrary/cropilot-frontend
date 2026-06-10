@@ -86,8 +86,8 @@ export class EditorComponent {
         this.title.setTitle(`${res.external_id} | CROPILOT`);
 
         // Set images
-        const imgItemsPredicted: ImageItem[] | undefined = resPredicted?.scans;
-        const imgItems: ImageItem[] = res.scans;
+        const imgItems: ImageItem[] = res.scans.map(img => edtSvc.normalizeImageForDisplay(img));
+        const imgItemsPredicted: ImageItem[] | undefined = resPredicted?.scans?.map(img => edtSvc.normalizeImageForDisplay(img));
         edtSvc.loadingLeft = false;
         edtSvc.images.set(imgItems);
         edtSvc.originalImages.set(imgItems);

@@ -1,8 +1,8 @@
 <div class="left-part button-group">
   <span
     class="button secondary"
-    [class.disabled]="edtSvc.currentIndex() === 0 || !edtSvc.displayedImagesFinal().length"
-    (click)="edtSvc.showPrevImage()"
+    [class.disabled]="editor.currentIndex() === 0 || !editor.displayedImagesFinal().length"
+    (click)="editor.showPrevImage()"
   >
     <span class="icon">
       <app-icon name="arrow-left" [size]="16" />
@@ -10,8 +10,8 @@
   </span>
   <span
     class="button secondary"
-    [class.disabled]="edtSvc.currentIndex() === edtSvc.displayedImagesFinal().length - 1 || !edtSvc.displayedImagesFinal().length"
-    (click)="edtSvc.showNextImage()"
+    [class.disabled]="editor.currentIndex() === editor.displayedImagesFinal().length - 1 || !editor.displayedImagesFinal().length"
+    (click)="editor.showNextImage()"
   >
     <span class="icon">
       <app-icon name="arrow-right" [size]="16" />
@@ -22,8 +22,8 @@
 <div class="middle-part button-group">
   <span
     class="button secondary"
-    [class.disabled]="edtSvc.viewport.scale === edtSvc.maxZoom"
-    (click)="edtSvc.zoom('in')"
+    [class.disabled]="editor.viewport.scale === editor.maxZoom"
+    (click)="editor.zoom('in')"
   >
     <span class="icon">
       <app-icon name="zoom-in" [size]="16" />
@@ -31,8 +31,8 @@
   </span>
   <span
     class="button secondary"
-    [class.disabled]="edtSvc.viewport.scale === 1"
-    (click)="edtSvc.zoom('out')"
+    [class.disabled]="editor.viewport.scale === 1"
+    (click)="editor.zoom('out')"
   >
     <span class="icon">
       <app-icon name="zoom-out" [size]="16" />
@@ -40,24 +40,26 @@
   </span>
   <span
     class="button secondary"
-    [class.disabled]="edtSvc.viewport.scale === 1"
-    (click)="edtSvc.resetZoom()"
+    [class.disabled]="editor.viewport.scale === 1"
+    (click)="editor.resetZoom()"
   >
     <span class="icon">
       <app-icon name="fit-to-screen" [size]="16" />
     </span>
   </span>
-  <span
+  <!-- <span
     class="button secondary"
-    (click)="edtSvc.rotate('left')"
+    [class.disabled]="!auth.canWriteTitle() || !editor.displayedImagesFinal().length || !editor.mainImage"
+    (click)="editor.rotate('left')"
   >
     <span class="icon">
       <app-icon name="rotate-left" [size]="16" />
     </span>
-  </span>
+  </span> -->
   <span
     class="button secondary"
-    (click)="edtSvc.rotate('right')"
+    [class.disabled]="!auth.canWriteTitle() || !editor.displayedImagesFinal().length || !editor.mainImage"
+    (click)="editor.rotate('right')"
   >
     <span class="icon">
       <app-icon name="rotate-right" [size]="16" />
