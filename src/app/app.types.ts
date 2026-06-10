@@ -150,6 +150,19 @@ export interface ImageItem {
   pages: Page[];
 }
 
+export interface UpdatePagePayload {
+  xc: number;
+  yc: number;
+  width: number;
+  height: number;
+  angle: number;
+}
+
+export type UpdateImagePayload = Omit<ImageItem, 'pages'> & {
+  orientation: number;
+  pages: UpdatePagePayload[];
+};
+
 export interface ImageRect {
   x: number;
   y: number;

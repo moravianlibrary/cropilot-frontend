@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { DimColor, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, Viewport } from '../app.types';
+import { DimColor, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
 import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
@@ -156,8 +156,8 @@ export class EditorService {
     });
   }
 
-  updatePages(id: string, payload: any[]): any {
-    return this.http.patch(`${this.apiUrl}/${id}/update-pages`, payload, { headers: this.authSvc.authHeaders('json', true) });
+  updatePages(id: string, payload: UpdateImagePayload[]): Observable<{ id: string }> {
+    return this.http.patch<{ id: string }>(`${this.apiUrl}/${id}/update-pages`, payload, { headers: this.authSvc.authHeaders('json', true) });
   }
 
   reset(id: string): Observable<TitleDetail> {
@@ -175,7 +175,7 @@ export class EditorService {
     this.redrawAllPages();
     this.updateMainImageItemAndImages();
     
-    const editedImages = this.images()
+    const editedImages: UpdateImagePayload[] = this.images()
       .filter(i => i.edited)
       .map(({ pages, ...i }) => ({
         ...i,
