@@ -6,6 +6,7 @@ import { LoaderComponent } from '../../components/loader/loader.component';
 import { ToastComponent } from '../../components/toast/toast.component';
 import { AuthService } from '../../services/auth.service';
 import { UiService } from '../../services/ui.service';
+import { hitTestPageGeometry, localCornerToUserCorner } from '../../utils/editor-geometry';
 
 @Component({
   selector: 'app-main-editor',
@@ -373,140 +374,13 @@ export class MainComponent {
 
   private hitTestPage(x: number, y: number, p: Page): HitInfo {
     const edtSvc = this.edtSvc;
-    const { centerX, centerY, width, height } = edtSvc.getPageRectPx(p);
-    const angle = degreeToRadian(p.angle);
-
-    const hw = width / 2;
-    const hh = height / 2;
-
-    const dx = x - centerX;
-    const dy = y - centerY;
-    const cos = Math.cos(-angle);
-    const sin = Math.sin(-angle);
-    const localX = dx * cos - dy * sin;
-    const localY = dx * sin + dy * cos;
-
-    const withinXWithTolerance = Math.abs(localX) <= hw + this.edgeHitTolerance / 2;
-    const withinYWithTolerance = Math.abs(localY) <= hh + this.edgeHitTolerance / 2;
-    const withinX = Math.abs(localX) <= hw;
-    const withinY = Math.abs(localY) <= hh;
-
-    // Corners and rotates
-    const corners: { x: number; y: number; name: CornerName }[] = [
-      { x: -hw - edtSvc.cornerSize / 2, y: -hh - edtSvc.cornerSize / 2, name: 'nw' },
-      { x: hw + edtSvc.cornerSize / 2,  y: -hh - edtSvc.cornerSize / 2, name: 'ne' },
-      { x: hw + edtSvc.cornerSize / 2,  y: hh + edtSvc.cornerSize / 2,  name: 'se' },
-      { x: -hw - edtSvc.cornerSize / 2, y: hh + edtSvc.cornerSize / 2,  name: 'sw' }
-    ];
-
-    for (const corner of corners) {
-      const dxC = localX - corner.x;
-      const dyC = localY - corner.y;
-      const distCorner = Math.hypot(dxC, dyC);
-
-      // Corners
-      if (distCorner <= this.cornerHitTolerance) {
-        const userCorner = this.localCornerToUserCorner(corner.name, p.angle);
-        return { area: 'corner', page: p, corner: userCorner };
-      }
-
-      const distToCorner = Math.hypot(localX - corner.x, localY - corner.y);
-      if (
-        distToCorner < this.rotateHandleOffset
-        || distToCorner > this.rotateHitTolerance
-        || (withinX && withinY)
-      ) {
-        continue;
-      }
-
-      // Rotates
-      const userCorner = this.localCornerToUserCorner(corner.name, p.angle);
-      return { area: 'rotate', page: p, corner: userCorner };
-    }
-
-    if (!withinXWithTolerance || !withinYWithTolerance) {
-      return { area: 'none' };
-    }
-
-    // Edge detection in user space (not local)
-    const nearLeftOrRight = Math.abs(Math.abs(localX) - (hw + 6)) <= this.edgeHitTolerance;
-    const nearTopOrBottom = Math.abs(Math.abs(localY) - (hh + 6)) <= this.edgeHitTolerance;
-
-    if (nearLeftOrRight && !nearTopOrBottom) {
-      const localSide = localX > 0 ? 'right' : 'left';
-      const userSide = this.localEdgeSideToUserSide(localSide, p.angle);
-      return { area: 'edge', page: p, edgeOrientation: 'vertical', edgeSide: userSide };
-    }
-
-    if (nearTopOrBottom && !nearLeftOrRight) {
-      const localSide = localY > 0 ? 'bottom' : 'top';
-      const userSide = this.localEdgeSideToUserSide(localSide, p.angle);
-      return { area: 'edge', page: p, edgeOrientation: 'horizontal', edgeSide: userSide };
-    }
-
-    // Inside rect
-    if (withinX && withinY) {
-      return { area: 'inside', page: p };
-    }
-
-    // Else
-    return { area: 'none' };
-  }
-
-  private localEdgeSideToUserSide(localSide: 'left' | 'right' | 'top' | 'bottom', angleDeg: number) {
-    const a = angleDeg;
-
-    if (a >= -45 && a <= 45) {
-      return localSide;
-    }
-
-    if (a > 45 && a <= 135) {
-      switch (localSide) {
-        case 'left': return 'top';
-        case 'right': return 'bottom';
-        case 'top': return 'right';
-        case 'bottom': return 'left';
-      }
-    }
-
-    if (a > 135 || a <= -135) {
-      switch (localSide) {
-        case 'left': return 'right';
-        case 'right': return 'left';
-        case 'top': return 'bottom';
-        case 'bottom': return 'top';
-      }
-    }
-
-    if (a > -135 && a < -45) {
-      switch (localSide) {
-        case 'left': return 'bottom';
-        case 'right': return 'top';
-        case 'top': return 'left';
-        case 'bottom': return 'right';
-      }
-    }
-
-    return localSide;
-  }
-
-  private localCornerToUserCorner(local: CornerName, angleDeg: number): CornerName {
-    const a = angleDeg;
-
-    if (a >= -45 && a <= 45) return local;
-
-    if (a > 45 && a <= 135) {
-      const map90: { [key: string]: CornerName } = { nw: 'ne', ne: 'se', se: 'sw', sw: 'nw' };
-      return map90[local];
-    }
-
-    if (a > 135 || a <= -135) {
-      const map180: { [key: string]: CornerName } = { nw: 'se', ne: 'sw', sw: 'ne', se: 'nw' };
-      return map180[local];
-    }
-
-    const map270: { [key: string]: CornerName } = { nw: 'sw', sw: 'se', se: 'ne', ne: 'nw' };
-    return map270[local];
+    return hitTestPageGeometry(x, y, p, edtSvc.getPageRectPx(p), {
+      edgeHitTolerance: this.edgeHitTolerance,
+      cornerHitTolerance: this.cornerHitTolerance,
+      rotateHandleOffset: this.rotateHandleOffset,
+      rotateHitTolerance: this.rotateHitTolerance,
+      cornerSize: edtSvc.cornerSize
+    });
   }
 
   private getEdgeCursor(angleDeg: number, local: EdgeLocalOrientation): string {
@@ -526,7 +400,7 @@ export class MainComponent {
     let a = angleDeg % 180;
     if (a < 0) a += 180;
 
-    const userCorner = this.localCornerToUserCorner(corner, angleDeg);
+    const userCorner = localCornerToUserCorner(corner, angleDeg);
 
     const baseForCorner =
       userCorner === 'nw' || userCorner === 'se'

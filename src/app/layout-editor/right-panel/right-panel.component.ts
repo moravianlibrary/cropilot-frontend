@@ -9,6 +9,7 @@ import { MenuComponent } from '../../components/menu/menu.component';
 import { flagMessages } from '../../app.config';
 import { AuthService } from '../../services/auth.service';
 import { IconComponent } from '../../components/icon/icon.component';
+import { getHeightResizeOrientation, getWidthResizeOrientation } from '../../utils/editor-geometry';
 
 @Component({
   selector: 'app-right-panel-editor',
@@ -102,15 +103,7 @@ export class RightPanelComponent {
         };
 
         const handleRotated = (angle: number) => {
-          const getOrientation = (angle: number) => {
-            if (angle > 0 && angle < 90)  return { signX: +1, signY: +1, ref: 'bottom-right', baseAngle: angle };
-            if (angle > 90)               return { signX: -1, signY: +1, ref: 'bottom-left',  baseAngle: angle - 90 };
-            if (angle < -90)              return { signX: -1, signY: -1, ref: 'top-left',     baseAngle: -angle - 90 };
-            if (angle < 0 && angle > -90) return { signX: +1, signY: -1, ref: 'top-right',    baseAngle: -angle };
-            return null;
-          };
-
-          const o = getOrientation(angle);
+          const o = getWidthResizeOrientation(angle);
           if (!o) return;
 
           value = clamp(value);
@@ -211,15 +204,7 @@ export class RightPanelComponent {
         };
 
         const handleRotatedHeight = (angle: number) => {
-          const getOrientation = (angle: number) => {
-            if (angle > 0 && angle < 90)  return { signX: -1, signY: +1, ref: 'bottom-left', baseAngle: 90 - angle };
-            if (angle > 90)               return { signX: -1, signY: -1, ref: 'top-left',  baseAngle: angle - 90 };
-            if (angle < -90)              return { signX: +1, signY: -1, ref: 'top-right', baseAngle: 180 + angle };
-            if (angle < 0 && angle > -90) return { signX: +1, signY: +1, ref: 'bottom-right',    baseAngle: -angle };
-            return null;
-          };
-
-          const o = getOrientation(angle);
+          const o = getHeightResizeOrientation(angle);
           if (!o) return; 
 
           value = clamp(value);

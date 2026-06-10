@@ -238,3 +238,29 @@ export interface SelectOption {
   value: number | string;
   label: string;
 };
+
+
+
+// ========== GEOMETRY UTILS ==========
+export type PageRectPx = {
+  centerX: number;
+  centerY: number;
+  width: number;
+  height: number;
+};
+
+export type HitTestOptions = {
+  edgeHitTolerance: number;
+  cornerHitTolerance: number;
+  rotateHandleOffset: number;
+  rotateHitTolerance: number;
+  cornerSize: number;
+};
+
+export type LocalSide = EdgeSide;
+
+export type ResizeOrientation = {
+  signX: 1 | -1;
+  signY: 1 | -1;
+  baseAngle: number;
+};
