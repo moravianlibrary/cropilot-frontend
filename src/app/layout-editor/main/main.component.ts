@@ -106,9 +106,7 @@ export class MainComponent {
       edtSvc.lastSelectedPage = edtSvc.selectedPage;
       edtSvc.selectedPage = null;
       edtSvc.lastPageCursorIsInside = null;
-      edtSvc.redrawImageOnCanvas();
-      if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
-      edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
+      edtSvc.redrawAllPages();
       edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
       edtSvc.hoveringPage('');
     };
@@ -212,9 +210,7 @@ export class MainComponent {
       edtSvc.selectedPage = hitPage;
       edtSvc.clickedDiffPage = edtSvc.lastSelectedPage && edtSvc.selectedPage && edtSvc.lastSelectedPage !== edtSvc.selectedPage;
       edtSvc.lastPageCursorIsInside = hitPage;
-      edtSvc.redrawImageOnCanvas();
-      if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
-      edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
+      edtSvc.redrawAllPages();
       edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
       edtSvc.hoveringPage(hitPage?._id ?? '');
       // Don't return here to enable other mousedown interactions
@@ -270,9 +266,7 @@ export class MainComponent {
 
           if (!edtSvc.imgWasEdited()) return;
           if (hitPage) edtSvc.hoveringPage(hitPage._id);
-          edtSvc.redrawImageOnCanvas();
-          if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
-          edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
+          edtSvc.redrawAllPages();
           edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
           return;
         }
@@ -307,9 +301,7 @@ export class MainComponent {
           edtSvc.startHit = null;
           edtSvc.isRotating = false;
           edtSvc.rotationStartPage = null;
-          edtSvc.redrawImageOnCanvas();
-          if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
-          edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
+          edtSvc.redrawAllPages();
           edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
           return;
         }
@@ -337,9 +329,7 @@ export class MainComponent {
         edtSvc.resizeMode = null;
         edtSvc.resizeStartPage = null;
         edtSvc.resizeStartMouse = null;
-        edtSvc.redrawImageOnCanvas();
-        if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
-        edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
+        edtSvc.redrawAllPages();
         edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
         return;
       }
@@ -627,9 +617,7 @@ export class MainComponent {
     edtSvc.pageWasEdited = true;
     edtSvc.imgWasEdited.set(true);
     edtSvc.sthWasEdited = true;
-    edtSvc.redrawImageOnCanvas();
-    if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
-    edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
+    edtSvc.redrawAllPages();
   }
 
   private rotatePage(cursor: string, ev: MouseEvent, el: HTMLElement): void {
@@ -696,9 +684,7 @@ export class MainComponent {
     edtSvc.pageWasEdited = true;
     edtSvc.imgWasEdited.set(true);
     edtSvc.sthWasEdited = true;
-    edtSvc.redrawImageOnCanvas();
-    if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
-    edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
+    edtSvc.redrawAllPages();
   }
 
   private resizePage(ev: MouseEvent, el: HTMLElement): void {
@@ -1518,9 +1504,7 @@ export class MainComponent {
     const edtSvc = this.edtSvc;
     edtSvc.selectedPage = p;
     edtSvc.currentPages = edtSvc.currentPages.map(page => page._id === p._id ? p : page);
-    edtSvc.redrawImageOnCanvas();
-    if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
-    edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
+    edtSvc.redrawAllPages();
   }
 
   private applyCornerResize(p: Page, start: Page, userCorner: CornerName, ev: MouseEvent) {
@@ -2473,9 +2457,7 @@ export class MainComponent {
     const edtSvc = this.edtSvc;
     edtSvc.selectedPage = p;
     edtSvc.currentPages = edtSvc.currentPages.map(page => page._id === p._id ? p : page);
-    edtSvc.redrawImageOnCanvas();
-    if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
-    edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));
+    edtSvc.redrawAllPages();
   }
 
   private stopDragRotateResize(): void {
@@ -2494,9 +2476,7 @@ export class MainComponent {
       edtSvc.resizeStartMouse = null;
       edtSvc.resizeMode = null;
       
-      edtSvc.redrawImageOnCanvas();
-      if (edtSvc.showPredictions) edtSvc.currentPredictedPages.forEach(p => edtSvc.drawPagePredicted(p));
-      edtSvc.currentPages.forEach(p => edtSvc.drawPage(p));  
+      edtSvc.redrawAllPages();
       return;
     }
   }

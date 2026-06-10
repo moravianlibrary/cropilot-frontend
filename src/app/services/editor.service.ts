@@ -172,9 +172,7 @@ export class EditorService {
     if (this.imgWasEdited()) this.updateImagesByEdited(this.mainImageItem()._id);
     this.selectedPage = null;
     this.resetZoom();
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
     this.updateMainImageItemAndImages();
     
     const editedImages = this.images()
@@ -596,9 +594,7 @@ export class EditorService {
 
     this.resizeCanvasToEditor();
     this.updateImageRect(this.mainImage, this.mainImageItem().orientation);
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
   }
 
   normalizeImageForDisplay(img: ImageItem): ImageItem {
@@ -773,9 +769,7 @@ export class EditorService {
     this.viewport = { x: 0, y: 0, scale: 1 };
     this.snapped = false;
 
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
   }
 
   // Default zooming
@@ -799,9 +793,7 @@ export class EditorService {
     this.viewport.scale = scale;
 
     this.clampViewportToMinZoomEnvelope();
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
   }
 
   panBy(dxScreen: number, dyScreen: number): void {
@@ -811,9 +803,7 @@ export class EditorService {
     this.viewport.y += dyScreen;
 
     this.clampViewportToMinZoomEnvelope();
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
   }
 
   private clampViewportToMinZoomEnvelope(): void {
@@ -1022,9 +1012,7 @@ export class EditorService {
 
     this.snapped = true;
 
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
   }
 
 
@@ -1102,9 +1090,7 @@ export class EditorService {
     );
 
     this.resetZoom();
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
     this.updateMainImageItem();
 
     this.imgWasEdited.set(true);
@@ -1140,9 +1126,7 @@ export class EditorService {
   }
 
   hoveringPage(hoveredPageId: string): void {
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p, hoveredPageId));
+    this.redrawAllPages(hoveredPageId);
   }
 
   updateHoverPage(): void {
@@ -1333,9 +1317,7 @@ export class EditorService {
     this.currentPages.push(addedPage);
     this.selectedPage = this.currentPages[this.currentPages.length - 1];
     this.imgWasEdited.set(true);
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
 
     this.resetZoom();
   }
@@ -1344,9 +1326,7 @@ export class EditorService {
     this.currentPages = this.currentPages.filter(p => p !== this.selectedPage);
     if (this.currentPages.length) this.currentPages = this.currentPages.map(p => ({ ...p, type: 'single' }));
     this.selectedPage = null;
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
     this.updateMainImageItem();
     this.pageWasEdited = true;
     this.imgWasEdited.set(true);
@@ -1396,6 +1376,12 @@ export class EditorService {
     if (this.selectedPage) {
       this.dimOutside(this.selectedPage);
     }
+  }
+
+  redrawAllPages(hoveredPageId?: string): void {
+    this.redrawImageOnCanvas();
+    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
+    this.currentPages.forEach(p => this.drawPage(p, hoveredPageId));
   }
 
   updateCurrentPagesWithEdited(): void {
@@ -1480,9 +1466,7 @@ export class EditorService {
           this.storage.set('filterScanTypeStart', 'all');
           this.pageNumberRadio.set('all');
           this.storage.set('filterPageNumberStart', 'all');
-          this.redrawImageOnCanvas();
-          if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-          this.currentPages.forEach(p => this.drawPage(p));
+          this.redrawAllPages();
           uiSvc.closeDialog();
           uiSvc.showToast('Nastavení bylo resetováno.', { type: 'success' });
         }
@@ -1535,9 +1519,7 @@ export class EditorService {
 
     this.storage.set('filterScanTypeStart', this.scanTypeRadio());
     this.storage.set('filterPageNumberStart', this.pageNumberRadio());
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
     this.uiSvc.showToast('Nastavení bylo uloženo.', { type: 'success' });
   }
 
@@ -1665,9 +1647,7 @@ export class EditorService {
         : null;
       this.clickedDiffPage = this.lastSelectedPage && this.selectedPage && this.lastSelectedPage !== this.selectedPage;
       this.lastPageCursorIsInside = this.selectedPage;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
       this.updateMainImageItem();
     }
 
@@ -1684,9 +1664,7 @@ export class EditorService {
       this.lastSelectedPage = this.selectedPage;
       this.selectedPage = null;
       this.lastPageCursorIsInside = null;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
       this.updateMainImageItem();
     }
 
@@ -1711,9 +1689,7 @@ export class EditorService {
       const gridMode = this.gridMode();
       this.gridRadio.set(gridMode);
       this.storage.set('gridMode', gridMode);
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     };
 
     // Outline width
@@ -1723,9 +1699,7 @@ export class EditorService {
       const outlineWidthLabel2 = this.outlineWidthLabel();
       this.outlineRadio.set(outlineWidthLabel2);
       this.storage.set('outlineWidthLabel', outlineWidthLabel2);
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     }
 
     // Dimming color
@@ -1733,9 +1707,7 @@ export class EditorService {
       this.dimColor.update(prev => prev === 'Černá' ? 'Červená' : (prev === 'Červená' ? 'Bílá' : (prev === 'Bílá' ? 'Žádná' : 'Černá')));
       this.dimRadio.set(this.dimColor());
       this.storage.set('dimColor', this.dimColor());
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     }
 
     // Prev/next scan
@@ -1792,9 +1764,7 @@ export class EditorService {
       this.lastSelectedPage = updatedPage;
       this.currentPages = this.currentPages.map(p =>p._id === updatedPage._id ? updatedPage : p);
 
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     }
 
     // Change page width / height
@@ -2041,9 +2011,7 @@ export class EditorService {
       this.pageWasEdited = true;
       this.imgWasEdited.set(true);
       this.sthWasEdited = true;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     }
 
     // Rotate page by 1
@@ -2086,9 +2054,7 @@ export class EditorService {
       this.pageWasEdited = true;
       this.imgWasEdited.set(true);
       this.sthWasEdited = true;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     }
 
     // Rotate scan by 90
@@ -2137,9 +2103,7 @@ export class EditorService {
         const newIndex = potentialNewIndex === this.currentPages.length ? 0 : potentialNewIndex;
         this.selectedPage = this.currentPages[newIndex];
         this.lastPageCursorIsInside = this.selectedPage;
-        this.redrawImageOnCanvas();
-        if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-        this.currentPages.forEach(p => this.drawPage(p));
+        this.redrawAllPages();
         return;
       }
       
@@ -2151,9 +2115,7 @@ export class EditorService {
         await this.uiSvc.waitForFalse(this.loadingFirstCurrentPage);
         this.selectedPage = this.currentPages.reduce((min, page) => page.xc < min.xc ? page : min);
         this.lastPageCursorIsInside = this.selectedPage;
-        this.redrawImageOnCanvas();
-        if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-        this.currentPages.forEach(p => this.drawPage(p));
+        this.redrawAllPages();
         this.updateMainImageItem();
       }
     }
@@ -2233,9 +2195,7 @@ export class EditorService {
       const newIndex = potentialNewIndex === this.currentPages.length ? 0 : potentialNewIndex;
       this.selectedPage = this.currentPages[newIndex];
       this.lastPageCursorIsInside = this.selectedPage;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     };
 
     // Copy text
@@ -2261,9 +2221,7 @@ export class EditorService {
       && this.selectedPage && !this.uiSvc.dialogOpen()
     ) {
       this.isRotating = false;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     }
   }
 }
