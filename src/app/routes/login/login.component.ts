@@ -10,5 +10,5 @@ import { IconComponent } from "../../components/icon/icon.component";
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
-  authSvc = inject(AuthService);
+  auth = inject(AuthService);
 }

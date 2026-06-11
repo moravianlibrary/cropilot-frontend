@@ -1,18 +1,18 @@
-@let dialogButtons = uiSvc.dialogButtons();
+@let dialogButtons = ui.dialogButtons();
 
 <div
   class="dialog-backdrop"
-  [class.open]="uiSvc.dialogOpen()"
+  [class.open]="ui.dialogOpen()"
   (click)="onBackdropClick()"
 ></div>
 
 <div
   class="dialog-container"
-  [class.open]="uiSvc.dialogOpen()"
-  [style]="uiSvc.dialogWidth() ? `width:min(90dvw, ${uiSvc.dialogWidth()}px)` : ''"
+  [class.open]="ui.dialogOpen()"
+  [style]="ui.dialogWidth() ? `width:min(90dvw, ${ui.dialogWidth()}px)` : ''"
 >
   <header class="dialog-header">
-    <h2>{{ uiSvc.dialogTitle() }}</h2>
+    <h2>{{ ui.dialogTitle() }}</h2>
     <span
       class="icon dialog-close"
       (click)="close()"
@@ -24,25 +24,25 @@
     </span>
   </header>
 
-  @if (uiSvc.dialogContent()) {
+  @if (ui.dialogContent()) {
     <section
       id="dialog-body"
       class="dialog-body os-pending"
       [style]="dialogButtons.length ? 'border-radius:0' : ''"
     >
-      @let canWriteTitle = authSvc.canWriteTitle();
-      @let dialogContentType = uiSvc.dialogContentType();
+      @let canWriteTitle = auth.canWriteTitle();
+      @let dialogContentType = ui.dialogContentType();
 
       <!-- Settings -->
       @if (dialogContentType === 'settings') {
         <div class="settings-content-wrapper">
-          @if (authSvc.isAdmin()) {
+          @if (auth.isAdmin()) {
             <div class="settings-block">
               <label class="settings-block-label toggle-switch">
                 <input
                   type="checkbox"
-                  [checked]="edtSvc.showPredictions"
-                  (click)="edtSvc.togglePredictions()"
+                  [checked]="editor.showPredictions"
+                  (click)="editor.togglePredictions()"
                 />
                 <span class="slider"></span>
                 Zobrazení původních predikcí
@@ -61,8 +61,8 @@
                     <input
                       type="radio"
                       name="grid-mode"
-                      [checked]="gridMode === edtSvc.gridRadio()"
-                      (change)="edtSvc.gridRadio.set(gridMode)"
+                      [checked]="gridMode === editor.gridRadio()"
+                      (change)="editor.gridRadio.set(gridMode)"
                     />
                     <span class="radio-value">{{ gridModeDict[gridMode] }}</span>
                   </label>
@@ -78,8 +78,8 @@
                     <input
                       type="radio"
                       name="outline-width"
-                      [checked]="outlineWidth === edtSvc.outlineWidthLabel()"
-                      (change)="edtSvc.outlineRadio.set(outlineWidth)"
+                      [checked]="outlineWidth === editor.outlineWidthLabel()"
+                      (change)="editor.outlineRadio.set(outlineWidth)"
                     />
                     <span class="radio-value">{{ outlineWidth }}</span>
                   </label>
@@ -89,8 +89,8 @@
               <label class="settings-block-label toggle-switch outline-type">
                 <input
                   type="checkbox"
-                  [checked]="edtSvc.outlineDashed"
-                  (click)="edtSvc.toggleOutlineDashed()"
+                  [checked]="editor.outlineDashed"
+                  (click)="editor.toggleOutlineDashed()"
                 />
                 <span class="slider"></span>
                 Čárkovaný
@@ -104,8 +104,8 @@
                     <input
                       type="radio"
                       name="dim-color"
-                      [checked]="dimColor === edtSvc.dimRadio()"
-                      (change)="edtSvc.dimRadio.set(dimColor)"
+                      [checked]="dimColor === editor.dimRadio()"
+                      (change)="editor.dimRadio.set(dimColor)"
                     />
                     <span class="radio-value">{{ dimColor }}</span>
                   </label>
@@ -117,8 +117,8 @@
             <label class="settings-block-label toggle-switch">
               <input
                 type="checkbox"
-                [checked]="edtSvc.rememberLastSelectedImageOfLastOpenTitle"
-                (click)="edtSvc.toggleLastSelectedScan()"
+                [checked]="editor.rememberLastSelectedImageOfLastOpenTitle"
+                (click)="editor.toggleLastSelectedScan()"
               />
               <span class="slider"></span>
               Zapamatovat si naposledy zobrazený sken u naposledy otevřeného titulu
@@ -134,8 +134,8 @@
                   <input
                     type="radio"
                     name="scan-type"
-                    [checked]="scanType === edtSvc.scanTypeRadio()"
-                    (change)="edtSvc.scanTypeRadio.set(scanType)"
+                    [checked]="scanType === editor.scanTypeRadio()"
+                    (change)="editor.scanTypeRadio.set(scanType)"
                   />
                   <span class="radio-value">{{ filterScanTypeStartDict[scanType] }}</span>
                 </label>
@@ -148,8 +148,8 @@
                   <input
                     type="radio"
                     name="page-number"
-                    [checked]="pageNumber === edtSvc.pageNumberRadio()"
-                    (change)="edtSvc.pageNumberRadio.set(pageNumber)"
+                    [checked]="pageNumber === editor.pageNumberRadio()"
+                    (change)="editor.pageNumberRadio.set(pageNumber)"
                   />
                   <span class="radio-value">{{ filterPageNumberStartDict[pageNumber] }}</span>
                 </label>
@@ -211,11 +211,11 @@
                   id="group-name"
                   name="group-name"
                   type="text"
-                  [(ngModel)]="dashSvc.groupName"
-                  (input)="dashSvc.checkGroupNameUniqueness()"
+                  [(ngModel)]="dashboard.groupName"
+                  (input)="dashboard.checkGroupNameUniqueness()"
                 />
               </label>
-              @let groupNameError = dashSvc.groupNameError();
+              @let groupNameError = dashboard.groupNameError();
               @if (groupNameError) {
                 <span class="error">{{ groupNameError }}</span>
               }
@@ -230,7 +230,7 @@
                   id="group-description"
                   name="group-description"
                   [class.edit-group]="dialogContentType === 'edit-group'"
-                  [(ngModel)]="dashSvc.groupDescription"
+                  [(ngModel)]="dashboard.groupDescription"
                 ></textarea>
               </label>
             </div>
@@ -241,14 +241,14 @@
               <label class="above-input select">
                 OŘEZOVÝ MODEL
                 <app-select
-                  [(ngModel)]="dashSvc.selectedCropModel"
+                  [(ngModel)]="dashboard.selectedCropModel"
                   [inputName]="'group-crop-model'"
                   location="dialog"
                   [width]="264"
                   [maxDropdownHeight]="192"
-                  [options]="dashSvc.availableCropModels()"
-                  [usedIn]="dashSvc.selectedCropModelUsed()"
-                  (usedOut)="dashSvc.onSelectCropModelUsed($event)"
+                  [options]="dashboard.availableCropModels()"
+                  [usedIn]="dashboard.selectedCropModelUsed()"
+                  (usedOut)="dashboard.onSelectCropModelUsed($event)"
                 ></app-select>
               </label>
             </div>
@@ -256,14 +256,14 @@
               <label class="above-input select">
                 ROTAČNÍ MODEL
                 <app-select
-                  [(ngModel)]="dashSvc.selectedRotationModel"
+                  [(ngModel)]="dashboard.selectedRotationModel"
                   [inputName]="'group-rotation-model'"
                   location="dialog"
                   [width]="264"
                   [maxDropdownHeight]="192"
-                  [options]="dashSvc.availableRotationModels()"
-                  [usedIn]="dashSvc.selectedRotationModelUsed()"
-                  (usedOut)="dashSvc.onSelectRotationModelUsed($event)"
+                  [options]="dashboard.availableRotationModels()"
+                  [usedIn]="dashboard.selectedRotationModelUsed()"
+                  (usedOut)="dashboard.onSelectRotationModelUsed($event)"
                 ></app-select>
               </label>
             </div>
@@ -273,25 +273,25 @@
             <div class="block permissions">
               <div class="header">
                 <div class="label">ČLENOVÉ A PRÁVA</div>
-                @let permissions = dashSvc.groupPermissions();
+                @let permissions = dashboard.groupPermissions();
                 <div class="add-permission-wrapper">
                   <div class="main">
                     <app-select
-                      [(ngModel)]="dashSvc.selectedUserId"
+                      [(ngModel)]="dashboard.selectedUserId"
                       [inputName]="'add-user-to-group'"
                       location="dialog"
                       [maxDropdownHeight]="192"
-                      [options]="dashSvc.availableUsers()"
+                      [options]="dashboard.availableUsers()"
                       [placeholder]="'Napište jméno'"
-                      [usedIn]="dashSvc.selectedUserUsed()"
-                      (usedOut)="dashSvc.onSelectUserUsed($event)"
+                      [usedIn]="dashboard.selectedUserUsed()"
+                      (usedOut)="dashboard.onSelectUserUsed($event)"
                     ></app-select>
                     <span
                       class="add-perm button real-button primary"
-                      [class.disabled]="!dashSvc.availableUsers().length"
-                      (click)="dashSvc.addUserToGroup(dashSvc.selectedUserId())"
-                      (keydown.space)="dashSvc.addUserToGroup(dashSvc.selectedUserId())"
-                      (keydown.enter)="dashSvc.addUserToGroup(dashSvc.selectedUserId())"
+                      [class.disabled]="!dashboard.availableUsers().length"
+                      (click)="dashboard.addUserToGroup(dashboard.selectedUserId())"
+                      (keydown.space)="dashboard.addUserToGroup(dashboard.selectedUserId())"
+                      (keydown.enter)="dashboard.addUserToGroup(dashboard.selectedUserId())"
                       tabindex="0"
                     >
                       <span class="icon">
@@ -301,10 +301,10 @@
                     </span>
                     <span
                       class="button quaternary primary remove-all"
-                      [class.hidden]="dashSvc.groupPermissions().length < 2"
-                      (click)="dashSvc.removeAllUsers()"
-                      (keydown.space)="dashSvc.removeAllUsers()"
-                      (keydown.enter)="dashSvc.removeAllUsers()"
+                      [class.hidden]="dashboard.groupPermissions().length < 2"
+                      (click)="dashboard.removeAllUsers()"
+                      (keydown.space)="dashboard.removeAllUsers()"
+                      (keydown.enter)="dashboard.removeAllUsers()"
                       tabindex="0"
                     >
                       <span class="icon">
@@ -313,7 +313,7 @@
                       Odebrat vše
                     </span>
                   </div>
-                  @let selectedUserError = dashSvc.selectedUserError();
+                  @let selectedUserError = dashboard.selectedUserError();
                   @if (selectedUserError) {
                     <span class="error">{{ selectedUserError }}</span>
                   }
@@ -334,8 +334,8 @@
                           [id]="`${user._id}-upload`"
                           [name]="`${user._id}-upload`"
                           [checked]="isUploadTitle"
-                          (change)="dashSvc.toggleUserPermission(user._id, 'upload')"
-                          (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'upload')"
+                          (change)="dashboard.toggleUserPermission(user._id, 'upload')"
+                          (keydown.enter)="dashboard.toggleUserPermission(user._id, 'upload')"
                         />
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="16" />
@@ -351,8 +351,8 @@
                           [id]="`${user._id}-write`"
                           [name]="`${user._id}-write`"
                           [checked]="isWriteTitle"
-                          (change)="dashSvc.toggleUserPermission(user._id, 'write')"
-                          (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'write')"
+                          (change)="dashboard.toggleUserPermission(user._id, 'write')"
+                          (keydown.enter)="dashboard.toggleUserPermission(user._id, 'write')"
                         />
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="16" />
@@ -368,8 +368,8 @@
                           [id]="`${user._id}-read-title`"
                           [name]="`${user._id}-read-title`"
                           [checked]="isReadTitle"
-                          (change)="dashSvc.toggleUserPermission(user._id, 'read_title')"
-                          (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_title')"
+                          (change)="dashboard.toggleUserPermission(user._id, 'read_title')"
+                          (keydown.enter)="dashboard.toggleUserPermission(user._id, 'read_title')"
                         />
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="16" />
@@ -385,8 +385,8 @@
                           [id]="`${user._id}-read-group`"
                           [name]="`${user._id}-read-group`"
                           [checked]="isReadGroup"
-                          (change)="dashSvc.toggleUserPermission(user._id, 'read_group')"
-                          (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_group')"
+                          (change)="dashboard.toggleUserPermission(user._id, 'read_group')"
+                          (keydown.enter)="dashboard.toggleUserPermission(user._id, 'read_group')"
                         />
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="16" />
@@ -399,9 +399,9 @@
                     </div>
                     <span
                       class="remove"
-                      (click)="dashSvc.removeFromGroup(user._id)"
-                      (keydown.space)="dashSvc.removeFromGroup(user._id)"
-                      (keydown.enter)="dashSvc.removeFromGroup(user._id)"
+                      (click)="dashboard.removeFromGroup(user._id)"
+                      (keydown.space)="dashboard.removeFromGroup(user._id)"
+                      (keydown.enter)="dashboard.removeFromGroup(user._id)"
                       tabindex="0"
                     >
                       <span class="icon">
@@ -409,8 +409,8 @@
                       </span>
                     </span>
                   </div>
-                  @if (dashSvc.userPermissionsError[user._id]) {
-                    <span class="permission-error error">{{ dashSvc.userPermissionsError[user._id] }}</span>
+                  @if (dashboard.userPermissionsError[user._id]) {
+                    <span class="permission-error error">{{ dashboard.userPermissionsError[user._id] }}</span>
                   }
                 }
               </div>
@@ -429,11 +429,11 @@
                 id="new-title-name"
                 name="new-title-name"
                 type="text"
-                [(ngModel)]="dashSvc.titleName"
-                (input)="dashSvc.checkTitleName()"
+                [(ngModel)]="dashboard.titleName"
+                (input)="dashboard.checkTitleName()"
               />
             </label>
-            @let titleNameError = dashSvc.titleNameError();
+            @let titleNameError = dashboard.titleNameError();
             @if (titleNameError) {
               <span class="error">{{ titleNameError }}</span>
             }
@@ -444,14 +444,14 @@
               <label class="above-input select">
                 OŘEZOVÝ MODEL
                 <app-select
-                  [(ngModel)]="dashSvc.selectedCropModel"
+                  [(ngModel)]="dashboard.selectedCropModel"
                   [inputName]="'title-crop-model'"
                   location="dialog"
                   [width]="264"
                   [maxDropdownHeight]="dialogContentType === 'edit-title' ? 144 : 240"
-                  [options]="dashSvc.availableCropModels()"
-                  [usedIn]="dashSvc.selectedCropModelUsed()"
-                  (usedOut)="dashSvc.onSelectCropModelUsed($event)"
+                  [options]="dashboard.availableCropModels()"
+                  [usedIn]="dashboard.selectedCropModelUsed()"
+                  (usedOut)="dashboard.onSelectCropModelUsed($event)"
                 ></app-select>
               </label>
             </div>
@@ -459,14 +459,14 @@
               <label class="above-input select">
                 ROTAČNÍ MODEL
                 <app-select
-                  [(ngModel)]="dashSvc.selectedRotationModel"
+                  [(ngModel)]="dashboard.selectedRotationModel"
                   [inputName]="'title-rotation-model'"
                   location="dialog"
                   [width]="264"
                   [maxDropdownHeight]="dialogContentType === 'edit-title' ? 144 : 240"
-                  [options]="dashSvc.availableRotationModels()"
-                  [usedIn]="dashSvc.selectedRotationModelUsed()"
-                  (usedOut)="dashSvc.onSelectRotationModelUsed($event)"
+                  [options]="dashboard.availableRotationModels()"
+                  [usedIn]="dashboard.selectedRotationModelUsed()"
+                  (usedOut)="dashboard.onSelectRotationModelUsed($event)"
                 ></app-select>
               </label>
             </div>
@@ -484,10 +484,10 @@
             <div class="block">
               <label class="above-input upload-wrapper">
                 SKENY
-                @let files = dashSvc.files();
+                @let files = dashboard.files();
                 <app-upload
                   id="new-title-upload"
-                  (filesSelected)="dashSvc.uploadFiles($event)"
+                  (filesSelected)="dashboard.uploadFiles($event)"
                   [h3]="
                     files.length === 0
                     ? 'Přetáhněte sem'
@@ -498,7 +498,7 @@
                 >
                 </app-upload>
               </label>
-              @let uploadFilesError = dashSvc.uploadFilesError();
+              @let uploadFilesError = dashboard.uploadFilesError();
               @if (uploadFilesError) {
                 <span class="error">{{ uploadFilesError }}</span>
               }
@@ -525,11 +525,11 @@
                   id="user-fullname"
                   name="user-fullname"
                   type="text"
-                  [(ngModel)]="dashSvc.userFullname"
-                  (input)="dashSvc.checkUserName()"
+                  [(ngModel)]="dashboard.userFullname"
+                  (input)="dashboard.checkUserName()"
                 />
               </label>
-              @let userNameError = dashSvc.userNameError();
+              @let userNameError = dashboard.userNameError();
               @if (userNameError) {
                 <span class="error">{{ userNameError }}</span>
               }
@@ -544,20 +544,20 @@
                   id="user-email"
                   name="user-email"
                   type="email"
-                  [(ngModel)]="dashSvc.userEmail"
-                  (input)="dashSvc.checkUserEmail()"
+                  [(ngModel)]="dashboard.userEmail"
+                  (input)="dashboard.checkUserEmail()"
                 />
               </label>
-              @let userEmailError = dashSvc.userEmailError();
+              @let userEmailError = dashboard.userEmailError();
               @if (userEmailError) {
                 <span class="error">{{ userEmailError }}</span>
               }
               @if (dialogContentType === 'edit-user') {
                 <span
                   class="button primary soft reset-password"
-                  (click)="dashSvc.resetPasswordDialog(dashSvc.selectedUser()?._id ?? '')"
-                  (keydown.space)="dashSvc.resetPasswordDialog(dashSvc.selectedUser()?._id ?? '')"
-                  (keydown.enter)="dashSvc.resetPasswordDialog(dashSvc.selectedUser()?._id ?? '')"
+                  (click)="dashboard.resetPasswordDialog(dashboard.selectedUser()?._id ?? '')"
+                  (keydown.space)="dashboard.resetPasswordDialog(dashboard.selectedUser()?._id ?? '')"
+                  (keydown.enter)="dashboard.resetPasswordDialog(dashboard.selectedUser()?._id ?? '')"
                   tabindex="0"
                 >
                   <span class="icon">
@@ -573,26 +573,26 @@
             <div class="block permissions">
               <div class="header">
                 <div class="label">SKUPINY A PRÁVA</div>
-                @let permissions = dashSvc.userPermissions();
-                @if (permissions.length < dashSvc.groups().length) {
+                @let permissions = dashboard.userPermissions();
+                @if (permissions.length < dashboard.groups().length) {
                   <div class="add-permission-wrapper">
                     <div class="main">
                       <app-select
-                        [(ngModel)]="dashSvc.selectedGroupId"
+                        [(ngModel)]="dashboard.selectedGroupId"
                         [inputName]="'assign-group-to-user'"
                         location="dialog"
                         [maxDropdownHeight]="192"
-                        [options]="dashSvc.availableGroups()"
+                        [options]="dashboard.availableGroups()"
                         [placeholder]="'Napište název'"
-                        [usedIn]="dashSvc.selectedGroupUsed()"
-                        (usedOut)="dashSvc.onSelectGroupUsed($event)"
+                        [usedIn]="dashboard.selectedGroupUsed()"
+                        (usedOut)="dashboard.onSelectGroupUsed($event)"
                       ></app-select>
                       <span
                         class="add-perm button real-button primary"
-                        [class.disabled]="!dashSvc.availableGroups().length"
-                        (click)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
-                        (keydown.space)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
-                        (keydown.enter)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
+                        [class.disabled]="!dashboard.availableGroups().length"
+                        (click)="dashboard.assignGroupToUser(dashboard.selectedGroupId())"
+                        (keydown.space)="dashboard.assignGroupToUser(dashboard.selectedGroupId())"
+                        (keydown.enter)="dashboard.assignGroupToUser(dashboard.selectedGroupId())"
                         tabindex="0"
                       >
                         <span class="icon">
@@ -602,10 +602,10 @@
                       </span>
                       <span
                         class="button quaternary primary remove-all"
-                        [class.hidden]="dashSvc.userPermissions().length < 2"
-                        (click)="dashSvc.removeFromAllGroups()"
-                        (keydown.space)="dashSvc.removeFromAllGroups()"
-                        (keydown.enter)="dashSvc.removeFromAllGroups()"
+                        [class.hidden]="dashboard.userPermissions().length < 2"
+                        (click)="dashboard.removeFromAllGroups()"
+                        (keydown.space)="dashboard.removeFromAllGroups()"
+                        (keydown.enter)="dashboard.removeFromAllGroups()"
                         tabindex="0"
                       >
                         <span class="icon">
@@ -614,7 +614,7 @@
                         Odebrat vše
                       </span>
                     </div>
-                    @let selectedGroupError = dashSvc.selectedGroupError();
+                    @let selectedGroupError = dashboard.selectedGroupError();
                     @if (selectedGroupError) {
                       <span class="error">{{ selectedGroupError }}</span>
                     }
@@ -636,8 +636,8 @@
                           [id]="`${group.group_id}-upload`"
                           [name]="`${group.group_id}-upload`"
                           [checked]="isUploadTitle"
-                          (change)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
-                          (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
+                          (change)="dashboard.toggleGroupPermission(group.group_id, 'upload')"
+                          (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'upload')"
                         />
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="16" />
@@ -653,8 +653,8 @@
                           [id]="`${group.group_id}-write`"
                           [name]="`${group.group_id}-write`"
                           [checked]="isWriteTitle"
-                          (change)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
-                          (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
+                          (change)="dashboard.toggleGroupPermission(group.group_id, 'write')"
+                          (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'write')"
                         />
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="16" />
@@ -670,8 +670,8 @@
                           [id]="`${group.group_id}-read-title`"
                           [name]="`${group.group_id}-read-title`"
                           [checked]="isReadTitle"
-                          (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
-                          (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
+                          (change)="dashboard.toggleGroupPermission(group.group_id, 'read_title')"
+                          (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'read_title')"
                         />
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="16" />
@@ -687,8 +687,8 @@
                           [id]="`${group.group_id}-read-group`"
                           [name]="`${group.group_id}-read-group`"
                           [checked]="isReadGroup"
-                          (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
-                          (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
+                          (change)="dashboard.toggleGroupPermission(group.group_id, 'read_group')"
+                          (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'read_group')"
                         />
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="16" />
@@ -701,9 +701,9 @@
                     </div>
                     <span
                       class="remove"
-                      (click)="dashSvc.unassignGroupFromUser(group.group_id)"
-                      (keydown.space)="dashSvc.unassignGroupFromUser(group.group_id)"
-                      (keydown.enter)="dashSvc.unassignGroupFromUser(group.group_id)"
+                      (click)="dashboard.unassignGroupFromUser(group.group_id)"
+                      (keydown.space)="dashboard.unassignGroupFromUser(group.group_id)"
+                      (keydown.enter)="dashboard.unassignGroupFromUser(group.group_id)"
                       tabindex="0"
                     >
                       <span class="icon">
@@ -711,8 +711,8 @@
                       </span>
                     </span>
                   </div>
-                  @if (dashSvc.groupPermissionsError[group.group_id]) {
-                    <span class="permission-error error">{{ dashSvc.groupPermissionsError[group.group_id] }}</span>
+                  @if (dashboard.groupPermissionsError[group.group_id]) {
+                    <span class="permission-error error">{{ dashboard.groupPermissionsError[group.group_id] }}</span>
                   }
                 }
               </div>
@@ -739,7 +739,7 @@
                 id="new-user-password"
                 name="new-user-password"
                 type="text"
-                [value]="dashSvc.newPassword()"
+                [value]="dashboard.newPassword()"
                 readonly
               />
               <span class="copy-wrap">
@@ -759,8 +759,8 @@
         </div>
       }
     </section>
-  } @else if (uiSvc.dialogDescription()) {
-    <p class="dialog-description single">{{ uiSvc.dialogDescription() }}</p>
+  } @else if (ui.dialogDescription()) {
+    <p class="dialog-description single">{{ ui.dialogDescription() }}</p>
   }
 
   @if (dialogButtons.length) {
@@ -771,7 +771,7 @@
           [class.tertiary]="!btn.primary"
           [class.primary]="btn.primary"
           [class.destructive]="btn.destructive"
-          [class.disabled]="(btn.primary && uiSvc.dialogContent() && uiSvc.dialogContentType() === 'edit-title' && !dashSvc.titleChanged()) || uiSvc.confirmBtnDisabled()"
+          [class.disabled]="(btn.primary && ui.dialogContent() && ui.dialogContentType() === 'edit-title' && !dashboard.titleChanged()) || ui.confirmBtnDisabled()"
           (click)="btn.action ? btn.action() : close()"
           (keydown.space)="btn.action ? btn.action() : close()"
           (keydown.enter)="btn.action ? btn.action() : close()"

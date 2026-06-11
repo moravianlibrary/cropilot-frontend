@@ -18,9 +18,9 @@ import { IconComponent } from "../../components/icon/icon.component";
   styleUrl: './left-panel.component.scss'
 })
 export class LeftPanelComponent {
-  edtSvc = inject(EditorService);
-  dashSvc = inject(DashboardService);
-  authSvc = inject(AuthService);
+  editor = inject(EditorService);
+  dashboard = inject(DashboardService);
+  auth = inject(AuthService);
   private storage = inject(LocalStorageService);
 
   thumbnailsScroll = viewChild<ElementRef<HTMLDivElement>>('thumbnailsScroll');
@@ -36,7 +36,7 @@ export class LeftPanelComponent {
 
       const img = entry.target as HTMLImageElement;
       const id = img.dataset['id']!;
-      const targetImg = this.edtSvc.images().find(img => img._id === id);
+      const targetImg = this.editor.images().find(img => img._id === id);
 
       if (targetImg?.thumbnailUrl) {
         img.src = targetImg.thumbnailUrl;
@@ -44,12 +44,12 @@ export class LeftPanelComponent {
         return;
       }
 
-      this.edtSvc.fetchThumbnail(id).subscribe(thumbnail => {
+      this.editor.fetchThumbnail(id).subscribe(thumbnail => {
         const thumbnailUrl = URL.createObjectURL(thumbnail);
 
         img.src = thumbnailUrl;
 
-        this.edtSvc.images.update(prev =>
+        this.editor.images.update(prev =>
           prev.map(img =>
             img._id === id
               ? {
@@ -108,23 +108,23 @@ export class LeftPanelComponent {
 
   // ========== CLICKS ==========
   backToMyGroupsTitles(groupId: string): void {
-    this.dashSvc.dashboardPage.set('titles');
-    window.location.href = `${this.authSvc.baseUri}/group/${groupId}`;
+    this.dashboard.dashboardPage.set('titles');
+    window.location.href = `${this.auth.baseUri}/group/${groupId}`;
   }
 
   backToHomepage(): void {
-    this.dashSvc.dashboardPage.set('groups');
+    this.dashboard.dashboardPage.set('groups');
   }
 
   clickThumbnail(image: ImageItem): void {
-    const edtSvc = this.edtSvc;
-    if (image._id === edtSvc.mainImageItem()._id) return;
+    const editor = this.editor;
+    if (image._id === editor.mainImageItem()._id) return;
     
-    edtSvc.updateImagesByCurrentPages();
-    edtSvc.setMainImage(image);
+    editor.updateImagesByCurrentPages();
+    editor.setMainImage(image);
 
-    if (edtSvc.rememberLastSelectedImageOfLastOpenTitle) {
-      edtSvc.lastSelectedImageId = image._id;
+    if (editor.rememberLastSelectedImageOfLastOpenTitle) {
+      editor.lastSelectedImageId = image._id;
       this.storage.set('lastSelectedImageId', `${image._id}`);
       return;
     }

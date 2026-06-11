@@ -13,12 +13,12 @@ import { IconComponent } from '../icon/icon.component';
   imports: [FormsModule, SelectComponent, IconComponent],
   templateUrl: './drawer.component.html',
   styleUrl: './drawer.component.scss',
-  host: { '[class.open]': 'uiSvc.drawerOpen()' },
+  host: { '[class.open]': 'ui.drawerOpen()' },
 })
 export class DrawerComponent {
-  dashSvc = inject(DashboardService);
-  authSvc = inject(AuthService);
-  uiSvc = inject(UiService);
+  dashboard = inject(DashboardService);
+  auth = inject(AuthService);
+  ui = inject(UiService);
 
   getDate = getDate;
   permissionDict = permissionDict;
@@ -36,28 +36,25 @@ export class DrawerComponent {
   }
 
   drawerEditAction(): void {
-    const dashSvc = this.dashSvc;
-    switch (dashSvc.dashboardPage()) {
+    const dashboard = this.dashboard;
+    switch (dashboard.dashboardPage()) {
       case 'groups':
-        dashSvc.editGroupDialog();
+        dashboard.editGroupDialog();
         break;
       case 'users':
-        dashSvc.editUserDialog();
+        dashboard.editUserDialog();
         break;
     }
   }
 
   drawerDeleteAction(): void {
-    const dashSvc = this.dashSvc;
-    switch (dashSvc.dashboardPage()) {
+    const dashboard = this.dashboard;
+    switch (dashboard.dashboardPage()) {
       case 'groups':
-        dashSvc.deleteGroupDialog();
+        dashboard.deleteGroupDialog();
         break;
-      // case 'titles':
-      //   dashSvc.deleteTitleDialog();
-      //   break;
       case 'users':
-        dashSvc.deleteUserDialog();
+        dashboard.deleteUserDialog();
         break;
     }
   }

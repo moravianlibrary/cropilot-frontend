@@ -20,7 +20,7 @@
       [value]="displayedLabel()"
       (input)="onInput($event)"
       (keydown)="onKeyDown($event)"
-      [tabindex]="uiSvc.dialogOpen() && location() === 'drawer' ? -1 : 0"
+      [tabindex]="ui.dialogOpen() && location() === 'drawer' ? -1 : 0"
     />
     <span class="icon">
       <app-icon name="chevron-down" [size]="16" />

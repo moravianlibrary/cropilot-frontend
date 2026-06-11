@@ -1,8 +1,8 @@
-@let isAdmin = authSvc.isAdmin();
-@let dialogOpen = uiSvc.dialogOpen();
+@let isAdmin = auth.isAdmin();
+@let dialogOpen = ui.dialogOpen();
 
 <header class="drawer-header">
-  <h2>{{ uiSvc.drawerTitle() }}</h2>
+  <h2>{{ ui.drawerTitle() }}</h2>
 
   <span class="drawer-actions">
     @if (isAdmin) {
@@ -33,9 +33,9 @@
     }
     <span
       class="drawer-close action"
-      (click)="dashSvc.closeDrawer()"
-      (keydown.space)="dashSvc.closeDrawer()"
-      (keydown.enter)="dashSvc.closeDrawer()"
+      (click)="dashboard.closeDrawer()"
+      (keydown.space)="dashboard.closeDrawer()"
+      (keydown.enter)="dashboard.closeDrawer()"
       [tabindex]="dialogOpen ? -1 : 0"
     >
       <span class="icon">
@@ -45,7 +45,7 @@
   </span>
 </header>
 
-@if (uiSvc.drawerContent()) {
+@if (ui.drawerContent()) {
   <section
     id="drawer-body"
     class="drawer-body os-pending"
@@ -53,8 +53,8 @@
     <div class="content-wrapper">
 
       <!-- Groups -->
-      @if (uiSvc.drawerContentType() === 'groups') {
-        @let group = dashSvc.selectedGroupDetail();
+      @if (ui.drawerContentType() === 'groups') {
+        @let group = dashboard.selectedGroupDetail();
 
         @if (group?.description?.length) {
           <div class="block">
@@ -135,22 +135,22 @@
         <div class="block permissions">
           <div class="header">
             <div class="label">ČLENOVÉ A PRÁVA</div>
-            @let permissions = dashSvc.groupPermissions();
+            @let permissions = dashboard.groupPermissions();
             <div class="add-permission-wrapper">
               <div class="main">
                 <app-select
-                  [(ngModel)]="dashSvc.selectedUserId"
+                  [(ngModel)]="dashboard.selectedUserId"
                   [inputName]="'add-user-to-group'"
                   location="drawer"
-                  [options]="dashSvc.availableUsers()"x
+                  [options]="dashboard.availableUsers()"x
                   [placeholder]="'Napište jméno'"
-                  [usedIn]="dashSvc.selectedUserUsed()"
-                  (usedOut)="dashSvc.onSelectUserUsed($event)"
+                  [usedIn]="dashboard.selectedUserUsed()"
+                  (usedOut)="dashboard.onSelectUserUsed($event)"
                 ></app-select>
                 <span
                   class="add-perm button real-button primary"
-                  [class.disabled]="!dashSvc.availableUsers().length"
-                  (click)="dashSvc.addUserToGroup(dashSvc.selectedUserId())"
+                  [class.disabled]="!dashboard.availableUsers().length"
+                  (click)="dashboard.addUserToGroup(dashboard.selectedUserId())"
                   [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <span class="icon">
@@ -160,8 +160,8 @@
                 </span>
                 <span
                   class="button quaternary primary remove-all"
-                  [class.hidden]="dashSvc.groupPermissions().length < 2"
-                  (click)="dashSvc.removeAllUsers()"
+                  [class.hidden]="dashboard.groupPermissions().length < 2"
+                  (click)="dashboard.removeAllUsers()"
                   [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <span class="icon">
@@ -170,7 +170,7 @@
                   Odebrat vše
                 </span>
               </div>
-              @let selectedUserError = dashSvc.selectedUserError();
+              @let selectedUserError = dashboard.selectedUserError();
               @if (selectedUserError) {
                 <span class="error">{{ selectedUserError }}</span>
               }
@@ -191,8 +191,8 @@
                       [id]="`${user._id}-upload`"
                       [name]="`${user._id}-upload`"
                       [checked]="isUploadTitle"
-                      (change)="dashSvc.toggleUserPermission(user._id, 'upload')"
-                      (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'upload')"
+                      (change)="dashboard.toggleUserPermission(user._id, 'upload')"
+                      (keydown.enter)="dashboard.toggleUserPermission(user._id, 'upload')"
                       [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <span class="check-mark">
@@ -209,8 +209,8 @@
                       [id]="`${user._id}-write`"
                       [name]="`${user._id}-write`"
                       [checked]="isWriteTitle"
-                      (change)="dashSvc.toggleUserPermission(user._id, 'write')"
-                      (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'write')"
+                      (change)="dashboard.toggleUserPermission(user._id, 'write')"
+                      (keydown.enter)="dashboard.toggleUserPermission(user._id, 'write')"
                       [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <span class="check-mark">
@@ -227,8 +227,8 @@
                       [id]="`${user._id}-read-title`"
                       [name]="`${user._id}-read-title`"
                       [checked]="isReadTitle"
-                      (change)="dashSvc.toggleUserPermission(user._id, 'read_title')"
-                      (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_title')"
+                      (change)="dashboard.toggleUserPermission(user._id, 'read_title')"
+                      (keydown.enter)="dashboard.toggleUserPermission(user._id, 'read_title')"
                       [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <span class="check-mark">
@@ -245,8 +245,8 @@
                       [id]="`${user._id}-read-group`"
                       [name]="`${user._id}-read-group`"
                       [checked]="isReadGroup"
-                      (change)="dashSvc.toggleUserPermission(user._id, 'read_group')"
-                      (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_group')"
+                      (change)="dashboard.toggleUserPermission(user._id, 'read_group')"
+                      (keydown.enter)="dashboard.toggleUserPermission(user._id, 'read_group')"
                       [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <span class="check-mark">
@@ -260,9 +260,9 @@
                 </div>
                 <span
                   class="remove"
-                  (click)="dashSvc.removeFromGroup(user._id)"
-                  (keydown.space)="dashSvc.removeFromGroup(user._id)"
-                  (keydown.enter)="dashSvc.removeFromGroup(user._id)"
+                  (click)="dashboard.removeFromGroup(user._id)"
+                  (keydown.space)="dashboard.removeFromGroup(user._id)"
+                  (keydown.enter)="dashboard.removeFromGroup(user._id)"
                   [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <span class="icon">
@@ -270,8 +270,8 @@
                   </span>
                 </span>
               </div>
-              @if (dashSvc.userPermissionsError[user._id]) {
-                <span class="permission-error error">{{ dashSvc.userPermissionsError[user._id] }}</span>
+              @if (dashboard.userPermissionsError[user._id]) {
+                <span class="permission-error error">{{ dashboard.userPermissionsError[user._id] }}</span>
               }
             }
           </div>
@@ -279,8 +279,8 @@
       }
 
       <!-- Users -->
-      @if (uiSvc.drawerContentType() === 'users') {
-        @let user = dashSvc.selectedUser();
+      @if (ui.drawerContentType() === 'users') {
+        @let user = dashboard.selectedUser();
         
         <div class="block">
           <div class="label">
@@ -310,24 +310,24 @@
         <div class="block permissions">
           <div class="header">
             <div class="label">SKUPINY A PRÁVA</div>
-            @let permissions = dashSvc.userPermissions();
+            @let permissions = dashboard.userPermissions();
             <div class="add-permission-wrapper">
               <div class="main">
                 <app-select
-                  [(ngModel)]="dashSvc.selectedGroupId"
+                  [(ngModel)]="dashboard.selectedGroupId"
                   [inputName]="'assign-group-to-user'"
                   location="drawer"
-                  [options]="dashSvc.availableGroups()"
+                  [options]="dashboard.availableGroups()"
                   [placeholder]="'Napište název'"
-                  [usedIn]="dashSvc.selectedGroupUsed()"
-                  (usedOut)="dashSvc.onSelectGroupUsed($event)"
+                  [usedIn]="dashboard.selectedGroupUsed()"
+                  (usedOut)="dashboard.onSelectGroupUsed($event)"
                 ></app-select>
                 <span
                   class="add-perm button real-button primary"
-                  [class.disabled]="!dashSvc.availableGroups().length"
-                  (click)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
-                  (keydown.space)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
-                  (keydown.enter)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
+                  [class.disabled]="!dashboard.availableGroups().length"
+                  (click)="dashboard.assignGroupToUser(dashboard.selectedGroupId())"
+                  (keydown.space)="dashboard.assignGroupToUser(dashboard.selectedGroupId())"
+                  (keydown.enter)="dashboard.assignGroupToUser(dashboard.selectedGroupId())"
                   [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <span class="icon">
@@ -337,10 +337,10 @@
                 </span>
                 <span
                   class="add-perm button quaternary primary remove-all"
-                  [class.hidden]="dashSvc.userPermissions().length < 2"
-                  (click)="dashSvc.removeFromAllGroups()"
-                  (keydown.space)="dashSvc.removeFromAllGroups()"
-                  (keydown.enter)="dashSvc.removeFromAllGroups()"
+                  [class.hidden]="dashboard.userPermissions().length < 2"
+                  (click)="dashboard.removeFromAllGroups()"
+                  (keydown.space)="dashboard.removeFromAllGroups()"
+                  (keydown.enter)="dashboard.removeFromAllGroups()"
                   [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <span class="icon">
@@ -349,7 +349,7 @@
                   Odebrat vše
                 </span>
               </div>
-              @let selectedGroupError = dashSvc.selectedGroupError();
+              @let selectedGroupError = dashboard.selectedGroupError();
               @if (selectedGroupError) {
                 <span class="error">{{ selectedGroupError }}</span>
               }
@@ -370,8 +370,8 @@
                       [id]="`${group.group_id}-upload`"
                       [name]="`${group.group_id}-upload`"
                       [checked]="isUploadTitle"
-                      (change)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
-                      (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
+                      (change)="dashboard.toggleGroupPermission(group.group_id, 'upload')"
+                      (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'upload')"
                       [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <span class="check-mark">
@@ -388,8 +388,8 @@
                       [id]="`${group.group_id}-write`"
                       [name]="`${group.group_id}-write`"
                       [checked]="isWriteTitle"
-                      (change)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
-                      (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
+                      (change)="dashboard.toggleGroupPermission(group.group_id, 'write')"
+                      (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'write')"
                       [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <span class="check-mark">
@@ -406,8 +406,8 @@
                       [id]="`${group.group_id}-read-title`"
                       [name]="`${group.group_id}-read-title`"
                       [checked]="isReadTitle"
-                      (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
-                      (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
+                      (change)="dashboard.toggleGroupPermission(group.group_id, 'read_title')"
+                      (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'read_title')"
                       [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <span class="check-mark">
@@ -424,8 +424,8 @@
                       [id]="`${group.group_id}-read-group`"
                       [name]="`${group.group_id}-read-group`"
                       [checked]="isReadGroup"
-                      (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
-                      (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
+                      (change)="dashboard.toggleGroupPermission(group.group_id, 'read_group')"
+                      (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'read_group')"
                       [tabindex]="dialogOpen ? -1 : 0"
                     />
                     <span class="check-mark">
@@ -439,9 +439,9 @@
                 </div>
                 <span
                   class="remove"
-                  (click)="dashSvc.unassignGroupFromUser(group.group_id)"
-                  (keydown.space)="dashSvc.unassignGroupFromUser(group.group_id)"
-                  (keydown.enter)="dashSvc.unassignGroupFromUser(group.group_id)"
+                  (click)="dashboard.unassignGroupFromUser(group.group_id)"
+                  (keydown.space)="dashboard.unassignGroupFromUser(group.group_id)"
+                  (keydown.enter)="dashboard.unassignGroupFromUser(group.group_id)"
                   [tabindex]="dialogOpen ? -1 : 0"
                 >
                   <span class="icon">
@@ -449,8 +449,8 @@
                   </span>
                 </span>
               </div>
-              @if (dashSvc.groupPermissionsError[group.group_id]) {
-                <span class="permission-error error">{{ dashSvc.groupPermissionsError[group.group_id] }}</span>
+              @if (dashboard.groupPermissionsError[group.group_id]) {
+                <span class="permission-error error">{{ dashboard.groupPermissionsError[group.group_id] }}</span>
               }
             }
           </div>
@@ -461,7 +461,7 @@
   </section>
 }
 
-@let drawerButtons = uiSvc.drawerButtons();
+@let drawerButtons = ui.drawerButtons();
 @if (drawerButtons.length) {
   <footer class="drawer-footer">
     @for (btn of drawerButtons; track $index) {
@@ -472,12 +472,12 @@
         [class.destructive]="btn.destructive"
         [class.disabled]="btn.primary && (
           !isAdmin
-          || (dashSvc.dashboardPage() === 'groups' && !dashSvc.groupChanged())
-          || (dashSvc.dashboardPage() === 'users' && !dashSvc.userChanged())
+          || (dashboard.dashboardPage() === 'groups' && !dashboard.groupChanged())
+          || (dashboard.dashboardPage() === 'users' && !dashboard.userChanged())
         )"
-        (click)="btn.action ? btn.action() : dashSvc.closeDrawer()"
-        (keydown.space)="btn.action ? btn.action() : dashSvc.closeDrawer()"
-        (keydown.enter)="btn.action ? btn.action() : dashSvc.closeDrawer()"
+        (click)="btn.action ? btn.action() : dashboard.closeDrawer()"
+        (keydown.space)="btn.action ? btn.action() : dashboard.closeDrawer()"
+        (keydown.enter)="btn.action ? btn.action() : dashboard.closeDrawer()"
         [tabindex]="dialogOpen ? -1 : 0"
       >
         {{ btn.label }}

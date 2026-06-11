@@ -8,9 +8,9 @@ import { AuthService } from '../../../services/auth.service';
   styleUrl: './forbidden.component.scss'
 })
 export class ForbiddenComponent {
-  private authSvc = inject(AuthService);
+  private auth = inject(AuthService);
   
   goToLogin(): void {
-    this.authSvc.redirectToLogin();
+    this.auth.redirectToLogin();
   }
 }

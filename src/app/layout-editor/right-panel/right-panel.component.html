@@ -1,25 +1,25 @@
-@let canWriteTitle = authSvc.canWriteTitle();
+@let canWriteTitle = auth.canWriteTitle();
 
 <div class="header top border-bottom">
   <div class="title-menu-wrapper">
-    <h1>Sken {{ currentIndexImage }}/{{ edtSvc.displayedImagesFinal().length }}</h1>
+    <h1>Sken {{ currentIndexImage }}/{{ editor.displayedImagesFinal().length }}</h1>
     <app-menu [type]="'menu-secondary'" />
   </div>
-  @if (edtSvc.mainImageItem().scan_name) {
+  @if (editor.mainImageItem().scan_name) {
     <div class="scan-name">
       <div class="label">Název skenu</div>
-      <div class="name">{{ edtSvc.mainImageItem().scan_name }}</div>
+      <div class="name">{{ editor.mainImageItem().scan_name }}</div>
     </div>
   }
-  @for (flag of edtSvc.mainImageItem().flags; track flag) {
-    @if (!(edtSvc.mainImageItem().flags.length > 1 && flag === 'low_confidence')) {
+  @for (flag of editor.mainImageItem().flags; track flag) {
+    @if (!(editor.mainImageItem().flags.length > 1 && flag === 'low_confidence')) {
       <span
         class="flag"
-        [class.edited]="edtSvc.mainImageItem().edited"
+        [class.edited]="editor.mainImageItem().edited"
         [class.error]="['page_count_mismatch', 'no_prediction', 'prediction_overlap'].includes(flag)"
         [class.warning]="['low_confidence', 'odd_dimensions'].includes(flag)"
       >
-        @if (edtSvc.mainImageItem().edited) {
+        @if (editor.mainImageItem().edited) {
           <span class="icon">
             <app-icon name="info" [size]="16"></app-icon>
           </span>
@@ -28,15 +28,15 @@
             <app-icon name="warning" [size]="16"></app-icon>
           </span>
         }
-        {{ getFlagLabel(flag) + (edtSvc.mainImageItem().edited ? ' (změna)': '') }}
+        {{ getFlagLabel(flag) + (editor.mainImageItem().edited ? ' (změna)': '') }}
       </span>
     }
   }
   <div class="actions">
     <span
       class="action"
-      [class.disabled]="!canWriteTitle || edtSvc.currentPages.length >= edtSvc.maxPages || !edtSvc.displayedImagesFinal().length"
-      (click)="edtSvc.addPage()"
+      [class.disabled]="!canWriteTitle || editor.currentPages.length >= editor.maxPages || !editor.displayedImagesFinal().length"
+      (click)="editor.addPage()"
     >
       Přidat výřez
       <span class="icon">
@@ -47,7 +47,7 @@
 </div>
 
 <div class="middle">
-  @if (!!edtSvc.selectedPage) {
+  @if (!!editor.selectedPage) {
     <span class="page">
       <span class="header">
         <span class="title-menu-wrapper">
@@ -56,7 +56,7 @@
         <span class="actions">
           <span
             class="action"
-            (click)="edtSvc.removePage()"
+            (click)="editor.removePage()"
           >
             Smazat
             <span class="icon">
@@ -78,7 +78,7 @@
               title="Nejlevější bod výřezu (většinou levá strana nebo roh)"
               class="left-input"
               type="number"
-              [ngModel]="edtSvc.selectedPage.left * 100 | number:'1.0-2'"
+              [ngModel]="editor.selectedPage.left * 100 | number:'1.0-2'"
               [ngModelOptions]="{ updateOn: 'blur' }"
               (ngModelChange)="changeInputValue('left', $event)"
               (keydown.enter)="changeInputValue('left', $event)"
@@ -90,7 +90,7 @@
             <span class="arrow up" (mousedown)="onArrowMouseDown('up', $event, 'left', xInput)">
               <span
                 class="icon"
-                [class.disabled]="edtSvc.selectedPage.right >= 0.999946"
+                [class.disabled]="editor.selectedPage.right >= 0.999946"
               >
                 <app-icon name="arrow-up-in-rect" [size]="16"></app-icon>
               </span>
@@ -98,7 +98,7 @@
             <span class="arrow down" (mousedown)="onArrowMouseDown('down', $event, 'left', xInput)">
               <span
                 class="icon"
-                [class.disabled]="edtSvc.selectedPage.left <= 0.000045"
+                [class.disabled]="editor.selectedPage.left <= 0.000045"
               >
                 <app-icon name="arrow-down-in-rect" [size]="16"></app-icon>
               </span>
@@ -113,7 +113,7 @@
               title="Nejhornější bod výřezu (většinou horní strana nebo roh)"
               class="right-input"
               type="number"
-              [ngModel]="edtSvc.selectedPage.top * 100 | number:'1.0-2'"
+              [ngModel]="editor.selectedPage.top * 100 | number:'1.0-2'"
               [ngModelOptions]="{ updateOn: 'blur' }"
               (ngModelChange)="changeInputValue('top', $event)"
               (keydown.enter)="changeInputValue('top', $event)"
@@ -125,7 +125,7 @@
             <span class="arrow up" (mousedown)="onArrowMouseDown('up', $event, 'top', yInput)">
               <span
                 class="icon"
-                [class.disabled]="edtSvc.selectedPage.bottom >= 0.999946"
+                [class.disabled]="editor.selectedPage.bottom >= 0.999946"
               >
                 <app-icon name="arrow-up-in-rect" [size]="16"></app-icon>
               </span>
@@ -133,7 +133,7 @@
             <span class="arrow down" (mousedown)="onArrowMouseDown('down', $event, 'top', yInput)">
               <span
                 class="icon"
-                [class.disabled]="edtSvc.selectedPage.top <= 0.000045"
+                [class.disabled]="editor.selectedPage.top <= 0.000045"
               >
                 <app-icon name="arrow-down-in-rect" [size]="16"></app-icon>
               </span>
@@ -154,7 +154,7 @@
               title="Šířka výřezu"
               class="left-input"
               type="number"
-              [ngModel]="edtSvc.selectedPage.width * 100 | number:'1.0-2'"
+              [ngModel]="editor.selectedPage.width * 100 | number:'1.0-2'"
               [ngModelOptions]="{ updateOn: 'blur' }"
               (ngModelChange)="changeInputValue('width', $event)"
               (keydown.enter)="changeInputValue('width', $event)"
@@ -167,14 +167,14 @@
               <span
                 class="icon"
                 [class.disabled]="
-                  (edtSvc.selectedPage.angle === 0 && (edtSvc.selectedPage.right) >= 0.999946)
-                  || (edtSvc.selectedPage.angle === -180 && edtSvc.selectedPage.left <= 0.000045)
-                  || (edtSvc.selectedPage.angle === 90 && edtSvc.selectedPage.bottom >= 0.999946)
-                  || (edtSvc.selectedPage.angle === -90 && edtSvc.selectedPage.top <= 0.000045)
-                  || (edtSvc.selectedPage.angle > 0 && edtSvc.selectedPage.angle < 90 && (edtSvc.selectedPage.right >= 0.999946 || edtSvc.selectedPage.bottom >= 0.999946))
-                  || (edtSvc.selectedPage.angle > 90 && (edtSvc.selectedPage.left <= 0.000045 || edtSvc.selectedPage.bottom >= 0.999946))
-                  || (edtSvc.selectedPage.angle < -90 && edtSvc.selectedPage.angle > -180 && (edtSvc.selectedPage.left <= 0.000045 || edtSvc.selectedPage.top <= 0.000045))
-                  || (edtSvc.selectedPage.angle < 0 && edtSvc.selectedPage.angle > -90 && (edtSvc.selectedPage.right >= 0.999946 || edtSvc.selectedPage.top <= 0.000045))
+                  (editor.selectedPage.angle === 0 && (editor.selectedPage.right) >= 0.999946)
+                  || (editor.selectedPage.angle === -180 && editor.selectedPage.left <= 0.000045)
+                  || (editor.selectedPage.angle === 90 && editor.selectedPage.bottom >= 0.999946)
+                  || (editor.selectedPage.angle === -90 && editor.selectedPage.top <= 0.000045)
+                  || (editor.selectedPage.angle > 0 && editor.selectedPage.angle < 90 && (editor.selectedPage.right >= 0.999946 || editor.selectedPage.bottom >= 0.999946))
+                  || (editor.selectedPage.angle > 90 && (editor.selectedPage.left <= 0.000045 || editor.selectedPage.bottom >= 0.999946))
+                  || (editor.selectedPage.angle < -90 && editor.selectedPage.angle > -180 && (editor.selectedPage.left <= 0.000045 || editor.selectedPage.top <= 0.000045))
+                  || (editor.selectedPage.angle < 0 && editor.selectedPage.angle > -90 && (editor.selectedPage.right >= 0.999946 || editor.selectedPage.top <= 0.000045))
                 "
               >
                 <app-icon name="arrow-up-in-rect" [size]="16"></app-icon>
@@ -183,7 +183,7 @@
             <span class="arrow down" (mousedown)="onArrowMouseDown('down', $event, 'width', widthInput)">
               <span
                 class="icon"
-                [class.disabled]="edtSvc.selectedPage.width <= 0.000045"
+                [class.disabled]="editor.selectedPage.width <= 0.000045"
               >
                 <app-icon name="arrow-down-in-rect" [size]="16"></app-icon>
               </span>
@@ -198,7 +198,7 @@
               title="Výška výřezu"
               class="right-input"
               type="number"
-              [ngModel]="edtSvc.selectedPage.height * 100 | number:'1.0-2'"
+              [ngModel]="editor.selectedPage.height * 100 | number:'1.0-2'"
               [ngModelOptions]="{ updateOn: 'blur' }"
               (ngModelChange)="changeInputValue('height', $event)"
               (keydown.enter)="changeInputValue('height', $event)"
@@ -211,14 +211,14 @@
               <span
                 class="icon"
                 [class.disabled]="
-                  (edtSvc.selectedPage.angle === 0 && edtSvc.selectedPage.bottom >= 0.999946)
-                  || (edtSvc.selectedPage.angle === -180 && edtSvc.selectedPage.top <= 0.000045)
-                  || (edtSvc.selectedPage.angle === -90 && edtSvc.selectedPage.right >= 0.999946)
-                  || (edtSvc.selectedPage.angle === 90 && edtSvc.selectedPage.left <= 0.000045)
-                  || (edtSvc.selectedPage.angle > 0 && edtSvc.selectedPage.angle < 90 && (edtSvc.selectedPage.bottom >= 0.999946 || edtSvc.selectedPage.left <= 0.000045))
-                  || (edtSvc.selectedPage.angle > 90 && (edtSvc.selectedPage.top <= 0.000045 || edtSvc.selectedPage.left <= 0.000045))
-                  || (edtSvc.selectedPage.angle < -90 && edtSvc.selectedPage.angle > -180 && (edtSvc.selectedPage.top <= 0.000045 || edtSvc.selectedPage.right >= 0.999946))
-                  || (edtSvc.selectedPage.angle < 0 && edtSvc.selectedPage.angle > -90 && (edtSvc.selectedPage.right >= 0.999946 || edtSvc.selectedPage.bottom >= 0.999946))
+                  (editor.selectedPage.angle === 0 && editor.selectedPage.bottom >= 0.999946)
+                  || (editor.selectedPage.angle === -180 && editor.selectedPage.top <= 0.000045)
+                  || (editor.selectedPage.angle === -90 && editor.selectedPage.right >= 0.999946)
+                  || (editor.selectedPage.angle === 90 && editor.selectedPage.left <= 0.000045)
+                  || (editor.selectedPage.angle > 0 && editor.selectedPage.angle < 90 && (editor.selectedPage.bottom >= 0.999946 || editor.selectedPage.left <= 0.000045))
+                  || (editor.selectedPage.angle > 90 && (editor.selectedPage.top <= 0.000045 || editor.selectedPage.left <= 0.000045))
+                  || (editor.selectedPage.angle < -90 && editor.selectedPage.angle > -180 && (editor.selectedPage.top <= 0.000045 || editor.selectedPage.right >= 0.999946))
+                  || (editor.selectedPage.angle < 0 && editor.selectedPage.angle > -90 && (editor.selectedPage.right >= 0.999946 || editor.selectedPage.bottom >= 0.999946))
                 "
               >
                 <app-icon name="arrow-up-in-rect" [size]="16"></app-icon>
@@ -227,7 +227,7 @@
             <span class="arrow down" (mousedown)="onArrowMouseDown('down', $event, 'height', heightInput)">
               <span
                 class="icon"
-                [class.disabled]="edtSvc.selectedPage.height <= 0.000045"
+                [class.disabled]="editor.selectedPage.height <= 0.000045"
               >
                 <app-icon name="arrow-down-in-rect" [size]="16"></app-icon>
               </span>
@@ -244,7 +244,7 @@
             title="Kladné stupně otáčí výřez po směru hodinových ručiček"
             class="left-input angle-input"
             type="number"
-            [ngModel]="edtSvc.selectedPage.angle | number:'1.0-2'"
+            [ngModel]="editor.selectedPage.angle | number:'1.0-2'"
             [ngModelOptions]="{ updateOn: 'blur' }"
             (ngModelChange)="changeInputValue('angle', $event)"
             (keydown.enter)="changeInputValue('angle', $event)"
@@ -257,13 +257,13 @@
             <span
                 class="icon"
                 [class.disabled]="(
-                  edtSvc.rotationDirection > 0
+                  editor.rotationDirection > 0
                   && (
-                    edtSvc.selectedPage.angle >= 44.999946
-                    || edtSvc.selectedPage.bottom >= 0.999946
-                    || edtSvc.selectedPage.top <= 0.000045
-                    || edtSvc.selectedPage.right >= 0.999946
-                    || edtSvc.selectedPage.left <= 0.000045
+                    editor.selectedPage.angle >= 44.999946
+                    || editor.selectedPage.bottom >= 0.999946
+                    || editor.selectedPage.top <= 0.000045
+                    || editor.selectedPage.right >= 0.999946
+                    || editor.selectedPage.left <= 0.000045
                   )
                 )"
               >
@@ -274,13 +274,13 @@
             <span
               class="icon"
               [class.disabled]="(
-                edtSvc.rotationDirection < 0
+                editor.rotationDirection < 0
                 && (
-                  edtSvc.selectedPage.angle <= -44.999946
-                  || edtSvc.selectedPage.bottom >= 0.999946
-                  || edtSvc.selectedPage.top <= 0.000045
-                  || edtSvc.selectedPage.right >= 0.999946
-                  || edtSvc.selectedPage.left <= 0.000045
+                  editor.selectedPage.angle <= -44.999946
+                  || editor.selectedPage.bottom >= 0.999946
+                  || editor.selectedPage.top <= 0.000045
+                  || editor.selectedPage.right >= 0.999946
+                  || editor.selectedPage.left <= 0.000045
                 )
               )"
             >
@@ -297,7 +297,7 @@
   <span 
     class="button real-button primary"
     [class.disabled]="!canWriteTitle"
-    (click)="edtSvc.saveChanges()"
+    (click)="editor.saveChanges()"
   >
     Uložit vše
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">

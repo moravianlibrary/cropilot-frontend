@@ -20,7 +20,7 @@ import { IconComponent } from '../icon/icon.component';
   ],
 })
 export class SelectComponent implements ControlValueAccessor {
-  uiSvc = inject(UiService);
+  ui = inject(UiService);
   
   width = input<number>(326);
   maxDropdownHeight = input<number>(240);

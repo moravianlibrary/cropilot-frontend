@@ -14,12 +14,12 @@ import { LocalStorageService } from './local-storage.service';
 })
 export class EditorService {
   private http = inject(HttpClient);
-  private envService = inject(EnvironmentService);
-  private authSvc = inject(AuthService);
-  private uiSvc = inject(UiService);
+  private env = inject(EnvironmentService);
+  private auth = inject(AuthService);
+  private ui = inject(UiService);
   private storage = inject(LocalStorageService);
   
-  private get apiUrl(): string { return this.envService.get('serverBaseUrl') };
+  private get apiUrl(): string { return this.env.get('serverBaseUrl') };
 
 
   // ========== STATE ==========
@@ -135,39 +135,39 @@ export class EditorService {
 
   // ========== API ==========
   fetchScans(id: string): Observable<TitleDetail> {
-    return this.http.get<TitleDetail>(`${this.apiUrl}/${id}/scans`, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.get<TitleDetail>(`${this.apiUrl}/${id}/scans`, { headers: this.auth.authHeaders('json', true) });
   }
 
   fetchPredictedScans(id: string): Observable<TitleDetail> {
-    return this.http.get<TitleDetail>(`${this.apiUrl}/${id}/predicted-scans`, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.get<TitleDetail>(`${this.apiUrl}/${id}/predicted-scans`, { headers: this.auth.authHeaders('json', true) });
   }
 
   fetchThumbnail(id: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${this.book()}/thumbnails?scan_id=${id}`, { 
       responseType: 'blob',
-      headers: this.authSvc.authHeaders('*/*')
+      headers: this.auth.authHeaders('*/*')
     });
   }
 
   fetchImage(id: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${this.book()}/files?scan_id=${id}`, { 
       responseType: 'blob',
-      headers: this.authSvc.authHeaders('*/*')
+      headers: this.auth.authHeaders('*/*')
     });
   }
 
   updatePages(id: string, payload: UpdateImagePayload[]): Observable<{ id: string }> {
-    return this.http.patch<{ id: string }>(`${this.apiUrl}/${id}/update-pages`, payload, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.patch<{ id: string }>(`${this.apiUrl}/${id}/update-pages`, payload, { headers: this.auth.authHeaders('json', true) });
   }
 
   reset(id: string): Observable<TitleDetail> {
-    return this.http.patch<TitleDetail>(`${this.apiUrl}/${id}/reset`, {}, { headers: this.authSvc.authHeaders() });
+    return this.http.patch<TitleDetail>(`${this.apiUrl}/${id}/reset`, {}, { headers: this.auth.authHeaders() });
   }
 
 
   // ========== API ACTIONS ==========
   saveChanges(): void {
-    if (!this.authSvc.canWriteTitle()) return;
+    if (!this.auth.canWriteTitle()) return;
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
     if (this.imgWasEdited()) this.updateImagesByEdited(this.mainImageItem()._id);
     this.selectedPage = null;
@@ -187,14 +187,14 @@ export class EditorService {
       }));
     this.updatePages(this.book(), editedImages).pipe(
       catchError(err => {
-        this.uiSvc.showToast('Při ukládání změn se něco pokazilo. Zkuste změny uložit znovu.', { type: 'error' });
+        this.ui.showToast('Při ukládání změn se něco pokazilo. Zkuste změny uložit znovu.', { type: 'error' });
         console.error(err);
         return throwError(() => err);
       })
     ).subscribe(() => {
       this.sthWasEdited = false;
       this.setDisplayedImages();
-      this.uiSvc.showToast('Změny byly úspěšně uloženy!', { type: 'success' });
+      this.ui.showToast('Změny byly úspěšně uloženy!', { type: 'success' });
     });
   }
 
@@ -217,13 +217,13 @@ export class EditorService {
 
     this.imgWasEdited.set(false);
 
-    this.uiSvc.showToast('Změny skenu byly úspěšně resetovány!', { type: 'success' });
+    this.ui.showToast('Změny skenu byly úspěšně resetovány!', { type: 'success' });
   }
 
   resetDoc(): void {
     this.reset(this.book()).pipe(
       catchError(err => {
-        this.uiSvc.showToast('Při resetu změn dokumentu se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+        this.ui.showToast('Při resetu změn dokumentu se něco pokazilo. Zkuste to znovu.', { type: 'error' });
         console.error('Fetch error:', err);
         return throwError(() => err);
       })
@@ -237,7 +237,7 @@ export class EditorService {
       this.setDisplayedImages();
       this.setMainImage(this.displayedImagesFinal()[0]);
 
-      this.uiSvc.showToast('Změny dokumentu byly úspěšně resetovány!', { type: 'success' });
+      this.ui.showToast('Změny dokumentu byly úspěšně resetovány!', { type: 'success' });
     });
   }
 
@@ -336,7 +336,7 @@ export class EditorService {
       this.loadingMain.set(false);
 
       if (this.imgWasEdited()) {
-        await this.uiSvc.waitForFalse(this.imgWasEdited);
+        await this.ui.waitForFalse(this.imgWasEdited);
         this.setDisplayedImages();
         if (this.clickedPageNumberFilter) this.clickedPageNumberFilter = false; // Don't move image to edited when click on page number filter
       }
@@ -353,7 +353,7 @@ export class EditorService {
     }
 
     this.fetchImage(img._id).subscribe(blob => {
-      if (blob.type.includes('tiff')) this.uiSvc.showToast('Nepodařilo se zobrazit sken, protože je ve formátu TIFF.', { type: 'error' });
+      if (blob.type.includes('tiff')) this.ui.showToast('Nepodařilo se zobrazit sken, protože je ve formátu TIFF.', { type: 'error' });
 
       const url = URL.createObjectURL(blob);
 
@@ -999,7 +999,7 @@ export class EditorService {
     this.updateImagesByCurrentPages();
     this.showImage(-1);
     if (this.imgWasEdited()) {
-      await this.uiSvc.waitForFalse(this.imgWasEdited);
+      await this.ui.waitForFalse(this.imgWasEdited);
       this.setDisplayedImages();
     }
   }
@@ -1010,7 +1010,7 @@ export class EditorService {
     this.updateImagesByCurrentPages();
     this.showImage(1);
     if (this.imgWasEdited()) {
-      await this.uiSvc.waitForFalse(this.imgWasEdited);
+      await this.ui.waitForFalse(this.imgWasEdited);
       this.setDisplayedImages();
     }
   }
@@ -1031,7 +1031,7 @@ export class EditorService {
 
   // ========== ROTATING ==========
   rotate(direction: 'left' | 'right'): void {
-    if (!this.authSvc.canWriteTitle() || !this.displayedImagesFinal().length || !this.mainImage) return;
+    if (!this.auth.canWriteTitle() || !this.displayedImagesFinal().length || !this.mainImage) return;
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
 
     const currentImage = this.mainImageItem();
@@ -1107,7 +1107,7 @@ export class EditorService {
   }
 
   updateHoverPage(): void {
-    if (!this.authSvc.canWriteTitle()) return;
+    if (!this.auth.canWriteTitle()) return;
     
     const insidePage = Boolean(this.pageId);
     if (!this.isDragging && !this.isRotating && insidePage) {
@@ -1272,7 +1272,7 @@ export class EditorService {
   }
   
   addPage(): void {
-    if (!this.authSvc.canWriteTitle() || this.currentPages.length >= this.maxPages || !this.displayedImagesFinal().length) return;
+    if (!this.auth.canWriteTitle() || this.currentPages.length >= this.maxPages || !this.displayedImagesFinal().length) return;
 
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
 
@@ -1412,14 +1412,14 @@ export class EditorService {
   pageNumberRadio = signal<PageNumberType>('all');
 
   openSettingsDialog(): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
     
-    uiSvc.dialogWidth.set(680);
-    uiSvc.dialogTitle.set('Nastavení');
-    uiSvc.dialogContent.set(true);
-    uiSvc.dialogContentType.set('settings');
-    uiSvc.dialogDescription.set(null);
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(680);
+    ui.dialogTitle.set('Nastavení');
+    ui.dialogContent.set(true);
+    ui.dialogContentType.set('settings');
+    ui.dialogDescription.set(null);
+    ui.dialogButtons.set([
       { 
         label: 'Reset',
         action: () => {
@@ -1444,21 +1444,21 @@ export class EditorService {
           this.pageNumberRadio.set('all');
           this.storage.set('filterPageNumberStart', 'all');
           this.redrawAllPages();
-          uiSvc.closeDialog();
-          uiSvc.showToast('Nastavení bylo resetováno.', { type: 'success' });
+          ui.closeDialog();
+          ui.showToast('Nastavení bylo resetováno.', { type: 'success' });
         }
       },
       {
         label: 'Uložit',
         primary: true,
         action: () => {
-          uiSvc.closeDialog();
+          ui.closeDialog();
           this.saveSettings();
         }
       }
     ]);
 
-    uiSvc.openDialog();
+    ui.openDialog();
   }
 
   togglePredictions(): void {
@@ -1497,70 +1497,70 @@ export class EditorService {
     this.storage.set('filterScanTypeStart', this.scanTypeRadio());
     this.storage.set('filterPageNumberStart', this.pageNumberRadio());
     this.redrawAllPages();
-    this.uiSvc.showToast('Nastavení bylo uloženo.', { type: 'success' });
+    this.ui.showToast('Nastavení bylo uloženo.', { type: 'success' });
   }
 
   openShortcutsDialog(): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
 
-    uiSvc.dialogWidth.set(680);
-    uiSvc.dialogTitle.set('Klávesové zkratky');
-    uiSvc.dialogContent.set(true);
-    uiSvc.dialogContentType.set('shortcuts');
-    uiSvc.dialogDescription.set(null);
-    uiSvc.dialogButtons.set([]);
+    ui.dialogWidth.set(680);
+    ui.dialogTitle.set('Klávesové zkratky');
+    ui.dialogContent.set(true);
+    ui.dialogContentType.set('shortcuts');
+    ui.dialogDescription.set(null);
+    ui.dialogButtons.set([]);
 
-    uiSvc.openDialog();
+    ui.openDialog();
   }
 
   openResetDocDialog(): void {
-    if (!this.authSvc.canWriteTitle()) return;
-    const uiSvc = this.uiSvc;
+    if (!this.auth.canWriteTitle()) return;
+    const ui = this.ui;
     
-    uiSvc.dialogWidth.set(680);
-    uiSvc.dialogTitle.set('Opravdu chcete resetovat změny dokumentu?');
-    uiSvc.dialogContent.set(false);
-    uiSvc.dialogContentType.set(null);
-    uiSvc.dialogDescription.set('Reset změn se týká celého dokumentu.');
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(680);
+    ui.dialogTitle.set('Opravdu chcete resetovat změny dokumentu?');
+    ui.dialogContent.set(false);
+    ui.dialogContentType.set(null);
+    ui.dialogDescription.set('Reset změn se týká celého dokumentu.');
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Resetovat celý dokument',
         primary: true,
         destructive: true,
         action: () => {
-          uiSvc.closeDialog();
+          ui.closeDialog();
           this.resetDoc();
         }
       }
     ]);
 
-    uiSvc.openDialog();
+    ui.openDialog();
   }
 
   openResetScanDialog(): void {
-    if (!this.authSvc.canWriteTitle()) return;
-    const uiSvc = this.uiSvc;
+    if (!this.auth.canWriteTitle()) return;
+    const ui = this.ui;
 
-    uiSvc.dialogWidth.set(680);
-    uiSvc.dialogTitle.set('Opravdu chcete resetovat změny skenu?');
-    uiSvc.dialogContent.set(false);
-    uiSvc.dialogContentType.set(null);
-    uiSvc.dialogDescription.set('Reset změn se týká aktuálního skenu.');
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(680);
+    ui.dialogTitle.set('Opravdu chcete resetovat změny skenu?');
+    ui.dialogContent.set(false);
+    ui.dialogContentType.set(null);
+    ui.dialogDescription.set('Reset změn se týká aktuálního skenu.');
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Resetovat změny skenu',
         primary: true,
         destructive: true,
         action: () => {
-          uiSvc.closeDialog();
+          ui.closeDialog();
           this.resetScan();
         }
       }
     ]);
 
-    uiSvc.openDialog();
+    ui.openDialog();
   }
 
 
@@ -1594,8 +1594,8 @@ export class EditorService {
     if (!this.isHandledKey(key) || (event.target as HTMLElement).tagName === 'INPUT') return;
     event.preventDefault();
     event.stopPropagation();
-    const dialogOpen = this.uiSvc.dialogOpen();
-    const canWriteTitle = this.authSvc.canWriteTitle();
+    const dialogOpen = this.ui.dialogOpen();
+    const canWriteTitle = this.auth.canWriteTitle();
 
     // Update hover page
     if (key === 'Shift') {
@@ -1631,9 +1631,9 @@ export class EditorService {
     // Unselect page
     if (canWriteTitle && key === 'Escape') {
       if (dialogOpen) {
-        this.uiSvc.dialogOpen.set(false);
-        this.uiSvc.dialogOpened = false;
-        if (this.uiSvc.dialogTitle() === 'Nastavení') this.gridRadio.set(this.gridMode());
+        this.ui.dialogOpen.set(false);
+        this.ui.dialogOpened = false;
+        if (this.ui.dialogTitle() === 'Nastavení') this.gridRadio.set(this.gridMode());
         return;
       }
       
@@ -1652,7 +1652,7 @@ export class EditorService {
     if (canWriteTitle && ['p', 'P'].includes(key) && !dialogOpen && this.currentPages.length < this.maxPages) this.addPage();
 
     // Show predictions
-    if (this.authSvc.isAdmin() && ['h', 'H'].includes(key) && !dialogOpen) {
+    if (this.auth.isAdmin() && ['h', 'H'].includes(key) && !dialogOpen) {
       this.showPredictions = !this.showPredictions;
       this.storage.set('showPredictions', this.showPredictions);
       window.location.reload();
@@ -2089,7 +2089,7 @@ export class EditorService {
         || (this.currentPages.length === this.maxPages && this.selectedPage === mostRightPage)
       ) {
         this.showNextImage();
-        await this.uiSvc.waitForFalse(this.loadingFirstCurrentPage);
+        await this.ui.waitForFalse(this.loadingFirstCurrentPage);
         this.selectedPage = this.currentPages.reduce((min, page) => page.xc < min.xc ? page : min);
         this.lastPageCursorIsInside = this.selectedPage;
         this.redrawAllPages();
@@ -2104,7 +2104,7 @@ export class EditorService {
         return;
       }
       
-      switch (this.uiSvc.dialogTitle()) {
+      switch (this.ui.dialogTitle()) {
         case 'Nastavení':
           this.saveSettings();
           break;
@@ -2116,7 +2116,7 @@ export class EditorService {
           break;
       }
 
-      this.uiSvc.closeDialog();
+      this.ui.closeDialog();
     };
 
     // Reset změn dokumentu a skenu
@@ -2153,9 +2153,9 @@ export class EditorService {
 
     // Toggle shortcuts
     if (['k', 'K'].includes(key)) {
-      if (dialogOpen && this.uiSvc.dialogTitle() === 'Klávesové zkratky') {
-        this.uiSvc.dialogOpen.set(false);
-        this.uiSvc.dialogOpened = false;
+      if (dialogOpen && this.ui.dialogTitle() === 'Klávesové zkratky') {
+        this.ui.dialogOpen.set(false);
+        this.ui.dialogOpened = false;
         return;
       }
 
@@ -2195,7 +2195,7 @@ export class EditorService {
     // Is rotating OFF
     if (
       (((event.ctrlKey || event.metaKey) && key === 'Alt') || (['Control', 'Meta'].includes(key) && event.altKey))
-      && this.selectedPage && !this.uiSvc.dialogOpen()
+      && this.selectedPage && !this.ui.dialogOpen()
     ) {
       this.isRotating = false;
       this.redrawAllPages();

@@ -15,9 +15,9 @@ import { hitTestPageGeometry, localCornerToUserCorner } from '../../utils/editor
   styleUrl: './main.component.scss'
 })
 export class MainComponent {
-  edtSvc = inject(EditorService);
-  private authSvc = inject(AuthService);
-  private uiSvc = inject(UiService);
+  editor = inject(EditorService);
+  private auth = inject(AuthService);
+  private ui = inject(UiService);
 
   private pointerCursor: string = "url('/assets/pointer-cursor.png') 6.5 0, pointer";
   private moveCursor: string = "url('/assets/move-cursor.png'), auto";
@@ -41,7 +41,7 @@ export class MainComponent {
   private rafId: number | null = null;
 
   ngAfterViewInit(): void {
-    const edtSvc = this.edtSvc;
+    const editor = this.editor;
 
     // On resize
     {
@@ -53,7 +53,7 @@ export class MainComponent {
 
           this.rafId = requestAnimationFrame(() => {
             this.ngZone.run(() => {
-              if (edtSvc.mainImage) edtSvc.refitMainImageToCanvas();
+              if (editor.mainImage) editor.refitMainImageToCanvas();
             });
           });
         });
@@ -63,8 +63,8 @@ export class MainComponent {
     }
     
     // Set canvas
-    edtSvc.c = document.getElementById('main-canvas') as HTMLCanvasElement;
-    edtSvc.ctx = edtSvc.c.getContext('2d')!;
+    editor.c = document.getElementById('main-canvas') as HTMLCanvasElement;
+    editor.ctx = editor.c.getContext('2d')!;
 
     // Attach event handlers
     this.attachMainCanvasEvents();
@@ -89,37 +89,37 @@ export class MainComponent {
 
   private attachEventsRest(el: HTMLElement | null): void {
     if (!el) return;
-    const edtSvc = this.edtSvc;
+    const editor = this.editor;
 
     el.onclick = (ev) => {
       const tagName = (ev.target as HTMLElement).tagName;
       if (tagName === 'APP-RIGHT-PANEL' || el.tagName === 'APP-RIGHT-PANEL') return;
       if (tagName !== 'APP-LEFT-PANEL' && tagName !== 'DIV' && tagName !== 'APP-RIGHT-PANEL' && tagName !== 'APP-BOTTOM-PANEL') return;
       if (el.tagName === 'DIV' && tagName !== 'DIV') return;
-      if (!edtSvc.selectedPage) return;
-      if (this.uiSvc.dialogOpened) {
-        this.uiSvc.dialogOpened = false;
+      if (!editor.selectedPage) return;
+      if (this.ui.dialogOpened) {
+        this.ui.dialogOpened = false;
         return;
       }
       this.stopDragRotateResize();
 
-      if (edtSvc.pageWasEdited) edtSvc.updateCurrentPagesWithEdited();
-      edtSvc.lastSelectedPage = edtSvc.selectedPage;
-      edtSvc.selectedPage = null;
-      edtSvc.lastPageCursorIsInside = null;
-      edtSvc.redrawAllPages();
-      edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
-      edtSvc.hoveringPage('');
+      if (editor.pageWasEdited) editor.updateCurrentPagesWithEdited();
+      editor.lastSelectedPage = editor.selectedPage;
+      editor.selectedPage = null;
+      editor.lastPageCursorIsInside = null;
+      editor.redrawAllPages();
+      editor.mainImageItem.set({ ...editor.mainImageItem(), url: editor.c.toDataURL('image/jpeg') });
+      editor.hoveringPage('');
     };
 
     el.onmouseup = (ev) => {
-      if (!edtSvc.selectedPage) return;
+      if (!editor.selectedPage) return;
       this.stopDragRotateResize();
     };
   }
 
   private attachMainCanvasEvents(): void {
-    const { c } = this.edtSvc; 
+    const { c } = this.editor; 
 
     ['mousedown', 'mousemove', 'mouseup', 'mouseenter', 'mouseleave', 'wheel'].forEach(eventType => {
       c.addEventListener(eventType, (ev) => this.handleCanvasInteraction(ev as (MouseEvent | WheelEvent), c));
@@ -128,27 +128,27 @@ export class MainComponent {
 
   private handleCanvasInteraction(ev: MouseEvent | WheelEvent, el: HTMLElement): void {
     if ((ev.target as HTMLElement).tagName !== 'CANVAS') return;
-    const edtSvc = this.edtSvc;
-    const canWriteTitle = this.authSvc.canWriteTitle();
+    const editor = this.editor;
+    const canWriteTitle = this.auth.canWriteTitle();
 
     const btn = ev.button;
     const hit = this.hitTest(ev);
     const pageId = this.pageIdCursorInside(ev);
-    edtSvc.pageId = pageId;
+    editor.pageId = pageId;
     const insidePage = !!pageId;
     const hitPage = hit.page ?? null;
-    edtSvc.hitPage = hitPage;
+    editor.hitPage = hitPage;
     
-    const hoveringPage = () => edtSvc.hoveringPage(hitPage?._id === edtSvc.selectedPage?._id ? edtSvc.selectedPage?._id ?? '' : pageId);
+    const hoveringPage = () => editor.hoveringPage(hitPage?._id === editor.selectedPage?._id ? editor.selectedPage?._id ?? '' : pageId);
 
     // Hover
     if (
       canWriteTitle
       && ev.type === 'mousemove'
-      && (edtSvc.lastPageCursorIsInside?._id !== pageId || edtSvc.selectedPage)
-      && !edtSvc.isDragging && !edtSvc.isRotating && !edtSvc.isResizing && !edtSvc.isPanning
+      && (editor.lastPageCursorIsInside?._id !== pageId || editor.selectedPage)
+      && !editor.isDragging && !editor.isRotating && !editor.isResizing && !editor.isPanning
     ) {
-      edtSvc.lastPageCursorIsInside = edtSvc.currentPages.find(p => p._id === pageId) ?? null;
+      editor.lastPageCursorIsInside = editor.currentPages.find(p => p._id === pageId) ?? null;
       hoveringPage();
     }
 
@@ -163,98 +163,98 @@ export class MainComponent {
 
       // Zooming: pinch OR ctrl/cmd + wheel
       if (ev.ctrlKey || ev.metaKey) {
-        const factor = Math.exp(-wev.deltaY * edtSvc.zoomFactor);
-        edtSvc.setZoomAt(sx, sy, edtSvc.viewport.scale * factor);
+        const factor = Math.exp(-wev.deltaY * editor.zoomFactor);
+        editor.setZoomAt(sx, sy, editor.viewport.scale * factor);
         if (canWriteTitle) hoveringPage();
       }
 
       // Panning: two-figer touch OR wheel
-      if (edtSvc.viewport.scale > 1 && !(ev.ctrlKey || ev.metaKey)) {
-        edtSvc.panBy(-wev.deltaX, -wev.deltaY);
+      if (editor.viewport.scale > 1 && !(ev.ctrlKey || ev.metaKey)) {
+        editor.panBy(-wev.deltaX, -wev.deltaY);
         if (canWriteTitle) hoveringPage();
       }
     }
 
     // Assign cursor
     if (canWriteTitle) {
-      edtSvc.cursor = insidePage ? (edtSvc.selectedPage?._id === hitPage?._id ? this.moveCursor : this.pointerCursor) : 'initial';
+      editor.cursor = insidePage ? (editor.selectedPage?._id === hitPage?._id ? this.moveCursor : this.pointerCursor) : 'initial';
 
-      if ((ev.type === 'mousedown' && btn === 1) || edtSvc.isPanning) {
-        edtSvc.cursor = 'grabbing';
-      } else if (hitPage && hitPage === edtSvc.selectedPage) {
+      if ((ev.type === 'mousedown' && btn === 1) || editor.isPanning) {
+        editor.cursor = 'grabbing';
+      } else if (hitPage && hitPage === editor.selectedPage) {
         if (hit.area === 'inside') {
-          edtSvc.cursor = hitPage && edtSvc.selectedPage?._id === hitPage._id
+          editor.cursor = hitPage && editor.selectedPage?._id === hitPage._id
             ? this.moveCursor
             : this.pointerCursor;
         } else if (hit.area === 'edge' && hit.edgeOrientation && hitPage) {
-          edtSvc.cursor = this.getEdgeCursor(hitPage.angle, hit.edgeOrientation);
+          editor.cursor = this.getEdgeCursor(hitPage.angle, hit.edgeOrientation);
         } else if (hit.area === 'corner' && hit.corner && hitPage) {
-          edtSvc.cursor = this.getCornerCursor(hitPage.angle, hit.corner);
+          editor.cursor = this.getCornerCursor(hitPage.angle, hit.corner);
         } else if (hit.area === 'rotate') {
-          if (hit.corner === 'ne') edtSvc.cursor = this.rotateCursorTopRight;
-          if (hit.corner === 'nw') edtSvc.cursor = this.rotateCursorTopLeft;
-          if (hit.corner === 'se') edtSvc.cursor = this.rotateCursorBottomRight;
-          if (hit.corner === 'sw') edtSvc.cursor = this.rotateCursorBottomLeft;
+          if (hit.corner === 'ne') editor.cursor = this.rotateCursorTopRight;
+          if (hit.corner === 'nw') editor.cursor = this.rotateCursorTopLeft;
+          if (hit.corner === 'se') editor.cursor = this.rotateCursorBottomRight;
+          if (hit.corner === 'sw') editor.cursor = this.rotateCursorBottomLeft;
         }
       }
 
-      el.style.cursor = edtSvc.cursor;
+      el.style.cursor = editor.cursor;
     }
 
     // Click
     if (canWriteTitle && ev.type === 'mousedown' && btn === 0) {
-      if (edtSvc.pageWasEdited && (edtSvc.cursor === 'initial' || edtSvc.cursor === this.pointerCursor)) {
-        edtSvc.updateCurrentPagesWithEdited();
+      if (editor.pageWasEdited && (editor.cursor === 'initial' || editor.cursor === this.pointerCursor)) {
+        editor.updateCurrentPagesWithEdited();
       }
-      edtSvc.isRotating = false;
-      edtSvc.lastSelectedPage = edtSvc.selectedPage;
-      edtSvc.selectedPage = hitPage;
-      edtSvc.clickedDiffPage = edtSvc.lastSelectedPage && edtSvc.selectedPage && edtSvc.lastSelectedPage !== edtSvc.selectedPage;
-      edtSvc.lastPageCursorIsInside = hitPage;
-      edtSvc.redrawAllPages();
-      edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
-      edtSvc.hoveringPage(hitPage?._id ?? '');
+      editor.isRotating = false;
+      editor.lastSelectedPage = editor.selectedPage;
+      editor.selectedPage = hitPage;
+      editor.clickedDiffPage = editor.lastSelectedPage && editor.selectedPage && editor.lastSelectedPage !== editor.selectedPage;
+      editor.lastPageCursorIsInside = hitPage;
+      editor.redrawAllPages();
+      editor.mainImageItem.set({ ...editor.mainImageItem(), url: editor.c.toDataURL('image/jpeg') });
+      editor.hoveringPage(hitPage?._id ?? '');
       // Don't return here to enable other mousedown interactions
     }
 
     // Panning
     {
-      if (ev.type === 'mousedown' && btn === 1 && edtSvc.viewport.scale > 1) {
-        edtSvc.isPanning = true;
-        edtSvc.panPrevX = (ev as MouseEvent).clientX;
-        edtSvc.panPrevY = (ev as MouseEvent).clientY;
+      if (ev.type === 'mousedown' && btn === 1 && editor.viewport.scale > 1) {
+        editor.isPanning = true;
+        editor.panPrevX = (ev as MouseEvent).clientX;
+        editor.panPrevY = (ev as MouseEvent).clientY;
         return;
       }
 
-      if (ev.type === 'mousemove' && edtSvc.isPanning) {
-        const dx = (ev as MouseEvent).clientX - edtSvc.panPrevX;
-        const dy = (ev as MouseEvent).clientY - edtSvc.panPrevY;
-        edtSvc.panPrevX = (ev as MouseEvent).clientX;
-        edtSvc.panPrevY = (ev as MouseEvent).clientY;
+      if (ev.type === 'mousemove' && editor.isPanning) {
+        const dx = (ev as MouseEvent).clientX - editor.panPrevX;
+        const dy = (ev as MouseEvent).clientY - editor.panPrevY;
+        editor.panPrevX = (ev as MouseEvent).clientX;
+        editor.panPrevY = (ev as MouseEvent).clientY;
 
-        edtSvc.panBy(dx, dy);
+        editor.panBy(dx, dy);
         return;
       }
 
-      if (ev.type === 'mouseup' && edtSvc.isPanning) {
-        edtSvc.isPanning = false;
+      if (ev.type === 'mouseup' && editor.isPanning) {
+        editor.isPanning = false;
         hoveringPage();
-        el.style.cursor = insidePage ? (edtSvc.selectedPage?._id === hitPage?._id ? this.moveCursor : this.pointerCursor) : 'initial';
-        edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
+        el.style.cursor = insidePage ? (editor.selectedPage?._id === hitPage?._id ? this.moveCursor : this.pointerCursor) : 'initial';
+        editor.mainImageItem.set({ ...editor.mainImageItem(), url: editor.c.toDataURL('image/jpeg') });
         return;
       }
     }
 
     // Drag
-    if (canWriteTitle && hit.area === 'inside' || edtSvc.isDragging) {
+    if (canWriteTitle && hit.area === 'inside' || editor.isDragging) {
       if (ev.type === 'mousedown' && btn === 0 && hitPage) {
-        edtSvc.isDragging = true;
-        edtSvc.dragStartMouse = this.getMousePos(ev);
-        edtSvc.dragStartPage = structuredClone(hitPage);
+        editor.isDragging = true;
+        editor.dragStartMouse = this.getMousePos(ev);
+        editor.dragStartPage = structuredClone(hitPage);
         return;
       }
 
-      if (edtSvc.isDragging) {
+      if (editor.isDragging) {
         if (ev.type === 'mousemove') {
           el.style.cursor = this.moveCursor;
           this.dragPage(ev);
@@ -262,13 +262,13 @@ export class MainComponent {
         }
 
         if (ev.type === 'mouseup') {
-          edtSvc.isDragging = false;
-          edtSvc.dragStartPage = null;
+          editor.isDragging = false;
+          editor.dragStartPage = null;
 
-          if (!edtSvc.imgWasEdited()) return;
-          if (hitPage) edtSvc.hoveringPage(hitPage._id);
-          edtSvc.redrawAllPages();
-          edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
+          if (!editor.imgWasEdited()) return;
+          if (hitPage) editor.hoveringPage(hitPage._id);
+          editor.redrawAllPages();
+          editor.mainImageItem.set({ ...editor.mainImageItem(), url: editor.c.toDataURL('image/jpeg') });
           return;
         }
       }
@@ -277,33 +277,33 @@ export class MainComponent {
     // Rotate
     {
       if (ev.type === 'mousedown' && btn === 0 && hit.area === 'rotate' && hitPage) {
-        edtSvc.startHit = hit;
+        editor.startHit = hit;
 
-        const { centerX, centerY } = edtSvc.getPageRectPx(hitPage);
+        const { centerX, centerY } = editor.getPageRectPx(hitPage);
         const mouse = this.getMousePos(ev);
         if (!mouse) return;
 
         const dx = mouse.x - centerX;
         const dy = mouse.y - centerY;
 
-        edtSvc.rotationStartMouseAngle = Math.atan2(dy, dx);
-        edtSvc.rotationStartPage = edtSvc.selectedPage;
-        edtSvc.isRotating = true;
+        editor.rotationStartMouseAngle = Math.atan2(dy, dx);
+        editor.rotationStartPage = editor.selectedPage;
+        editor.isRotating = true;
         return;
       }
 
-      if (edtSvc.isRotating) {
+      if (editor.isRotating) {
         if (ev.type === 'mousemove') {
-          this.rotatePage(edtSvc.cursor, ev, el);
+          this.rotatePage(editor.cursor, ev, el);
           return;
         }
 
         if (ev.type === 'mouseup') {
-          edtSvc.startHit = null;
-          edtSvc.isRotating = false;
-          edtSvc.rotationStartPage = null;
-          edtSvc.redrawAllPages();
-          edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
+          editor.startHit = null;
+          editor.isRotating = false;
+          editor.rotationStartPage = null;
+          editor.redrawAllPages();
+          editor.mainImageItem.set({ ...editor.mainImageItem(), url: editor.c.toDataURL('image/jpeg') });
           return;
         }
       }
@@ -312,26 +312,26 @@ export class MainComponent {
     // Resize
     {
       if (ev.type === 'mousedown' && btn === 0 && (hit.area === 'edge' || hit.area === 'corner') && hitPage) {
-        edtSvc.resizeMode = hit;
-        edtSvc.resizeStartPage = edtSvc.selectedPage;
-        edtSvc.resizeStartMouse = this.getMousePos(ev);
-        edtSvc.resizeCursor = el.style.cursor;
+        editor.resizeMode = hit;
+        editor.resizeStartPage = editor.selectedPage;
+        editor.resizeStartMouse = this.getMousePos(ev);
+        editor.resizeCursor = el.style.cursor;
         return;
       }
 
-      if (ev.type === 'mousemove' && edtSvc.resizeMode && edtSvc.resizeStartPage) {
-        edtSvc.isResizing = true;
+      if (ev.type === 'mousemove' && editor.resizeMode && editor.resizeStartPage) {
+        editor.isResizing = true;
         this.resizePage(ev, el);
         return;
       }
 
-      if (ev.type === 'mouseup' && edtSvc.resizeMode) {
-        edtSvc.isResizing = false;
-        edtSvc.resizeMode = null;
-        edtSvc.resizeStartPage = null;
-        edtSvc.resizeStartMouse = null;
-        edtSvc.redrawAllPages();
-        edtSvc.mainImageItem.set({ ...edtSvc.mainImageItem(), url: edtSvc.c.toDataURL('image/jpeg') });
+      if (ev.type === 'mouseup' && editor.resizeMode) {
+        editor.isResizing = false;
+        editor.resizeMode = null;
+        editor.resizeStartPage = null;
+        editor.resizeStartMouse = null;
+        editor.redrawAllPages();
+        editor.mainImageItem.set({ ...editor.mainImageItem(), url: editor.c.toDataURL('image/jpeg') });
         return;
       }
     }
@@ -340,46 +340,46 @@ export class MainComponent {
   
   // ========== PAGE LOGIC ==========
   private pageIdCursorInside(e: MouseEvent): string {
-    const edtSvc = this.edtSvc;
+    const editor = this.editor;
     const pos = this.getMousePos(e);
-    edtSvc.mousePos = pos;
+    editor.mousePos = pos;
     if (!pos) return '';
 
-    return edtSvc.pageIdCursorInside();
+    return editor.pageIdCursorInside();
   }
 
   private hitTest(e: MouseEvent): HitInfo {
     const pos = this.getMousePos(e);
     if (!pos) return { area: 'none' };
 
-    const edtSvc = this.edtSvc;
-    const pages = edtSvc.currentPages;
+    const editor = this.editor;
+    const pages = editor.currentPages;
 
-    if (edtSvc.selectedPage) {
-      const page = edtSvc.isShiftActive && edtSvc.currentPages.length === edtSvc.maxPages
-        ? edtSvc.currentPages.find(p => p._id !== edtSvc.selectedPage?._id) ?? edtSvc.selectedPage
-        : edtSvc.selectedPage;
+    if (editor.selectedPage) {
+      const page = editor.isShiftActive && editor.currentPages.length === editor.maxPages
+        ? editor.currentPages.find(p => p._id !== editor.selectedPage?._id) ?? editor.selectedPage
+        : editor.selectedPage;
       const hit = this.hitTestPage(pos.x, pos.y, page);
       if (hit.area !== 'none') return hit;
     }
 
-    const candidatePages = pages.filter(p => p !== edtSvc.selectedPage);
+    const candidatePages = pages.filter(p => p !== editor.selectedPage);
     const hits = candidatePages
       .map(p => this.hitTestPage(pos.x, pos.y, p))
       .filter(hit => hit.area !== 'none');
-    const index = hits.length <= 1 ? 0 : (edtSvc.isShiftActive ? 1 : 0);
+    const index = hits.length <= 1 ? 0 : (editor.isShiftActive ? 1 : 0);
 
     return hits[index] ?? { area: 'none' };
   }
 
   private hitTestPage(x: number, y: number, p: Page): HitInfo {
-    const edtSvc = this.edtSvc;
-    return hitTestPageGeometry(x, y, p, edtSvc.getPageRectPx(p), {
+    const editor = this.editor;
+    return hitTestPageGeometry(x, y, p, editor.getPageRectPx(p), {
       edgeHitTolerance: this.edgeHitTolerance,
       cornerHitTolerance: this.cornerHitTolerance,
       rotateHandleOffset: this.rotateHandleOffset,
       rotateHitTolerance: this.rotateHitTolerance,
-      cornerSize: edtSvc.cornerSize
+      cornerSize: editor.cornerSize
     });
   }
 
@@ -415,13 +415,13 @@ export class MainComponent {
   }
 
   private getMousePos(e: MouseEvent): { x: number; y: number } | null {
-    const edtSvc = this.edtSvc;
+    const editor = this.editor;
 
-    const rect = edtSvc.c.getBoundingClientRect();
+    const rect = editor.c.getBoundingClientRect();
     const localX = e.clientX - rect.left;
     const localY = e.clientY - rect.top;
 
-    const { x, y, scale } = edtSvc.viewport;
+    const { x, y, scale } = editor.viewport;
 
     // Invert the viewport transform: screen = world * scale + (x,y)  =>  world = (screen - (x,y)) / scale
     return {
@@ -431,18 +431,17 @@ export class MainComponent {
   }
 
   private dragPage(e: MouseEvent): void {    
-    const edtSvc = this.edtSvc;
-    if (!edtSvc.selectedPage) return;
+    const editor = this.editor;
+    if (!editor.selectedPage) return;
 
-    // const { width, height } = imgSvc.c;
-    const { width, height } = edtSvc.imageRect;
-    const start = edtSvc.dragStartPage;
+    const { width, height } = editor.imageRect;
+    const start = editor.dragStartPage;
     const mousePos = this.getMousePos(e);
-    if (!start || !mousePos || !edtSvc.dragStartMouse) return;
-    const page = edtSvc.selectedPage;
+    if (!start || !mousePos || !editor.dragStartMouse) return;
+    const page = editor.selectedPage;
 
-    const dx = (mousePos.x - edtSvc.dragStartMouse.x) / width;
-    const dy = (mousePos.y - edtSvc.dragStartMouse.y) / height;
+    const dx = (mousePos.x - editor.dragStartMouse.x) / width;
+    const dy = (mousePos.y - editor.dragStartMouse.y) / height;
 
     let newCx = start.xc + dx;
     let newCy = start.yc + dy;
@@ -482,31 +481,31 @@ export class MainComponent {
       bottom: newBottom,
     };
 
-    edtSvc.selectedPage = updatedPage;
-    edtSvc.lastSelectedPage = updatedPage;
-    edtSvc.currentPages = edtSvc.currentPages.map(p =>
+    editor.selectedPage = updatedPage;
+    editor.lastSelectedPage = updatedPage;
+    editor.currentPages = editor.currentPages.map(p =>
       p._id === updatedPage._id ? updatedPage : p
     );
 
-    edtSvc.pageWasEdited = true;
-    edtSvc.imgWasEdited.set(true);
-    edtSvc.sthWasEdited = true;
-    edtSvc.redrawAllPages();
+    editor.pageWasEdited = true;
+    editor.imgWasEdited.set(true);
+    editor.sthWasEdited = true;
+    editor.redrawAllPages();
   }
 
   private rotatePage(cursor: string, ev: MouseEvent, el: HTMLElement): void {
-    const edtSvc = this.edtSvc;
-    if (!edtSvc.rotationStartPage) return;
+    const editor = this.editor;
+    if (!editor.rotationStartPage) return;
 
-    if (edtSvc.startHit?.corner === 'ne') cursor = this.rotateCursorTopRight;
-    if (edtSvc.startHit?.corner === 'nw') cursor = this.rotateCursorTopLeft;
-    if (edtSvc.startHit?.corner === 'se') cursor = this.rotateCursorBottomRight;
-    if (edtSvc.startHit?.corner === 'sw') cursor = this.rotateCursorBottomLeft;
+    if (editor.startHit?.corner === 'ne') cursor = this.rotateCursorTopRight;
+    if (editor.startHit?.corner === 'nw') cursor = this.rotateCursorTopLeft;
+    if (editor.startHit?.corner === 'se') cursor = this.rotateCursorBottomRight;
+    if (editor.startHit?.corner === 'sw') cursor = this.rotateCursorBottomLeft;
     el.style.cursor = cursor;
     
-    const startPage = edtSvc.rotationStartPage;
+    const startPage = editor.rotationStartPage;
 
-    const { centerX, centerY } = edtSvc.getPageRectPx(startPage);
+    const { centerX, centerY } = editor.getPageRectPx(startPage);
     const mouse = this.getMousePos(ev);
     if (!mouse) return;
 
@@ -515,19 +514,19 @@ export class MainComponent {
 
     const currentMouseAngle = Math.atan2(dy, dx);
 
-    let delta = currentMouseAngle - edtSvc.rotationStartMouseAngle;
+    let delta = currentMouseAngle - editor.rotationStartMouseAngle;
 
     let proposedAngle = startPage.angle + radianToDegree(delta);
     proposedAngle = clamp(proposedAngle, -45, 45);
-    edtSvc.rotationDirection = Math.sign((proposedAngle - startPage.angle) || proposedAngle);
+    editor.rotationDirection = Math.sign((proposedAngle - startPage.angle) || proposedAngle);
 
     const canRotate = (angle: number) => {
-      const bounds = edtSvc.computeBounds(startPage.xc, startPage.yc, startPage.width, startPage.height, angle);
+      const bounds = editor.computeBounds(startPage.xc, startPage.yc, startPage.width, startPage.height, angle);
       return bounds.left >= 0 && bounds.right <= 1 && bounds.top >= 0 && bounds.bottom <= 1;
     }
 
     if (!canRotate(proposedAngle)) {
-      const step = (proposedAngle - startPage.angle) > 0 ? edtSvc.incrementAngle : -edtSvc.incrementAngle;
+      const step = (proposedAngle - startPage.angle) > 0 ? editor.incrementAngle : -editor.incrementAngle;
 
       let temp = startPage.angle;
       while (canRotate(temp + step)) temp += step;
@@ -536,11 +535,11 @@ export class MainComponent {
     }
 
     // Build updated page
-    if (!edtSvc.selectedPage) return;
+    if (!editor.selectedPage) return;
 
-    const bounds = edtSvc.computeBounds(startPage.xc, startPage.yc, startPage.width, startPage.height, proposedAngle);
+    const bounds = editor.computeBounds(startPage.xc, startPage.yc, startPage.width, startPage.height, proposedAngle);
     const updatedPage: Page = {
-      ...edtSvc.selectedPage,
+      ...editor.selectedPage,
       angle: proposedAngle,
       left: bounds.left,
       right: bounds.right,
@@ -549,25 +548,25 @@ export class MainComponent {
     };
 
     // Update state
-    edtSvc.selectedPage = updatedPage;
-    edtSvc.lastSelectedPage = updatedPage;
-    edtSvc.currentPages = edtSvc.currentPages.map(p =>
+    editor.selectedPage = updatedPage;
+    editor.lastSelectedPage = updatedPage;
+    editor.currentPages = editor.currentPages.map(p =>
       p._id === updatedPage._id ? updatedPage : p
     );
 
-    edtSvc.pageWasEdited = true;
-    edtSvc.imgWasEdited.set(true);
-    edtSvc.sthWasEdited = true;
-    edtSvc.redrawAllPages();
+    editor.pageWasEdited = true;
+    editor.imgWasEdited.set(true);
+    editor.sthWasEdited = true;
+    editor.redrawAllPages();
   }
 
   private resizePage(ev: MouseEvent, el: HTMLElement): void {
-    const edtSvc = this.edtSvc;
-    const mode = edtSvc.resizeMode;
-    const startPage = edtSvc.resizeStartPage;
+    const editor = this.editor;
+    const mode = editor.resizeMode;
+    const startPage = editor.resizeStartPage;
     if (!mode || !startPage) return;
 
-    el.style.cursor = edtSvc.resizeCursor;
+    el.style.cursor = editor.resizeCursor;
 
     const updated = structuredClone(startPage);
     
@@ -579,19 +578,19 @@ export class MainComponent {
       this.applyCornerResize(updated, startPage, mode.corner!, ev);
     }
 
-    edtSvc.pageWasEdited = true;
-    edtSvc.imgWasEdited.set(true);
-    edtSvc.sthWasEdited = true;
+    editor.pageWasEdited = true;
+    editor.imgWasEdited.set(true);
+    editor.sthWasEdited = true;
   }
 
   private applyEdgeResize(p: Page, start: Page, userSide: EdgeSide, ev: MouseEvent) {
-    const rect = this.edtSvc.imageRect;
+    const rect = this.editor.imageRect;
     const cw = rect.width;
     const ch = rect.height;
     const ratio = cw / ch;
     const inverseRatio = ch / cw;
 
-    const startMouse = this.edtSvc.resizeStartMouse;
+    const startMouse = this.editor.resizeStartMouse;
     const mouse = this.getMousePos(ev);
     if (!mouse || !startMouse) return;
 
@@ -1375,20 +1374,20 @@ export class MainComponent {
     p.xc = newXc;
     p.yc = newYc;
 
-    const edtSvc = this.edtSvc;
-    edtSvc.selectedPage = p;
-    edtSvc.currentPages = edtSvc.currentPages.map(page => page._id === p._id ? p : page);
-    edtSvc.redrawAllPages();
+    const editor = this.editor;
+    editor.selectedPage = p;
+    editor.currentPages = editor.currentPages.map(page => page._id === p._id ? p : page);
+    editor.redrawAllPages();
   }
 
   private applyCornerResize(p: Page, start: Page, userCorner: CornerName, ev: MouseEvent) {
-    const rect = this.edtSvc.imageRect;
+    const rect = this.editor.imageRect;
     const cw = rect.width;
     const ch = rect.height;
     const ratio = cw / ch;
     const inverseRatio = ch / cw;
     
-    const startMouse = this.edtSvc.resizeStartMouse;
+    const startMouse = this.editor.resizeStartMouse;
     const mouse = this.getMousePos(ev);
     if (!mouse || !startMouse) return;
 
@@ -2328,29 +2327,29 @@ export class MainComponent {
     p.xc = newXc;
     p.yc = newYc;
 
-    const edtSvc = this.edtSvc;
-    edtSvc.selectedPage = p;
-    edtSvc.currentPages = edtSvc.currentPages.map(page => page._id === p._id ? p : page);
-    edtSvc.redrawAllPages();
+    const editor = this.editor;
+    editor.selectedPage = p;
+    editor.currentPages = editor.currentPages.map(page => page._id === p._id ? p : page);
+    editor.redrawAllPages();
   }
 
   private stopDragRotateResize(): void {
-    const edtSvc = this.edtSvc;
-    if (edtSvc.isDragging || edtSvc.isRotating || edtSvc.isResizing) {
-      edtSvc.isDragging = false;
-      edtSvc.dragStartPage = null;
-      edtSvc.dragStartMouse = null;
+    const editor = this.editor;
+    if (editor.isDragging || editor.isRotating || editor.isResizing) {
+      editor.isDragging = false;
+      editor.dragStartPage = null;
+      editor.dragStartMouse = null;
       
-      edtSvc.isRotating = false;
-      edtSvc.rotationStartPage = null;
-      edtSvc.rotationStartMouseAngle = 0;
+      editor.isRotating = false;
+      editor.rotationStartPage = null;
+      editor.rotationStartMouseAngle = 0;
     
-      edtSvc.isResizing = false;
-      edtSvc.resizeStartPage = null;
-      edtSvc.resizeStartMouse = null;
-      edtSvc.resizeMode = null;
+      editor.isResizing = false;
+      editor.resizeStartPage = null;
+      editor.resizeStartMouse = null;
+      editor.resizeMode = null;
       
-      edtSvc.redrawAllPages();
+      editor.redrawAllPages();
       return;
     }
   }

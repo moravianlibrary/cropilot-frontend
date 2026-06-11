@@ -12,8 +12,8 @@ import { IconComponent } from '../icon/icon.component';
   styleUrls: ['./upload.component.scss']
 })
 export class UploadComponent {
-  dashSvc = inject(DashboardService);
-  uiSvc = inject(UiService);
+  dashboard = inject(DashboardService);
+  ui = inject(UiService);
   
   h3 = input<string>('Přetáhněte sem');
   formatsAndSizeText = input<string>('');
@@ -43,7 +43,7 @@ export class UploadComponent {
     });
 
     if (unallowedTypesFiles.length) {
-      this.uiSvc.showToast(
+      this.ui.showToast(
         `Tyto skeny nejsou ve formátu JPEG nebo PNG:
          • ${unallowedTypesFiles.slice(0,this.maxNamedFiles).join('\n• ')}
          ${unallowedTypesFiles.length > this.maxNamedFiles ? `...a ${unallowedTypesFiles.length - this.maxNamedFiles} další${[1, 2, 3, 4].includes(unallowedTypesFiles.length - this.maxNamedFiles) ? '' : 'ch'}` : ''}`,
@@ -52,7 +52,7 @@ export class UploadComponent {
     }
 
     if (oversizedFiles.length) {
-      this.uiSvc.showToast(
+      this.ui.showToast(
         `Tyto skeny jsou větší než 4 MB:
          • ${oversizedFiles.slice(0,this.maxNamedFiles).join('\n• ')}
          ${oversizedFiles.length > this.maxNamedFiles ? `...a ${oversizedFiles.length - this.maxNamedFiles} další${[1, 2, 3, 4].includes(oversizedFiles.length - this.maxNamedFiles) ? '' : 'ch'}` : ''}`,

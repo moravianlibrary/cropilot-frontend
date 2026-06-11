@@ -1,17 +1,17 @@
-@let user = authSvc.user();
-@let isAdmin = authSvc.isAdmin();
-@let dashboardPage = dashSvc.dashboardPage();
+@let user = auth.user();
+@let isAdmin = auth.isAdmin();
+@let dashboardPage = dashboard.dashboardPage();
 @let onTitlesPage = dashboardPage === 'titles';
-@let dialogOrDrawerOpen = uiSvc.dialogOpen() || uiSvc.drawerOpen();
+@let dialogOrDrawerOpen = ui.dialogOpen() || ui.drawerOpen();
 
 <div class="title-menu-wrapper">
   <a
     id="logo"
     class="clickable"
-    [href]="authSvc.baseUri"
-    (click)="dashSvc.navigateToGroups()"
-    (keydown.space)="dashSvc.navigateToGroups()"
-    (keydown.enter)="dashSvc.navigateToGroups()"
+    [href]="auth.baseUri"
+    (click)="dashboard.navigateToGroups()"
+    (keydown.space)="dashboard.navigateToGroups()"
+    (keydown.enter)="dashboard.navigateToGroups()"
     [tabindex]="dialogOrDrawerOpen ? -1 : 0"
   >
     <svg width="25" height="25" viewBox="0 0 25 25"  xmlns="http://www.w3.org/2000/svg">
@@ -23,9 +23,9 @@
     <span
       class="breadcrumb-item"
       [class.inactive]="onTitlesPage"
-      (click)="dashSvc.navigateToGroups()"
-      (keydown.space)="dashSvc.navigateToGroups()"
-      (keydown.enter)="dashSvc.navigateToGroups()"
+      (click)="dashboard.navigateToGroups()"
+      (keydown.space)="dashboard.navigateToGroups()"
+      (keydown.enter)="dashboard.navigateToGroups()"
       [tabindex]="dialogOrDrawerOpen || !onTitlesPage ? -1 : 0"
     >
       <span class="icon">
@@ -38,7 +38,7 @@
         <span class="icon">
           <app-icon name="arrow-right" [size]="16" />
         </span>
-        {{ dashSvc.selectedGroupPage()?.name }}
+        {{ dashboard.selectedGroupPage()?.name }}
       </span>
     }
   }
@@ -50,9 +50,9 @@
       <span
         class="tab"
         [class.active]="['groups', 'titles'].includes(dashboardPage)"
-        (click)="dashSvc.navigateToGroups()"
-        (keydown.space)="dashSvc.navigateToGroups()"
-        (keydown.enter)="dashSvc.navigateToGroups()"
+        (click)="dashboard.navigateToGroups()"
+        (keydown.space)="dashboard.navigateToGroups()"
+        (keydown.enter)="dashboard.navigateToGroups()"
         [tabindex]="dialogOrDrawerOpen ? -1 : 0"
       >
         <span class="icon">
@@ -63,9 +63,9 @@
       <span
         class="tab"
         [class.active]="dashboardPage === 'users'"
-        (click)="dashSvc.navigateToUsers()"
-        (keydown.space)="dashSvc.navigateToUsers()"
-        (keydown.enter)="dashSvc.navigateToUsers()"
+        (click)="dashboard.navigateToUsers()"
+        (keydown.space)="dashboard.navigateToUsers()"
+        (keydown.enter)="dashboard.navigateToUsers()"
         [tabindex]="dialogOrDrawerOpen ? -1 : 0"
       >
         <span class="icon">
@@ -78,9 +78,9 @@
   @if (user?._id !== '69b92fc488cb90543bf1a587') {
     <span
       class="logout button real-button secondary"
-      (click)="authSvc.logout()"
-      (keydown.space)="authSvc.logout()"
-      (keydown.enter)="authSvc.logout()"
+      (click)="auth.logout()"
+      (keydown.space)="auth.logout()"
+      (keydown.enter)="auth.logout()"
       [tabindex]="dialogOrDrawerOpen ? -1 : 0"
     >
       @if (isAdmin) {
@@ -100,9 +100,9 @@
   } @else {
     <span
       class="login button real-button secondary"
-      (click)="authSvc.redirectToLogin()"
-      (keydown.space)="authSvc.redirectToLogin()"
-      (keydown.enter)="authSvc.redirectToLogin()"
+      (click)="auth.redirectToLogin()"
+      (keydown.space)="auth.redirectToLogin()"
+      (keydown.enter)="auth.redirectToLogin()"
       [tabindex]="dialogOrDrawerOpen ? -1 : 0"
     >
       <span class="user-name">Přihlásit se</span>

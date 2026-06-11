@@ -7,7 +7,7 @@
       id="email"
       name="email"
       type="email"
-      [(ngModel)]="authSvc.username"
+      [(ngModel)]="auth.username"
     />
   </label>
   <label for="password">
@@ -16,22 +16,22 @@
       id="password"
       name="password"
       type="password"
-      [(ngModel)]="authSvc.password"
+      [(ngModel)]="auth.password"
     />
   </label>
 </div>
 
-@if (authSvc.error().length) {
+@if (auth.error().length) {
   <div class="error">
     <span class="icon">
       <app-icon name="warning" [size]="16"></app-icon>
     </span>
-    {{ authSvc.error() }}
+    {{ auth.error() }}
   </div>
 }
 
 <span
   class="button real-button primary"
   tabindex="0"
-  (click)="authSvc.login()"
+  (click)="auth.login()"
 >Přihlásit se</span>

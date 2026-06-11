@@ -28,7 +28,7 @@
       class="menu-bubble"
       [ngClass]="type()"
     >
-      @let canWriteTitle = authSvc.canWriteTitle();
+      @let canWriteTitle = auth.canWriteTitle();
       @if (type() === 'menu-primary') {
         <div class="menu-item first" (click)="onSettingsClick()">
           <span class="icon">

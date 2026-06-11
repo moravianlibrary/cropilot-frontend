@@ -18,10 +18,10 @@ import { IconComponent } from '../icon/icon.component';
   styleUrl: './dialog.component.scss'
 })
 export class DialogComponent {
-  dashSvc = inject(DashboardService);
-  edtSvc = inject(EditorService);
-  authSvc = inject(AuthService);
-  uiSvc = inject(UiService);
+  dashboard = inject(DashboardService);
+  editor = inject(EditorService);
+  auth = inject(AuthService);
+  ui = inject(UiService);
   
   open = input<boolean>(false);
   closed = output<void>();
@@ -31,8 +31,8 @@ export class DialogComponent {
 
   autoFocus = effect(() => {
     const open = this.open();
-    const dialogContent = this.uiSvc.dialogContent();
-    const dialogContentType = this.uiSvc.dialogContentType();
+    const dialogContent = this.ui.dialogContent();
+    const dialogContentType = this.ui.dialogContentType();
     if (open && dialogContent && !['shortcuts', 'settings'].includes(dialogContentType ?? '')) {
       if (this.focusTimer) clearTimeout(this.focusTimer);
       this.focusTimer = setTimeout(async () => {
@@ -61,7 +61,7 @@ export class DialogComponent {
   private copiedTimer!: number;
 
   copy(): void {
-    navigator.clipboard.writeText(this.dashSvc.newPassword());
+    navigator.clipboard.writeText(this.dashboard.newPassword());
 
     this.copied = true;
     window.clearTimeout(this.copiedTimer);
@@ -76,7 +76,7 @@ export class DialogComponent {
     this.backdropClick.emit();
     this.close();
 
-    if (this.uiSvc.dialogTitle() === 'Nastavení') this.edtSvc.gridRadio.set(this.edtSvc.gridMode());
-    if (['Úprava titulu', 'Smazat titul'].includes(this.uiSvc.dialogTitle())) this.dashSvc.selectedTitle.set(null);
+    if (this.ui.dialogTitle() === 'Nastavení') this.editor.gridRadio.set(this.editor.gridMode());
+    if (['Úprava titulu', 'Smazat titul'].includes(this.ui.dialogTitle())) this.dashboard.selectedTitle.set(null);
   }
 }

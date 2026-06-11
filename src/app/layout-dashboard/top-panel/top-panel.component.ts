@@ -13,9 +13,9 @@ import { IconComponent } from '../../components/icon/icon.component';
   styleUrl: './top-panel.component.scss'
 })
 export class TopPanelComponent {
-  authSvc = inject(AuthService);
-  uiSvc = inject(UiService);
-  dashSvc = inject(DashboardService);
+  auth = inject(AuthService);
+  ui = inject(UiService);
+  dashboard = inject(DashboardService);
   router = inject(Router);
 
   userRolesDict = userRolesDict;
