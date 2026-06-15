@@ -1015,13 +1015,39 @@ export class EditorService {
     }
   }
 
+  async showFirstImage(): Promise<void> {
+    if (this.currentIndex() === 0 || !this.displayedImagesFinal().length) return;
+    this.updateImagesByCurrentPages();
+    this.showImage(0);
+    if (this.imgWasEdited()) {
+      await this.ui.waitForFalse(this.imgWasEdited);
+      this.setDisplayedImages();
+    }
+  }
+
+  async showLastImage(): Promise<void> {
+    const displayedImages = this.displayedImagesFinal();
+    if (this.currentIndex() === displayedImages.length - 1 || !displayedImages.length) return;
+    this.updateImagesByCurrentPages();
+    this.showImage(1000);
+    if (this.imgWasEdited()) {
+      await this.ui.waitForFalse(this.imgWasEdited);
+      this.setDisplayedImages();
+    }
+  }
+
   private showImage(offset: number): void {
     const displayedImages = this.displayedImagesFinal();
-    const newIndex = ((this.currentIndex() + offset + displayedImages.length) % displayedImages.length);
-    const newImage = displayedImages.length !== 1 ? displayedImages[newIndex] : this.emptyImageItem;
+    const length = displayedImages.length;
+    const newImage = [0, 1000].includes(offset)
+      ? displayedImages[offset === 0 ? 0 : length - 1]
+      : length === 1
+        ? this.emptyImageItem
+        : displayedImages[(this.currentIndex() + offset + length) % length];
+    
     this.setMainImage(newImage);
 
-    if (displayedImages.length === 1) {
+    if (length === 1) {
       this.setDisplayedImages();
       this.mainImageItem.set(this.emptyImageItem);
     }
@@ -1573,6 +1599,7 @@ export class EditorService {
       'p', 'P',                                             // Add page
       'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',    // Drag selected page x, y by 1; not selected prev/next scan
       'PageDown', 'PageUp',                                 // (+ PageUp / PageDown)
+      'Home', 'End',                                        // First / last scan
       'm', 'M',                                             // Mřížka / grid
       'o', 'O',                                             // Obrys / outline
       'c', 'C',                                             // Clona (barva)
@@ -1696,6 +1723,12 @@ export class EditorService {
       const isPageKey = key === 'PageUp' || key === 'PageDown';
 
       if (isPageKey || isAllowedArrow) prevKeys.has(key) ? this.showPrevImage() : this.showNextImage();
+    }
+
+    // First/last scan
+    if ((['Home', 'End'].includes(key)) && !dialogOpen) {
+      const isHomeKey = key === 'Home';
+      isHomeKey ? this.showFirstImage() : this.showLastImage();
     }
 
     // Drag/move page
