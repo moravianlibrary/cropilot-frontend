@@ -92,6 +92,7 @@ export class EditorComponent {
         editor.images.set(imgItems);
         editor.originalImages.set(imgItems);
         editor.predictedImages.set(imgItemsPredicted ?? []);
+        editor.predictedOrientedImages.set(imgItemsPredicted ?? []);
 
         // Set settings stuff
         editor.dimColor.set(this.storage.get('dimColor', 'Černá', true) as DimColor);

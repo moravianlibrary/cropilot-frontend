@@ -47,22 +47,4 @@
       <app-icon name="fit-to-screen" [size]="16" />
     </span>
   </span>
-  <!-- <span
-    class="button secondary"
-    [class.disabled]="!auth.canWriteTitle() || !editor.displayedImagesFinal().length || !editor.mainImage"
-    (click)="editor.rotate('left')"
-  >
-    <span class="icon">
-      <app-icon name="rotate-left" [size]="16" />
-    </span>
-  </span> -->
-  <span
-    class="button secondary"
-    [class.disabled]="!auth.canWriteTitle() || !editor.displayedImagesFinal().length || !editor.mainImage"
-    (click)="editor.rotate('right')"
-  >
-    <span class="icon">
-      <app-icon name="rotate-right" [size]="16" />
-    </span>
-  </span>
 </div>

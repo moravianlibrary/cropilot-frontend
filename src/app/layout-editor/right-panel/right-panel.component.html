@@ -7,7 +7,7 @@
   </div>
   @if (editor.mainImageItem().scan_name) {
     <div class="scan-name">
-      <div class="label">Název skenu</div>
+      <!-- <div class="label">Název skenu</div> -->
       <div class="name">{{ editor.mainImageItem().scan_name }}</div>
     </div>
   }
@@ -32,6 +32,47 @@
       </span>
     }
   }
+  <div class="label">Otočení skenu</div>
+  <div class="actions">
+    <span class="switch-container view-switch" aria-label="Zobrazení textu">
+      <button
+        type="button"
+        class="switch-button hybrid"
+        [class.active]="editor.orientation() === 270"
+        (click)="editor.rotate(270)"
+      >
+        <span class="icon">
+          <app-icon name="reset" [size]="12" />
+        </span>90
+      </button>
+      <button
+        type="button"
+        class="switch-button"
+        [class.active]="editor.orientation() === 0"
+        (click)="editor.rotate(0)"
+      >
+        0°
+      </button>
+      <button
+        type="button"
+        class="switch-button hybrid"
+        [class.active]="editor.orientation() === 90"
+        (click)="editor.rotate(90)"
+      >
+        <span class="icon">
+          <app-icon name="forward" [size]="12" />
+        </span>90
+      </button>
+      <button
+        type="button"
+        class="switch-button"
+        [class.active]="editor.orientation() === 180"
+        (click)="editor.rotate(180)"
+      >
+        180°
+      </button>
+    </span>
+  </div>
   <div class="actions">
     <span
       class="action"

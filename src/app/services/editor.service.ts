@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { DimColor, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport } from '../app.types';
+import { DimColor, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
 import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
@@ -33,6 +33,7 @@ export class EditorService {
   displayedImages = signal<ImageItem[]>([]);
   displayedImagesPages = signal<ImageItem[]>([]);
   predictedImages = signal<ImageItem[]>([]);
+  predictedOrientedImages = signal<ImageItem[]>([]);
   sthWasEdited: boolean = false;
 
   mainImageItem = signal<ImageItem>({ _id: '', url: '', thumbnailUrl: '', edited: false, flags: [], pages: [] });
@@ -77,6 +78,7 @@ export class EditorService {
   rotationStartPage: Page | null = null;
   rotationStartMouseAngle: number = 0;
   gridMode = signal<GridMode>('when-rotating');
+  orientation = signal<ImageOrientation>(0);
 
   // Resize
   isResizing: boolean = false;
@@ -401,7 +403,7 @@ export class EditorService {
     if (this.showPredictions) {
       this.currentPredictedPages = [];
 
-      this.predictedImages()
+      this.predictedOrientedImages()
         .find(img => img._id === imgItem._id)
         ?.pages
         ?.forEach(page => {
@@ -605,7 +607,8 @@ export class EditorService {
         parseFloat(appStyle.borderBottomWidth));
   }
 
-  private updateImageRect(img: HTMLImageElement, orientation?: number): void {
+  private updateImageRect(img: HTMLImageElement, orientation?: ImageOrientation): void {
+    if (orientation || orientation === 0) this.orientation.set(orientation);
     const { width: orientedWidth, height: orientedHeight } = this.getOrientedImageSize(img, orientation);
     const imgRatio = orientedWidth / orientedHeight;
     const canvasRatio = this.c.width / this.c.height;
@@ -625,14 +628,14 @@ export class EditorService {
     };
   }
 
-  private getOrientedImageSize(img: HTMLImageElement, orientation?: number): { width: number; height: number } {
+  private getOrientedImageSize(img: HTMLImageElement, orientation?: ImageOrientation): { width: number; height: number } {
     const normalized = this.normalizeOrientation(orientation);
     return normalized === 90 || normalized === 270
       ? { width: img.height, height: img.width }
       : { width: img.width, height: img.height };
   }
 
-  private drawOrientedImage(orientationValue?: number): void {
+  private drawOrientedImage(orientationValue?: ImageOrientation): void {
     if (!this.mainImage) return;
 
     const { ctx } = this;
@@ -650,27 +653,89 @@ export class EditorService {
     ctx.restore();
   }
 
-  private normalizeOrientation(orientation?: number): number {
-    const normalized = ((orientation ?? 0) % 360 + 360) % 360;
+  private normalizeOrientation(orientation?: ImageOrientation): ImageOrientation {
+    const normalized = (((orientation ?? 0) % 360 + 360) % 360) as ImageOrientation;
     return [0, 90, 180, 270].includes(normalized) ? normalized : 0;
   }
 
-  private rotatePageGeometry(page: Page, direction: 'left' | 'right'): Page {
-    const rotated = direction === 'right'
-      ? {
+  private getInverseOrientation(orientation: ImageOrientation): ImageOrientation {
+    switch (orientation) {
+      case 90:
+        return 270;
+      case 180:
+        return 180;
+      case 270:
+        return 90;
+      case 0:
+      default:
+        return 0;
+    }
+  }
+
+  // private rotatePageGeometry(page: Page, direction: 'left' | 'right'): Page {
+  //   const rotated = direction === 'right'
+  //     ? {
+  //         ...page,
+  //         xc: 1 - page.yc,
+  //         yc: page.xc,
+  //         width: page.height,
+  //         height: page.width,
+  //       }
+  //     : {
+  //         ...page,
+  //         xc: page.yc,
+  //         yc: 1 - page.xc,
+  //         width: page.height,
+  //         height: page.width,
+  //       };
+  //   const bounds = this.computeBounds(rotated.xc, rotated.yc, rotated.width, rotated.height, rotated.angle);
+
+  //   return {
+  //     ...rotated,
+  //     left: bounds.left,
+  //     right: bounds.right,
+  //     top: bounds.top,
+  //     bottom: bounds.bottom,
+  //   };
+  // }
+  private rotatePageGeometry(page: Page, degrees: 0 | 90 | 180 | 270): Page {
+    let rotated: Page;
+
+    switch (degrees) {
+      case 90:
+        rotated = {
           ...page,
           xc: 1 - page.yc,
           yc: page.xc,
           width: page.height,
           height: page.width,
-        }
-      : {
+        };
+        break;
+
+      case 180:
+        rotated = {
+          ...page,
+          xc: 1 - page.xc,
+          yc: 1 - page.yc,
+        };
+        break;
+
+      case 270:
+        rotated = {
           ...page,
           xc: page.yc,
           yc: 1 - page.xc,
           width: page.height,
           height: page.width,
         };
+        break;
+
+      case 0:
+      default:
+        rotated = { ...page };
+        break;
+    }
+
     const bounds = this.computeBounds(rotated.xc, rotated.yc, rotated.width, rotated.height, rotated.angle);
 
     return {
@@ -682,7 +747,7 @@ export class EditorService {
     };
   }
 
-  private pageFromOriginalOrientation(page: Page, orientation?: number): Page {
+  private pageFromOriginalOrientation(page: Page, orientation?: ImageOrientation): Page {
     let transformed = { ...page };
     const turns = this.normalizeOrientation(orientation) / 90;
 
@@ -693,7 +758,7 @@ export class EditorService {
     return transformed;
   }
 
-  private pageToOriginalOrientation(page: Page, orientation?: number): Pick<Page, 'xc' | 'yc' | 'width' | 'height'> {
+  private pageToOriginalOrientation(page: Page, orientation?: ImageOrientation): Pick<Page, 'xc' | 'yc' | 'width' | 'height'> {
     let transformed = { ...page };
     const turns = this.normalizeOrientation(orientation) / 90;
 
@@ -1056,39 +1121,102 @@ export class EditorService {
 
 
   // ========== ROTATING ==========
-  rotate(direction: 'left' | 'right'): void {
+  // rotate(direction: 'left' | 'right'): void {
+  //   if (!this.auth.canWriteTitle() || !this.displayedImagesFinal().length || !this.mainImage) return;
+  //   if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
+
+  //   const currentImage = this.mainImageItem();
+  //   const currentOrientation = this.normalizeOrientation(currentImage.orientation);
+  //   const orientation = direction === 'right'
+  //     ? (currentOrientation + 90) % 360
+  //     : (currentOrientation + 270) % 360;
+
+  //   this.updateImageRect(this.mainImage, orientation);
+  //   this.selectedPage = null;
+  //   this.lastSelectedPage = null;
+  //   this.lastPageCursorIsInside = null;
+  //   this.currentPages = this.currentPages.map(p => this.rotatePageGeometry(p, direction));
+  //   this.currentPredictedPages = this.currentPredictedPages.map(p => this.rotatePageGeometry(p, direction));
+
+  //   this.mainImageItem.set({
+  //     ...currentImage,
+  //     orientation,
+  //     edited: true,
+  //     pages: this.currentPages
+  //   });
+
+  //   this.images.update(prev =>
+  //     prev.map(img => img._id === currentImage._id
+  //       ? {
+  //           ...img,
+  //           orientation,
+  //           edited: true,
+  //           pages: this.currentPages
+  //         }
+  //       : img
+  //     )
+  //   );
+
+  //   this.resetZoom();
+  //   this.redrawAllPages();
+  //   this.updateMainImageItem();
+
+  //   this.imgWasEdited.set(true);
+  //   this.sthWasEdited = true;
+  // }
+  rotate(orientation: ImageOrientation): void {
     if (!this.auth.canWriteTitle() || !this.displayedImagesFinal().length || !this.mainImage) return;
+    if (orientation === this.orientation()) return;
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
 
     const currentImage = this.mainImageItem();
-    const currentOrientation = this.normalizeOrientation(currentImage.orientation);
-    const orientation = direction === 'right'
-      ? (currentOrientation + 90) % 360
-      : (currentOrientation + 270) % 360;
+    const currentOrientation = this.orientation();
+
+    const originalPredictedPages = this.predictedImages().find(img => img._id === currentImage._id)?.pages;
+
+    const basePages = currentOrientation === 0
+      ? this.currentPages
+      : this.currentPages.map(p => this.rotatePageGeometry(p, this.getInverseOrientation(currentOrientation)));
 
     this.updateImageRect(this.mainImage, orientation);
+
     this.selectedPage = null;
     this.lastSelectedPage = null;
     this.lastPageCursorIsInside = null;
-    this.currentPages = this.currentPages.map(p => this.rotatePageGeometry(p, direction));
-    this.currentPredictedPages = this.currentPredictedPages.map(p => this.rotatePageGeometry(p, direction));
+
+    this.currentPages = basePages.map(p => this.rotatePageGeometry(p, orientation));
+    if (originalPredictedPages) this.currentPredictedPages = originalPredictedPages.map(p => this.rotatePageGeometry(p, orientation));
 
     this.mainImageItem.set({
       ...currentImage,
       orientation,
       edited: true,
-      pages: this.currentPages
+      pages: this.currentPages,
     });
 
     this.images.update(prev =>
-      prev.map(img => img._id === currentImage._id
-        ? {
-            ...img,
-            orientation,
-            edited: true,
-            pages: this.currentPages
-          }
-        : img
+      prev.map(img =>
+        img._id === currentImage._id
+          ? {
+              ...img,
+              orientation,
+              edited: true,
+              pages: this.currentPages,
+            }
+          : img
+      )
+    );
+
+    this.predictedOrientedImages.update(prev =>
+      prev.map(img =>
+        img._id === currentImage._id
+          ? {
+              ...img,
+              orientation,
+              edited: false,
+              pages: this.currentPredictedPages,
+            }
+          : img
       )
     );
 
@@ -1608,11 +1736,11 @@ export class EditorService {
       'Shift',                                              // + arrows = change width / height by 1
       'Control', 'Meta',                                    // + R = reset změn skenu; + shift + R = reset změn dokumentu
       'a', 'A', 's', 'S',                                   // Rotate page by 1
-      'd', 'D',                                             // Rotate scan by 90
+      'd', 'D', 'f', 'F', 'g', 'G', 'h', 'H',               // Rotate scan
       'k', 'K',                                             // Shortcuts
       'q', 'Q', 'w', 'W', 'e', 'E', 'r', 'R',               // Zooming
       'Tab',                                                // Cycle through current pages
-      'h', 'H'                                              // Show predictions
+      'j', 'J'                                              // Show predictions
     ].includes(key);
   }
 
@@ -1679,7 +1807,7 @@ export class EditorService {
     if (canWriteTitle && ['p', 'P'].includes(key) && !dialogOpen && this.currentPages.length < this.maxPages) this.addPage();
 
     // Show predictions
-    if (this.auth.isAdmin() && ['h', 'H'].includes(key) && !dialogOpen) {
+    if (this.auth.isAdmin() && ['j', 'J'].includes(key) && !dialogOpen) {
       this.showPredictions = !this.showPredictions;
       this.storage.set('showPredictions', this.showPredictions);
       window.location.reload();
@@ -2067,9 +2195,12 @@ export class EditorService {
       this.redrawAllPages();
     }
 
-    // Rotate scan by 90
-    if (canWriteTitle && ['d', 'D'].includes(key) && !dialogOpen) {
-      this.rotate('right');
+    // Rotate scan
+    if (canWriteTitle && ['d', 'D', 'f', 'F', 'g', 'G', 'h', 'H'].includes(key) && !dialogOpen) {
+      if (['d', 'D'].includes(key)) this.rotate(270);
+      if (['f', 'F'].includes(key)) this.rotate(0);
+      if (['g', 'G'].includes(key)) this.rotate(90);
+      if (['h', 'H'].includes(key)) this.rotate(180);
     }
 
     // Zooming

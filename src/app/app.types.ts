@@ -144,7 +144,7 @@ export interface ImageItem {
   scan_name?: string;
   url?: string;
   thumbnailUrl?: string;
-  orientation?: number;
+  orientation?: ImageOrientation;
   edited: boolean;
   flags: string[];
   pages: Page[];
@@ -159,7 +159,7 @@ export interface UpdatePagePayload {
 }
 
 export type UpdateImagePayload = Omit<ImageItem, 'pages'> & {
-  orientation: number;
+  orientation: ImageOrientation;
   pages: UpdatePagePayload[];
 };
 
@@ -170,6 +170,7 @@ export interface ImageRect {
   height: number;
 }
 
+export type ImageOrientation = 0 | 90 | 180 | 270;
 export type ScanType = 'all' | 'flagged' | 'edited' | 'ok';
 export type PageNumberType = 'all' | 'single' | 'double';
 export type InputType = 'left' | 'top' | 'width' | 'height' | 'angle';

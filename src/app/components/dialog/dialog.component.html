@@ -30,13 +30,14 @@
       class="dialog-body os-pending"
       [style]="dialogButtons.length ? 'border-radius:0' : ''"
     >
+      @let isAdmin = auth.isAdmin();
       @let canWriteTitle = auth.canWriteTitle();
       @let dialogContentType = ui.dialogContentType();
 
       <!-- Settings -->
       @if (dialogContentType === 'settings') {
         <div class="settings-content-wrapper">
-          @if (auth.isAdmin()) {
+          @if (isAdmin) {
             <div class="settings-block">
               <label class="settings-block-label toggle-switch">
                 <input
@@ -163,6 +164,7 @@
       @if (dialogContentType === 'shortcuts') {
         <div class="shortcuts-content-wrapper">
           <table cellspacing="0" cellpadding="0">
+            @if (isAdmin) { <tr><th>Ukazovat původní predikce</th><td>J</td></tr> }
             @if (canWriteTitle) {
               <tr><th>Vybrat výřez</th><td>1, 2</td></tr>
               <tr><th>Vybrat další výřez</th><td>Tab</td></tr>
@@ -173,7 +175,7 @@
               <tr><th>Změnit pozici výřezu (X, Y)</th><td>←, →, ↑, ↓</td></tr>
               <tr><th>Změnit šířku / výšku výřezu</th><td>Shift + ←, →, ↑, ↓</td></tr>
               <tr><th>Otočit výřez</th><td>A, S</td></tr>
-              <tr><th>Otočit sken o 90°</th><td>D</td></tr>
+              <tr><th>Otočit sken o -90° / 0° / 90° / 180°</th><td>D, F, G, H</td></tr>
               <tr><th>Přepnout zobrazení mřížky</th><td>M</td></tr>
               <tr><th>Přepnout zobrazení obrysu</th><td>O</td></tr>
               <tr><th>Přepnout barvu clony</th><td>C</td></tr>
