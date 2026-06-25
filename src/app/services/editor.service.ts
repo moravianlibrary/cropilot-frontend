@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { DimColor, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
-import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
+import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage, wait } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
 import { dimColorDict, gridColor, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
 import { AuthService } from './auth.service';
@@ -335,6 +335,7 @@ export class EditorService {
       this.selectedPage = null;
       this.resetZoom();
       this.renderCanvas(updated);
+
       this.loadingMain.set(false);
 
       if (this.imgWasEdited()) {
@@ -369,7 +370,7 @@ export class EditorService {
     });
   }
 
-  private renderCanvas(imgItem: ImageItem): void {
+  private async renderCanvas(imgItem: ImageItem): Promise<void> {
     if (imgItem.url) {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -378,6 +379,8 @@ export class EditorService {
 
       img.onload = () => this.fitAndDrawImage(img, imgItem);
       img.onerror = () => console.error('Failed to load image.');
+
+      await wait(100);
 
       this.c.style.visibility = 'visible';
       return;
