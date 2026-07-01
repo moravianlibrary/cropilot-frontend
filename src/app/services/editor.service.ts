@@ -675,32 +675,6 @@ export class EditorService {
     }
   }
 
-  // private rotatePageGeometry(page: Page, direction: 'left' | 'right'): Page {
-  //   const rotated = direction === 'right'
-  //     ? {
-  //         ...page,
-  //         xc: 1 - page.yc,
-  //         yc: page.xc,
-  //         width: page.height,
-  //         height: page.width,
-  //       }
-  //     : {
-  //         ...page,
-  //         xc: page.yc,
-  //         yc: 1 - page.xc,
-  //         width: page.height,
-  //         height: page.width,
-  //       };
-  //   const bounds = this.computeBounds(rotated.xc, rotated.yc, rotated.width, rotated.height, rotated.angle);
-
-  //   return {
-  //     ...rotated,
-  //     left: bounds.left,
-  //     right: bounds.right,
-  //     top: bounds.top,
-  //     bottom: bounds.bottom,
-  //   };
-  // }
   private rotatePageGeometry(page: Page, degrees: 0 | 90 | 180 | 270): Page {
     let rotated: Page;
 
@@ -1124,49 +1098,6 @@ export class EditorService {
 
 
   // ========== ROTATING ==========
-  // rotate(direction: 'left' | 'right'): void {
-  //   if (!this.auth.canWriteTitle() || !this.displayedImagesFinal().length || !this.mainImage) return;
-  //   if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
-
-  //   const currentImage = this.mainImageItem();
-  //   const currentOrientation = this.normalizeOrientation(currentImage.orientation);
-  //   const orientation = direction === 'right'
-  //     ? (currentOrientation + 90) % 360
-  //     : (currentOrientation + 270) % 360;
-
-  //   this.updateImageRect(this.mainImage, orientation);
-  //   this.selectedPage = null;
-  //   this.lastSelectedPage = null;
-  //   this.lastPageCursorIsInside = null;
-  //   this.currentPages = this.currentPages.map(p => this.rotatePageGeometry(p, direction));
-  //   this.currentPredictedPages = this.currentPredictedPages.map(p => this.rotatePageGeometry(p, direction));
-
-  //   this.mainImageItem.set({
-  //     ...currentImage,
-  //     orientation,
-  //     edited: true,
-  //     pages: this.currentPages
-  //   });
-
-  //   this.images.update(prev =>
-  //     prev.map(img => img._id === currentImage._id
-  //       ? {
-  //           ...img,
-  //           orientation,
-  //           edited: true,
-  //           pages: this.currentPages
-  //         }
-  //       : img
-  //     )
-  //   );
-
-  //   this.resetZoom();
-  //   this.redrawAllPages();
-  //   this.updateMainImageItem();
-
-  //   this.imgWasEdited.set(true);
-  //   this.sthWasEdited = true;
-  // }
   rotate(orientation: ImageOrientation): void {
     if (!this.auth.canWriteTitle() || !this.displayedImagesFinal().length || !this.mainImage) return;
     if (orientation === this.orientation()) return;
