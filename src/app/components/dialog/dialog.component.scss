@@ -113,6 +113,16 @@
       margin-top: var(--spacing-x1);
     }
 
+    .color-radio-value {
+      .color-swatch {
+        display: inline-block;
+        width: var(--spacing-x3-5);
+        height: var(--spacing-x3-5);
+        border: 1px solid var(--border-tertiary-color);
+        border-radius: var(--spacing-x1);
+      }
+    }
+
     .toggle-switch {
       display: flex;
       align-items: center;

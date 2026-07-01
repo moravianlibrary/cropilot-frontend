@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { DimColor, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation } from '../app.types';
+import { DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
 import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage, wait } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
-import { dimColorDict, gridColor, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
+import { dimColorDict, gridColorDict, gridDensityDict, gridLineWidthDict, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
 import { AuthService } from './auth.service';
 import { UiService } from './ui.service';
 import { LocalStorageService } from './local-storage.service';
@@ -110,7 +110,9 @@ export class EditorService {
 
   // Draw page parameters
   dimColor = signal<DimColor>('Černá');
-  gridSpacing: number = 12; // 40
+  gridDensityLabel = signal<GridDensityLabel>('Hustá');
+  gridColorLabel = signal<GridColorLabel>('Modrá');
+  gridLineWidthLabel = signal<GridLineWidthLabel>('Tenká');
   outlineWidthLabel = signal<OutlineWidthLabel>('Silný');
   outlineDashed: boolean = false;
   dashLength: number = 6;
@@ -1283,6 +1285,7 @@ export class EditorService {
       (this.gridMode() === 'when-rotating' && this.isRotating)
       || this.gridMode() === 'always'
     )) {
+      const gridSpacing = gridDensityDict[this.gridDensityLabel()];
       const hw = width / 2;
       const hh = height / 2;
       const left = -hw;
@@ -1293,25 +1296,25 @@ export class EditorService {
       ctx.save();
       ctx.beginPath();
 
-      // 1px lines that stay 1px even if scaled elsewhere (optional, harmless if not scaled)
+      // Keep the configured visual line width stable while the canvas is scaled.
       const sx = Math.hypot(ctx.getTransform().a, ctx.getTransform().b) || 1;
-      ctx.lineWidth = 1 / sx;
+      ctx.lineWidth = gridLineWidthDict[this.gridLineWidthLabel()] / sx;
 
-      ctx.strokeStyle = gridColor;
+      ctx.strokeStyle = gridColorDict[this.gridColorLabel()];
 
-      // To make 1px lines crisp on canvas, align to half-pixel in local space.
+      // Align to half-pixel in local space so thin canvas lines stay crisp.
       // Also ensure the first line starts exactly at the top-left corner.
-      const xStart = left + this.gridSpacing + 0.5;
-      const yStart = top + this.gridSpacing + 0.5;
+      const xStart = left + gridSpacing + 0.5;
+      const yStart = top + gridSpacing + 0.5;
 
       // Vertical lines
-      for (let x = xStart; x <= right; x += this.gridSpacing) {
+      for (let x = xStart; x <= right; x += gridSpacing) {
         ctx.moveTo(x, top);
         ctx.lineTo(x, bottom);
       }
 
       // Horizontal lines
-      for (let y = yStart; y <= bottom; y += this.gridSpacing) {
+      for (let y = yStart; y <= bottom; y += gridSpacing) {
         ctx.moveTo(left, y);
         ctx.lineTo(right, y);
       }
@@ -1494,6 +1497,9 @@ export class EditorService {
 
   // ========== DIALOG ACTIONS ==========
   gridRadio = signal<GridMode>('when-rotating');
+  gridDensityRadio = signal<GridDensityLabel>('Hustá');
+  gridColorRadio = signal<GridColorLabel>('Modrá');
+  gridLineWidthRadio = signal<GridLineWidthLabel>('Tenká');
   outlineRadio = signal<OutlineWidthLabel>('Silný');
   dimRadio = signal<DimColor>('Černá');
   scanTypeRadio = signal<ScanType>('all');
@@ -1501,6 +1507,7 @@ export class EditorService {
 
   openSettingsDialog(): void {
     const ui = this.ui;
+    this.resetSettingsDraft();
     
     ui.dialogWidth.set(680);
     ui.dialogTitle.set('Nastavení');
@@ -1516,6 +1523,15 @@ export class EditorService {
           this.gridRadio.set('when-rotating');
           this.gridMode.set('when-rotating');
           this.storage.set('gridMode', 'when-rotating');
+          this.gridDensityRadio.set('Hustá');
+          this.gridDensityLabel.set('Hustá');
+          this.storage.set('gridDensityLabel', 'Hustá');
+          this.gridColorRadio.set('Modrá');
+          this.gridColorLabel.set('Modrá');
+          this.storage.set('gridColorLabel', 'Modrá');
+          this.gridLineWidthRadio.set('Tenká');
+          this.gridLineWidthLabel.set('Tenká');
+          this.storage.set('gridLineWidthLabel', 'Tenká');
           this.outlineRadio.set('Silný');
           this.outlineWidthLabel.set('Silný');
           this.storage.set('outlineWidthLabel', 'Silný');
@@ -1549,6 +1565,17 @@ export class EditorService {
     ui.openDialog();
   }
 
+  resetSettingsDraft(): void {
+    this.gridRadio.set(this.gridMode());
+    this.gridDensityRadio.set(this.gridDensityLabel());
+    this.gridColorRadio.set(this.gridColorLabel());
+    this.gridLineWidthRadio.set(this.gridLineWidthLabel());
+    this.outlineRadio.set(this.outlineWidthLabel());
+    this.dimRadio.set(this.dimColor());
+    this.scanTypeRadio.set(this.selectedFilter ?? 'all');
+    this.pageNumberRadio.set(this.selectedPageNumberFilter() ?? 'all');
+  }
+
   togglePredictions(): void {
     this.showPredictions = !this.showPredictions;
   }
@@ -1566,6 +1593,15 @@ export class EditorService {
     const gridRadio = this.gridRadio();
     this.gridMode.set(gridRadio);
     this.storage.set('gridMode', gridRadio);
+    const gridDensityRadio = this.gridDensityRadio();
+    this.gridDensityLabel.set(gridDensityRadio);
+    this.storage.set('gridDensityLabel', gridDensityRadio);
+    const gridColorRadio = this.gridColorRadio();
+    this.gridColorLabel.set(gridColorRadio);
+    this.storage.set('gridColorLabel', gridColorRadio);
+    const gridLineWidthRadio = this.gridLineWidthRadio();
+    this.gridLineWidthLabel.set(gridLineWidthRadio);
+    this.storage.set('gridLineWidthLabel', gridLineWidthRadio);
     const outlineRadio = this.outlineRadio();
     this.outlineWidthLabel.set(outlineRadio);
     this.storage.set('outlineWidthLabel', outlineRadio);
@@ -1722,7 +1758,7 @@ export class EditorService {
       if (dialogOpen) {
         this.ui.dialogOpen.set(false);
         this.ui.dialogOpened = false;
-        if (this.ui.dialogTitle() === 'Nastavení') this.gridRadio.set(this.gridMode());
+        if (this.ui.dialogTitle() === 'Nastavení') this.resetSettingsDraft();
         return;
       }
       

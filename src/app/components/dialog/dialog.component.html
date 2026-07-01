@@ -55,7 +55,8 @@
           }
           @if (canWriteTitle) {
             <div class="settings-block">
-              <div class="settings-block-label">Zobrazení mřížky</div>
+              <div class="settings-block-label">Mřížka</div>
+              <div class="sublabel">Zobrazení</div>
               <span class="radios-wrapper">
                 @for (gridMode of gridModeDictKeys; track gridMode) {
                   <label class="radio">
@@ -69,6 +70,51 @@
                   </label>
                 }
               </span>
+              <div class="sublabel last-sublabel">Hustota</div>
+              <span class="radios-wrapper">
+                @for (gridDensity of gridDensityDictKeys; track gridDensity) {
+                  <label class="radio">
+                    <input
+                      type="radio"
+                      name="grid-density"
+                      [checked]="gridDensity === editor.gridDensityRadio()"
+                      (change)="editor.gridDensityRadio.set(gridDensity)"
+                    />
+                    <span class="radio-value">{{ gridDensity }}</span>
+                  </label>
+                }
+              </span>
+              <div class="sublabel last-sublabel">Barva</div>
+              <span class="radios-wrapper">
+                @for (gridColor of gridColorDictKeys; track gridColor) {
+                  <label class="radio">
+                    <input
+                      type="radio"
+                      name="grid-color"
+                      [checked]="gridColor === editor.gridColorRadio()"
+                      (change)="editor.gridColorRadio.set(gridColor)"
+                    />
+                    <span class="radio-value color-radio-value">
+                      <span class="color-swatch" [style.background]="gridColorDict[gridColor]"></span>
+                      {{ gridColor }}
+                    </span>
+                  </label>
+                }
+              </span>
+              <div class="sublabel last-sublabel">Tloušťka čáry</div>
+              <span class="radios-wrapper">
+                @for (gridLineWidth of gridLineWidthDictKeys; track gridLineWidth) {
+                  <label class="radio">
+                    <input
+                      type="radio"
+                      name="grid-line-width"
+                      [checked]="gridLineWidth === editor.gridLineWidthRadio()"
+                      (change)="editor.gridLineWidthRadio.set(gridLineWidth)"
+                    />
+                    <span class="radio-value">{{ gridLineWidth }}</span>
+                  </label>
+                }
+              </span>
             </div>
             <div class="settings-block">
               <div class="settings-block-label">Obrys vybraného výřezu</div>
@@ -79,7 +125,7 @@
                     <input
                       type="radio"
                       name="outline-width"
-                      [checked]="outlineWidth === editor.outlineWidthLabel()"
+                      [checked]="outlineWidth === editor.outlineRadio()"
                       (change)="editor.outlineRadio.set(outlineWidth)"
                     />
                     <span class="radio-value">{{ outlineWidth }}</span>
@@ -124,7 +170,6 @@
               <span class="slider"></span>
               Zapamatovat si naposledy zobrazený sken u naposledy otevřeného titulu
             </label>
-            <!-- <span class="description">Například: Prohlížíte si titul A a jste na skenu č. 26. Aplikaci zavřete. Pokud mezitím na tomto počítači nikdo neotevře žádný jiný titul, při dalším otevření titulu A se automaticky zobrazí opět sken č. 26.</span> -->
           </div>
           <div class="settings-block last">
             <div class="settings-block-label">Aktivní filtry při startu aplikace</div>

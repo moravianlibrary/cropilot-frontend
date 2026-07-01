@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { EnvironmentService } from './services/environment.service';
-import { DimColor, GridMode, OutlineWidthLabel, PageNumberType, PermissionType, Role, ScanType, TitleState } from './app.types';
+import { DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, PermissionType, Role, ScanType, TitleState } from './app.types';
 
 export const defaultColor = '#00DDFF';
 export const warningColor = '#FF9500';
@@ -11,7 +11,6 @@ export const errorColor = '#FF3A30';
 export const editedColor = '#FFCC00';
 export const predictedColor = '#A855F7';
 export const transparentColor = '#00000000';
-export const gridColor = '#0078FF66'; // '#FF000050'
 
 export const flagMessages: Record<string, string> = {
   'prediction_overlap': 'Výřezy se překrývají',
@@ -25,6 +24,27 @@ export const gridModeDict: Record<GridMode, string> = {
   'when-rotating': 'Při otáčení',
   'always': 'Vždy',
   'never': 'Nikdy'
+};
+
+export const gridDensityDict: Record<GridDensityLabel, number> = {
+  'Řídká': 24,
+  'Běžná': 16,
+  'Hustá': 12,
+  'Velmi hustá': 8
+};
+
+export const gridColorDict: Record<GridColorLabel, string> = {
+  'Modrá': '#0078FF66',
+  'Azurová': '#00A6A666',
+  'Žlutá': '#FFCC0066',
+  'Červená': '#FF3A3066'
+};
+
+export const gridLineWidthDict: Record<GridLineWidthLabel, number> = {
+  'Tenká': 1,
+  'Střední': 1.5,
+  'Silná': 2,
+  'Výrazná': 3
 };
 
 export const outlineWidthDict: Record<OutlineWidthLabel, number> = {

@@ -1,7 +1,7 @@
 import { Component, effect, inject, input, output } from '@angular/core';
-import { DimColor, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
+import { DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
 import { EditorService } from '../../services/editor.service';
-import { dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridModeDict, outlineWidthDict } from '../../app.config';
+import { dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridColorDict, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict } from '../../app.config';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../services/dashboard.service';
 import { AuthService } from '../../services/auth.service';
@@ -45,6 +45,15 @@ export class DialogComponent {
   gridModeDict: Record<GridMode, string> = gridModeDict;
   gridModeDictKeys = Object.keys(gridModeDict) as GridMode[];
 
+  gridDensityDict: Record<GridDensityLabel, number> = gridDensityDict;
+  gridDensityDictKeys = Object.keys(gridDensityDict) as GridDensityLabel[];
+
+  gridColorDict: Record<GridColorLabel, string> = gridColorDict;
+  gridColorDictKeys = Object.keys(gridColorDict) as GridColorLabel[];
+
+  gridLineWidthDict: Record<GridLineWidthLabel, number> = gridLineWidthDict;
+  gridLineWidthDictKeys = Object.keys(gridLineWidthDict) as GridLineWidthLabel[];
+
   outlineWidthDict: Record<OutlineWidthLabel, number> = outlineWidthDict;
   outlineWidthDictKeys = Object.keys(outlineWidthDict) as OutlineWidthLabel[];
   
@@ -69,6 +78,7 @@ export class DialogComponent {
   }
 
   close(): void {
+    if (this.ui.dialogTitle() === 'Nastavení') this.editor.resetSettingsDraft();
     this.closed.emit();
   }
 
@@ -76,7 +86,6 @@ export class DialogComponent {
     this.backdropClick.emit();
     this.close();
 
-    if (this.ui.dialogTitle() === 'Nastavení') this.editor.gridRadio.set(this.editor.gridMode());
     if (['Úprava titulu', 'Smazat titul'].includes(this.ui.dialogTitle())) this.dashboard.selectedTitle.set(null);
   }
 }

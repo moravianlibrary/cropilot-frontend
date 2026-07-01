@@ -6,7 +6,7 @@ import { LeftPanelComponent } from '../../layout-editor/left-panel/left-panel.co
 import { RightPanelComponent } from '../../layout-editor/right-panel/right-panel.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, forkJoin, map, Observable, of, Subscription, switchMap, tap, throwError } from 'rxjs';
-import { DimColor, GridMode, ImageItem, OutlineWidthLabel, PageNumberType, ScanType, TitleDetail } from '../../app.types';
+import { DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, ImageItem, OutlineWidthLabel, PageNumberType, ScanType, TitleDetail } from '../../app.types';
 import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
 import { UiService } from '../../services/ui.service';
@@ -99,6 +99,12 @@ export class EditorComponent {
         editor.dimRadio.set(editor.dimColor());
         editor.gridMode.set(this.storage.get('gridMode', 'when-rotating', true) as GridMode);
         editor.gridRadio.set(editor.gridMode());
+        editor.gridDensityLabel.set(this.storage.get('gridDensityLabel', 'Hustá', true) as GridDensityLabel);
+        editor.gridDensityRadio.set(editor.gridDensityLabel());
+        editor.gridColorLabel.set(this.storage.get('gridColorLabel', 'Modrá', true) as GridColorLabel);
+        editor.gridColorRadio.set(editor.gridColorLabel());
+        editor.gridLineWidthLabel.set(this.storage.get('gridLineWidthLabel', 'Tenká', true) as GridLineWidthLabel);
+        editor.gridLineWidthRadio.set(editor.gridLineWidthLabel());
         editor.outlineWidthLabel.set(this.storage.get('outlineWidthLabel', 'Silný', true) as OutlineWidthLabel);
         editor.outlineRadio.set(editor.outlineWidthLabel());
         editor.outlineDashed = !!this.storage.get('outlineDashed', false, true);
