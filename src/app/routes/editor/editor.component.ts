@@ -35,7 +35,8 @@ export class EditorComponent {
   // Changes not saved alert
   @HostListener('window:beforeunload', ['$event'])
   handleBeforeUnload(event: BeforeUnloadEvent) {
-    if (this.editor.sthWasEdited) {
+    // Read-only users can't save, so don't warn them about unsaved changes.
+    if (this.editor.sthWasEdited && this.auth.canWriteTitle()) {
       event.preventDefault();
       return false;
     }

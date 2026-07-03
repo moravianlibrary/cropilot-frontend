@@ -1101,7 +1101,7 @@ export class EditorService {
 
   // ========== ROTATING ==========
   rotate(orientation: ImageOrientation): void {
-    if (!this.auth.canWriteTitle() || !this.displayedImagesFinal().length || !this.mainImage) return;
+    if (!this.auth.canEditTitle() || !this.displayedImagesFinal().length || !this.mainImage) return;
     if (orientation === this.orientation()) return;
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
 
@@ -1197,7 +1197,7 @@ export class EditorService {
   }
 
   updateHoverPage(): void {
-    if (!this.auth.canWriteTitle()) return;
+    if (!this.auth.canEditTitle()) return;
     
     const insidePage = Boolean(this.pageId);
     if (!this.isDragging && !this.isRotating && insidePage) {
@@ -1363,7 +1363,7 @@ export class EditorService {
   }
   
   addPage(): void {
-    if (!this.auth.canWriteTitle() || this.currentPages.length >= this.maxPages || !this.displayedImagesFinal().length) return;
+    if (!this.auth.canEditTitle() || this.currentPages.length >= this.maxPages || !this.displayedImagesFinal().length) return;
 
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
 
@@ -1721,6 +1721,8 @@ export class EditorService {
     event.stopPropagation();
     const dialogOpen = this.ui.dialogOpen();
     const canWriteTitle = this.auth.canWriteTitle();
+    // Editing shortcuts are available in read mode too; only saving is restricted.
+    const canEditTitle = this.auth.canEditTitle();
 
     // Update hover page
     if (key === 'Shift') {
@@ -1736,7 +1738,7 @@ export class EditorService {
         return;
       }
       
-      if (!canWriteTitle) return;
+      if (!canEditTitle) return;
       if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
       this.lastSelectedPage = this.selectedPage;
       const isLeftKey = key === '+' || key === '1';
@@ -1754,7 +1756,7 @@ export class EditorService {
     }
 
     // Unselect page
-    if (canWriteTitle && key === 'Escape') {
+    if (canEditTitle && key === 'Escape') {
       if (dialogOpen) {
         this.ui.dialogOpen.set(false);
         this.ui.dialogOpened = false;
@@ -1771,10 +1773,10 @@ export class EditorService {
     }
 
     // Remove selected page
-    if (canWriteTitle && ['Backspace', 'Delete'].includes(key) && !dialogOpen && this.selectedPage) this.removePage();
-    
+    if (canEditTitle && ['Backspace', 'Delete'].includes(key) && !dialogOpen && this.selectedPage) this.removePage();
+
     // Add page
-    if (canWriteTitle && ['p', 'P'].includes(key) && !dialogOpen && this.currentPages.length < this.maxPages) this.addPage();
+    if (canEditTitle && ['p', 'P'].includes(key) && !dialogOpen && this.currentPages.length < this.maxPages) this.addPage();
 
     // Show predictions
     if (this.auth.isAdmin() && ['j', 'J'].includes(key) && !dialogOpen) {
@@ -1784,7 +1786,7 @@ export class EditorService {
     }
 
     // Change grid mode
-    if (canWriteTitle && ['m', 'M'].includes(key) && this.selectedPage &&!dialogOpen) {
+    if (canEditTitle && ['m', 'M'].includes(key) && this.selectedPage &&!dialogOpen) {
       this.gridMode.set(!this.isRotating
         ? this.gridMode() === 'always' ? 'when-rotating' : 'always'
         : this.gridMode() === 'never' ? 'when-rotating' : 'never');
@@ -1795,7 +1797,7 @@ export class EditorService {
     };
 
     // Outline width
-    if (canWriteTitle && ['o', 'O'].includes(key) && this.selectedPage && !dialogOpen) {
+    if (canEditTitle && ['o', 'O'].includes(key) && this.selectedPage && !dialogOpen) {
       const outlineWidthLabel = this.outlineWidthLabel();
       this.outlineWidthLabel.set(outlineWidthLabel === 'Silný' ? 'Střední' : (outlineWidthLabel === 'Střední' ? 'Tenký' : (outlineWidthLabel === 'Tenký' ? 'Žádný' : 'Silný')));
       const outlineWidthLabel2 = this.outlineWidthLabel();
@@ -1805,7 +1807,7 @@ export class EditorService {
     }
 
     // Dimming color
-    if (canWriteTitle && ['c', 'C'].includes(key) && this.selectedPage && !event.ctrlKey && !event.metaKey && !dialogOpen) {
+    if (canEditTitle && ['c', 'C'].includes(key) && this.selectedPage && !event.ctrlKey && !event.metaKey && !dialogOpen) {
       this.dimColor.update(prev => prev === 'Černá' ? 'Červená' : (prev === 'Červená' ? 'Bílá' : (prev === 'Bílá' ? 'Žádná' : 'Černá')));
       this.dimRadio.set(this.dimColor());
       this.storage.set('dimColor', this.dimColor());
@@ -1830,7 +1832,7 @@ export class EditorService {
     }
 
     // Drag/move page
-    if (canWriteTitle && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key) && this.selectedPage && !event.altKey && !event.ctrlKey && !event.shiftKey && !event.metaKey && !dialogOpen) {
+    if (canEditTitle && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key) && this.selectedPage && !event.altKey && !event.ctrlKey && !event.shiftKey && !event.metaKey && !dialogOpen) {
       const start = this.selectedPage;
       const isHorizontal = ['ArrowLeft', 'ArrowRight'].includes(key);
       const sign = ['ArrowRight','ArrowDown'].includes(key) ? 1 : -1;
@@ -1876,7 +1878,7 @@ export class EditorService {
     }
 
     // Change page width / height
-    if (canWriteTitle && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key) && event.shiftKey && this.selectedPage && !dialogOpen) {
+    if (canEditTitle && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key) && event.shiftKey && this.selectedPage && !dialogOpen) {
       if (['ArrowLeft', 'ArrowRight'].includes(key)) {
         const cw = this.c.width;
         const ch = this.c.height;
@@ -2123,7 +2125,7 @@ export class EditorService {
     }
 
     // Rotate page by 1
-    if (canWriteTitle && ['a', 'A', 's', 'S'].includes(key) && this.selectedPage && !dialogOpen) {
+    if (canEditTitle && ['a', 'A', 's', 'S'].includes(key) && this.selectedPage && !dialogOpen) {
       const page = this.selectedPage;
       const sign = ['s', 'S'].includes(key) ? 1 : -1;
       const delta = this.incrementAngle * sign/*  * (event.shiftKey ? 10 : 1) */;
@@ -2166,7 +2168,7 @@ export class EditorService {
     }
 
     // Rotate scan
-    if (canWriteTitle && ['d', 'D', 'f', 'F', 'g', 'G', 'h', 'H'].includes(key) && !dialogOpen) {
+    if (canEditTitle && ['d', 'D', 'f', 'F', 'g', 'G', 'h', 'H'].includes(key) && !dialogOpen) {
       if (['d', 'D'].includes(key)) this.rotate(270);
       if (['f', 'F'].includes(key)) this.rotate(0);
       if (['g', 'G'].includes(key)) this.rotate(90);

@@ -25,6 +25,10 @@ export class AuthService {
   canReadGroup = signal<string>('');
   canUpload = signal<boolean>(false);
   isAdmin = computed<boolean>(() => this.user()?.role === 'admin');
+  // Local editing (moving/adding/removing crops in the editor) is allowed for any
+  // authenticated viewer, including read-only users. Persisting changes still
+  // requires write permission (canWriteTitle).
+  canEditTitle = computed<boolean>(() => !!this.user());
 
   get baseUri(): string {
     return window.location.origin;

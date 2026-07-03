@@ -129,7 +129,9 @@ export class MainComponent {
   private handleCanvasInteraction(ev: MouseEvent | WheelEvent, el: HTMLElement): void {
     if ((ev.target as HTMLElement).tagName !== 'CANVAS') return;
     const editor = this.editor;
-    const canWriteTitle = this.auth.canWriteTitle();
+    // Editing interactions (hover/select/drag/resize/rotate) are allowed in read
+    // mode too; only saving is restricted (see AuthService.canEditTitle).
+    const canWriteTitle = this.auth.canEditTitle();
 
     const btn = ev.button;
     const hit = this.hitTest(ev);
