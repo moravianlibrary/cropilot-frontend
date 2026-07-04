@@ -34,6 +34,26 @@ export interface GroupPage {
   created_at: string;
   modified_at: string;
   titles: Title[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  // Only returned on the first page; null on subsequent pages (options don't change).
+  filter_options: {
+    crop_models: string[];
+    rotation_models: string[];
+  } | null;
+}
+
+export interface TitlesQuery {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  sort_field?: Exclude<SortField, null>;
+  sort_direction?: Exclude<SortDirection, null>;
+  state?: string;
+  crop_model?: string;
+  rotation_model?: string;
 }
 
 export interface NewGroup {

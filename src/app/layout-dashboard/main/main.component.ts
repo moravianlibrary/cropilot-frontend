@@ -3,7 +3,7 @@ import { DashboardService } from '../../services/dashboard.service';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { permissionDict, titleStateDict, titleStateFilterDict } from '../../app.config';
-import { Title, Group, GroupPage, Permission, PermissionType, SortField, SortState, User, UserInGroup } from '../../app.types';
+import { Title, Group, GroupPage, Permission, PermissionType, SortField, SortState, TitlesQuery, User, UserInGroup } from '../../app.types';
 import { focusElement, getDate, waitForElement } from '../../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -36,6 +36,10 @@ export class MainComponent {
 
   getDate = getDate;
   tableHasScrollbar = signal<boolean>(false);
+
+  // Server-side titles paging/filter state
+  private currentGroupId = '';
+  private titlesSearchDebounce?: ReturnType<typeof setTimeout>;
 
   searchLabel = viewChild<ElementRef<HTMLLabelElement>>('searchLabel');
   bodyScroll = viewChild<ElementRef<HTMLDivElement>>('bodyScroll');
@@ -72,12 +76,13 @@ export class MainComponent {
 
             // Titles
             case 'group':
-              return this.dashboard.fetchTitles(group_id).pipe(
+              this.currentGroupId = group_id;
+              this.resetTitlesQueryState();
+              return this.dashboard.fetchTitles(group_id, { page: 1 }).pipe(
                 tap((res: GroupPage) => {
                   this.dashboard.dashboardPage.set('titles');
                   this.dashboard.selectedGroupPage.set(res);
-                  this.dashboard.titles.set(res.titles);
-                  this.dashboard.displayedTitles.set(res.titles);
+                  this.applyTitlesResponse(res);
                   this.title.setTitle(`${res.name} | CROPILOT`);
 
                   const titleId = this.storage.get('backFromTitleId', null, true);
@@ -85,7 +90,7 @@ export class MainComponent {
                     this.dashboard.selectedTitle.set(res.titles.find(t => t._id === titleId) ?? null);
                     this.storage.remove('backFromTitleId');
                   }
-                  
+
                   this.auth.canReadTitle.set(false);
                   if (this.auth.user()?.permissions.find(group => group.group_id === group_id && group.permission.includes('read_title'))) this.auth.canReadTitle.set(true);
                 }),
@@ -155,14 +160,22 @@ export class MainComponent {
 
   sort(field: SortField): void {
     if (!field) return;
+
+    const isSameField = this.sortState.field === field;
+    const direction = !isSameField || this.sortState.direction === 'asc' ? 'desc' : 'asc';
+
+    // Titles are sorted server-side (with pagination); reload from page 1.
+    if (this.dashboard.dashboardPage() === 'titles') {
+      this.sortState = { field, direction };
+      this.loadTitles(1);
+      return;
+    }
+
     let table: WritableSignal<any[]> | undefined;
 
     switch (this.dashboard.dashboardPage()) {
       case 'groups':
         table = this.dashboard.displayedGroups;
-        break;
-      case 'titles':
-        table = this.dashboard.displayedTitles;
         break;
       case 'users':
         table = this.dashboard.displayedUsers;
@@ -170,9 +183,6 @@ export class MainComponent {
     }
 
     if (!table) return;
-
-    const isSameField = this.sortState.field === field;
-    const direction = !isSameField || this.sortState.direction === 'asc' ? 'desc' : 'asc';
 
     this.sortState = { field, direction };
 
@@ -250,18 +260,99 @@ export class MainComponent {
   titleStateDict = titleStateDict;
 
   get totalTitlesLabel(): string {
-    const length = this.dashboard.displayedTitles().length;
+    const length = this.dashboard.titlesTotal();
     return `Celkem ${length} titul${length === 1 ? '' : [2, 3, 4].includes(length) ? 'y' : 'ů' }`;
   }
 
+  // Debounced server-side search (resets to first page).
   filterTitles(): void {
-    const searchTitles = this.dashboard.searchTitles();
-    this.dashboard.displayedTitles.set(this.dashboard.titles().filter(t => 
-      (t.external_id ?? '').toLowerCase().includes(searchTitles)
-      || t._id.toLowerCase().includes(searchTitles)
-      || (t.settings?.crop_model ?? '').toLowerCase().includes(searchTitles)
-    ));
+    clearTimeout(this.titlesSearchDebounce);
+    this.titlesSearchDebounce = setTimeout(() => this.loadTitles(1), 300);
   }
+
+  // ----- Server-side titles loading -----
+  private resetTitlesQueryState(): void {
+    this.dashboard.searchTitles.set('');
+    this.selectedCropModel = 'all';
+    this.selectedRotationModel = 'all';
+    this.selectedState = 'all';
+    this.sortState = { field: 'created_at', direction: 'desc' };
+  }
+
+  private applyTitlesResponse(res: GroupPage): void {
+    this.dashboard.titles.set(res.titles);
+    this.dashboard.displayedTitles.set(res.titles);
+    this.dashboard.titlesTotal.set(res.total);
+    this.dashboard.titlesPage.set(res.page);
+    this.dashboard.titlesPageSize.set(res.page_size);
+    this.dashboard.titlesTotalPages.set(res.total_pages);
+    // filter_options only come with the first page; keep existing options otherwise.
+    if (res.filter_options) {
+      this.dashboard.titleCropModelOptions.set(res.filter_options.crop_models);
+      this.dashboard.titleRotationModelOptions.set(res.filter_options.rotation_models);
+    }
+  }
+
+  private buildTitlesQuery(page: number): TitlesQuery {
+    const search = this.dashboard.searchTitles().trim();
+    const query: TitlesQuery = { page, page_size: this.dashboard.titlesPageSize() };
+
+    if (search) query.search = search;
+    if (this.sortState.field) query.sort_field = this.sortState.field;
+    if (this.sortState.direction) query.sort_direction = this.sortState.direction;
+    if (this.selectedState && this.selectedState !== 'all') query.state = this.selectedState;
+    if (this.selectedCropModel && this.selectedCropModel !== 'all') query.crop_model = this.selectedCropModel;
+    if (this.selectedRotationModel && this.selectedRotationModel !== 'all') query.rotation_model = this.selectedRotationModel;
+
+    return query;
+  }
+
+  loadTitles(page: number): void {
+    if (!this.currentGroupId) return;
+
+    this.dashboard.fetchTitles(this.currentGroupId, this.buildTitlesQuery(page)).pipe(
+      catchError(err => {
+        this.ui.showToast('Při načítání titulů se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+        console.error('Fetching titles failed:', err);
+        return throwError(() => err);
+      })
+    ).subscribe((res: GroupPage) => this.applyTitlesResponse(res));
+  }
+
+  // ----- Pagination controls -----
+  goToPage(page: number): void {
+    const total = this.dashboard.titlesTotalPages();
+    if (page < 1 || (total && page > total) || page === this.dashboard.titlesPage()) return;
+    this.loadTitles(page);
+  }
+
+  prevPage(): void {
+    this.goToPage(this.dashboard.titlesPage() - 1);
+  }
+
+  nextPage(): void {
+    this.goToPage(this.dashboard.titlesPage() + 1);
+  }
+
+  // Page numbers to render, with -1 marking an ellipsis gap.
+  pageNumbers = computed<number[]>(() => {
+    const total = this.dashboard.titlesTotalPages();
+    const current = this.dashboard.titlesPage();
+    if (total <= 1) return total === 1 ? [1] : [];
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+    const pages = new Set<number>([1, total, current, current - 1, current + 1]);
+    const sorted = [...pages].filter(p => p >= 1 && p <= total).sort((a, b) => a - b);
+
+    const result: number[] = [];
+    let prev = 0;
+    for (const p of sorted) {
+      if (p - prev > 1) result.push(-1);
+      result.push(p);
+      prev = p;
+    }
+    return result;
+  });
 
   canOpenTitle(title: Title): boolean {
     return this.auth.canReadTitle() && this.shouldHaveLink(title.state);
@@ -274,7 +365,7 @@ export class MainComponent {
   // Crop model filter
   cropModelDropdownOpen = false;
   selectedCropModel: string | null = 'all';
-  cropModelOptions = computed<(string)[]>(() => [...new Set(['all', ...this.dashboard.titles().map(t => t.settings?.crop_model ?? 'default')])]);
+  cropModelOptions = computed<(string)[]>(() => ['all', ...this.dashboard.titleCropModelOptions()]);
 
   toggleCropModelDropdown(): void {
     this.cropModelDropdownOpen = !this.cropModelDropdownOpen;
@@ -283,24 +374,18 @@ export class MainComponent {
   onCropModelChange(cropModel: string): void {
     this.selectedRotationModel = 'all';
     this.selectedState = 'all';
-    
+    this.dashboard.searchTitles.set('');
+
     this.selectedCropModel = cropModel;
     this.cropModelDropdownOpen = false;
 
-    switch (cropModel) {
-      case 'all':
-        this.dashboard.displayedTitles.set(this.dashboard.titles());
-        break;
-      default:
-        this.dashboard.displayedTitles.set(this.dashboard.titles().filter(t => t.settings?.crop_model === cropModel));
-        break;
-    }
+    this.loadTitles(1);
   }
 
   // Rotation model filter
   rotationModelDropdownOpen = false;
   selectedRotationModel: string | null = 'all';
-  rotationModelOptions = computed<(string)[]>(() => [...new Set(['all', ...this.dashboard.titles().map(t => t.settings?.rotation_model ?? 'text')])]);
+  rotationModelOptions = computed<(string)[]>(() => ['all', ...this.dashboard.titleRotationModelOptions()]);
 
   toggleRotationModelDropdown(): void {
     this.rotationModelDropdownOpen = !this.rotationModelDropdownOpen;
@@ -309,18 +394,12 @@ export class MainComponent {
   onRotationModelChange(rotationModel: string): void {
     this.selectedCropModel = 'all';
     this.selectedState = 'all';
-    
+    this.dashboard.searchTitles.set('');
+
     this.selectedRotationModel = rotationModel;
     this.rotationModelDropdownOpen = false;
 
-    switch (rotationModel) {
-      case 'all':
-        this.dashboard.displayedTitles.set(this.dashboard.titles());
-        break;
-      default:
-        this.dashboard.displayedTitles.set(this.dashboard.titles().filter(t => t.settings?.rotation_model === rotationModel));
-        break;
-    }
+    this.loadTitles(1);
   }
 
   // State filter
@@ -333,21 +412,15 @@ export class MainComponent {
     this.stateDropdownOpen = !this.stateDropdownOpen;
   }
 
-  onStateChange(stateValue: string): void {    
+  onStateChange(stateValue: string): void {
     this.selectedCropModel = 'all';
     this.selectedRotationModel = 'all';
-    
+    this.dashboard.searchTitles.set('');
+
     this.selectedState = stateValue;
     this.stateDropdownOpen = false;
 
-    switch (stateValue) {
-      case 'all':
-        this.dashboard.displayedTitles.set(this.dashboard.titles());
-        break;
-      default:
-        this.dashboard.displayedTitles.set(this.dashboard.titles().filter(t => t.state === stateValue));
-        break;
-    }
+    this.loadTitles(1);
   }
 
 

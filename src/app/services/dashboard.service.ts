@@ -1,8 +1,8 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { catchError, forkJoin, from, map, mergeMap, Observable, of, switchMap, tap, throwError, toArray } from 'rxjs';
 import { AuthService } from './auth.service';
-import { ChangedGroupMember, DashboardPage, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Permission, PermissionType, SelectOption, Title, User, UserInGroup } from '../app.types';
+import { ChangedGroupMember, DashboardPage, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Permission, PermissionType, SelectOption, Title, TitlesQuery, User, UserInGroup } from '../app.types';
 import { Router } from '@angular/router';
 import { checkEmailValidity, defer, focusMainWrapper, scrollToAndFocusElement, scrollToElement } from '../utils/utils';
 import { inlineErrors } from '../app.config';
@@ -99,6 +99,13 @@ export class DashboardService {
   titles = signal<Title[]>([]);
   displayedTitles = signal<Title[]>([]);
   searchTitles = signal<string>('');
+  // Server-side pagination + filter options for the titles table
+  titlesTotal = signal<number>(0);
+  titlesPage = signal<number>(1);
+  titlesPageSize = signal<number>(50);
+  titlesTotalPages = signal<number>(0);
+  titleCropModelOptions = signal<string[]>([]);
+  titleRotationModelOptions = signal<string[]>([]);
   selectedTitle = signal<Title | null>(null);
   titleName = signal<string>('');
   titleNameError = signal<string>('');
@@ -213,8 +220,22 @@ export class DashboardService {
   }
 
   // Titles
-  fetchTitles(groupId: string): Observable<GroupPage> {
-    return this.http.get<GroupPage>(`${this.auth.apiUrl}/groups/${groupId}`, { headers: this.auth.authHeaders() });
+  fetchTitles(groupId: string, query: TitlesQuery = {}): Observable<GroupPage> {
+    let params = new HttpParams()
+      .set('page', String(query.page ?? 1))
+      .set('page_size', String(query.page_size ?? this.titlesPageSize()));
+
+    if (query.search) params = params.set('search', query.search);
+    if (query.sort_field) params = params.set('sort_field', query.sort_field);
+    if (query.sort_direction) params = params.set('sort_direction', query.sort_direction);
+    if (query.state) params = params.set('state', query.state);
+    if (query.crop_model) params = params.set('crop_model', query.crop_model);
+    if (query.rotation_model) params = params.set('rotation_model', query.rotation_model);
+
+    return this.http.get<GroupPage>(`${this.auth.apiUrl}/groups/${groupId}`, {
+      headers: this.auth.authHeaders(),
+      params,
+    });
   }
 
   fetchModels(): Observable<Models> {
@@ -619,6 +640,7 @@ export class DashboardService {
               this.searchTitles.set('');
               this.titles.update(prev => [ newTitle, ...prev ]);
               this.displayedTitles.set(this.titles());
+              this.titlesTotal.update(prev => prev + 1);
 
               return res.id;
             }),
@@ -771,6 +793,7 @@ export class DashboardService {
           tap(() => {
             this.titles.update(prev => prev.filter(t => t._id !== (title?._id ?? '')));
             this.displayedTitles.set(this.titles());
+            this.titlesTotal.update(prev => Math.max(0, prev - 1));
             ui.closeDialog();
           }),
           catchError(err => {

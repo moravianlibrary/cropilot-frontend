@@ -580,6 +580,45 @@
         </div>
       </div>
     </div>
+
+    @if (dashboard.titlesTotalPages() > 1) {
+      <div class="pagination">
+        <span
+          class="page-button prev"
+          [class.disabled]="dashboard.titlesPage() <= 1"
+          (click)="prevPage()"
+          [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+        >
+          <app-icon name="arrow-down" [size]="16" />
+          Předchozí
+        </span>
+
+        <span class="pages">
+          @for (page of pageNumbers(); track $index) {
+            @if (page === -1) {
+              <span class="ellipsis">…</span>
+            } @else {
+              <span
+                class="page-number"
+                [class.active]="page === dashboard.titlesPage()"
+                (click)="goToPage(page)"
+                [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+              >{{ page }}</span>
+            }
+          }
+        </span>
+
+        <span
+          class="page-button next"
+          [class.disabled]="dashboard.titlesPage() >= dashboard.titlesTotalPages()"
+          (click)="nextPage()"
+          [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+        >
+          Další
+          <app-icon name="arrow-down" [size]="16" />
+        </span>
+      </div>
+    }
   </div>
 } @else if (dashboard.dashboardPage() === 'users') {
   
