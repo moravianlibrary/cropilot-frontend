@@ -17,7 +17,8 @@ export const flagMessages: Record<string, string> = {
   'page_count_mismatch': 'Chybějící výřez',
   'no_prediction': 'Neúspěšná predikce',
   'low_confidence': 'Nejistota',
-  'odd_dimensions': 'Podezřelý rozměr'
+  'odd_dimensions': 'Podezřelý rozměr',
+  'bad_split': 'Špatné rozdělení dvojstrany'
 };
 
 export const gridModeDict: Record<GridMode, string> = {

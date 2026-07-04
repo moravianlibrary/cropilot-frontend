@@ -17,7 +17,7 @@
       <span
         class="flag"
         [class.edited]="editor.mainImageItem().edited"
-        [class.error]="['page_count_mismatch', 'no_prediction', 'prediction_overlap'].includes(flag)"
+        [class.error]="['page_count_mismatch', 'no_prediction', 'prediction_overlap', 'bad_split'].includes(flag)"
         [class.warning]="['low_confidence', 'odd_dimensions'].includes(flag)"
       >
         @if (editor.mainImageItem().edited) {

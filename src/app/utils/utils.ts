@@ -117,7 +117,7 @@ export const waitForElement = (selector: string, root: ParentNode = document): P
 export const getColor = (page: Page): string => {
   if (page.edited) return editedColor;
 
-  const errorFlags = ['prediction_overlap'];
+  const errorFlags = ['prediction_overlap', 'bad_split'];
   if (page.flags.some(f => errorFlags.includes(f))) {
     return errorColor;
   }
