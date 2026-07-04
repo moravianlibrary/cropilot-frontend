@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { catchError, forkJoin, from, map, mergeMap, Observable, of, switchMap, tap, throwError, toArray } from 'rxjs';
 import { AuthService } from './auth.service';
-import { ChangedGroupMember, DashboardPage, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Permission, PermissionType, SelectOption, Title, TitlesQuery, User, UserInGroup } from '../app.types';
+import { ChangedGroupMember, DashboardPage, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Paginated, PagedQuery, Permission, PermissionType, SelectOption, Title, TitlesQuery, User, UserInGroup } from '../app.types';
 import { Router } from '@angular/router';
 import { checkEmailValidity, defer, focusMainWrapper, scrollToAndFocusElement, scrollToElement } from '../utils/utils';
 import { inlineErrors } from '../app.config';
@@ -24,6 +24,11 @@ export class DashboardService {
   groups = signal<Group[]>([]);
   displayedGroups = signal<Group[]>([]);
   searchGroups = signal<string>('');
+  // Server-side pagination for the groups table
+  groupsTotal = signal<number>(0);
+  groupsPage = signal<number>(1);
+  groupsPageSize = signal<number>(50);
+  groupsTotalPages = signal<number>(0);
   selectedGroupDetail = signal<Group | null>(null);
   selectedGroupPage = signal<GroupPage | null>(null);
   groupName = signal<string>('');
@@ -134,6 +139,11 @@ export class DashboardService {
   users = signal<User[]>([]);
   displayedUsers = signal<User[]>([]);
   searchUsers = signal<string>('');
+  // Server-side pagination for the users table
+  usersTotal = signal<number>(0);
+  usersPage = signal<number>(1);
+  usersPageSize = signal<number>(50);
+  usersTotalPages = signal<number>(0);
   selectedUser = signal<User | null>(null);
   newPassword = signal<string>('');
   userFullname = signal<string>('');
@@ -167,9 +177,32 @@ export class DashboardService {
 
 
   // ========== API ==========
+  // Builds pagination/search/sort query params shared by the list endpoints.
+  private pagedParams(query: PagedQuery): HttpParams {
+    let params = new HttpParams()
+      .set('page', String(query.page ?? 1))
+      .set('page_size', String(query.page_size ?? 50));
+
+    if (query.search) params = params.set('search', query.search);
+    if (query.sort_field) params = params.set('sort_field', query.sort_field);
+    if (query.sort_direction) params = params.set('sort_direction', query.sort_direction);
+    if (query.group_id) params = params.set('group_id', query.group_id);
+
+    return params;
+  }
+
   // Groups
+  // Full list (no pagination) - used by pickers/dialogs and external callers.
   fetchGroups(): Observable<Group[]> {
     return this.http.get<Group[]>(`${this.auth.apiUrl}/groups`, { headers: this.auth.authHeaders() });
+  }
+
+  // Paginated list - used by the groups dashboard page.
+  fetchGroupsPage(query: PagedQuery = {}): Observable<Paginated<Group>> {
+    return this.http.get<Paginated<Group>>(`${this.auth.apiUrl}/groups`, {
+      headers: this.auth.authHeaders(),
+      params: this.pagedParams(query),
+    });
   }
 
   createGroup(): Observable<NewGroup> {
@@ -289,8 +322,17 @@ export class DashboardService {
   }
 
   // Users
+  // Full list (no pagination) - used by pickers/dialogs.
   fetchUsers(groupId?: string): Observable<User[]> {
     return this.http.get<User[]>(`${this.auth.apiUrl}/users${groupId ? `?group_id=${groupId}` : ''}`, { headers: this.auth.authHeaders() });
+  }
+
+  // Paginated list - used by the users dashboard page.
+  fetchUsersPage(query: PagedQuery = {}): Observable<Paginated<User>> {
+    return this.http.get<Paginated<User>>(`${this.auth.apiUrl}/users`, {
+      headers: this.auth.authHeaders(),
+      params: this.pagedParams(query),
+    });
   }
 
   createUser(): Observable<NewUser> {

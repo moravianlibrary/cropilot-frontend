@@ -45,6 +45,25 @@ export interface GroupPage {
   } | null;
 }
 
+// Generic paginated response envelope returned by list endpoints.
+export interface Paginated<T> {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+// Shared pagination/search/sort query for the groups & users list endpoints.
+export interface PagedQuery {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  sort_field?: Exclude<SortField, null>;
+  sort_direction?: Exclude<SortDirection, null>;
+  group_id?: string;
+}
+
 export interface TitlesQuery {
   page?: number;
   page_size?: number;

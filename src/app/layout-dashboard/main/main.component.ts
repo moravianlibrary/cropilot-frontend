@@ -1,9 +1,9 @@
-import { Component, computed, ElementRef, inject, signal, viewChild, WritableSignal } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { permissionDict, titleStateDict, titleStateFilterDict } from '../../app.config';
-import { Title, Group, GroupPage, Permission, PermissionType, SortField, SortState, TitlesQuery, User, UserInGroup } from '../../app.types';
+import { Title, Group, GroupPage, Paginated, PagedQuery, Permission, PermissionType, SortField, SortState, TitlesQuery, User, UserInGroup } from '../../app.types';
 import { focusElement, getDate, waitForElement } from '../../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -40,6 +40,27 @@ export class MainComponent {
   // Server-side titles paging/filter state
   private currentGroupId = '';
   private titlesSearchDebounce?: ReturnType<typeof setTimeout>;
+  // Shared debounce for the groups/users search inputs
+  private listSearchDebounce?: ReturnType<typeof setTimeout>;
+
+  // Builds a pagination/search/sort query for the groups & users list endpoints.
+  private buildListQuery(page: number, search: string, pageSize: number): PagedQuery {
+    const query: PagedQuery = { page, page_size: pageSize };
+    const trimmed = search.trim();
+
+    if (trimmed) query.search = trimmed;
+    if (this.sortState.field) query.sort_field = this.sortState.field;
+    if (this.sortState.direction) query.sort_direction = this.sortState.direction;
+
+    return query;
+  }
+
+  // Resets search + sort before (re)loading a groups/users list page.
+  private resetListQueryState(): void {
+    this.dashboard.searchGroups.set('');
+    this.dashboard.searchUsers.set('');
+    this.sortState = { field: 'created_at', direction: 'desc' };
+  }
 
   searchLabel = viewChild<ElementRef<HTMLLabelElement>>('searchLabel');
   bodyScroll = viewChild<ElementRef<HTMLDivElement>>('bodyScroll');
@@ -61,11 +82,11 @@ export class MainComponent {
 
             // Groups
             case 'groups':
-              return this.dashboard.fetchGroups().pipe(
-                tap((res: Group[]) => {
+              this.resetListQueryState();
+              return this.dashboard.fetchGroupsPage({ page: 1 }).pipe(
+                tap((res: Paginated<Group>) => {
                   this.dashboard.dashboardPage.set('groups');
-                  this.dashboard.groups.set(res);
-                  this.dashboard.displayedGroups.set(this.dashboard.groups());
+                  this.applyGroupsResponse(res);
                 }),
                 catchError(err => {
                   this.ui.showToast('Při načítání skupin se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
@@ -105,11 +126,11 @@ export class MainComponent {
 
             // Users
             case 'users':
-              return this.dashboard.fetchUsers().pipe(
-                tap((res: User[]) => {
+              this.resetListQueryState();
+              return this.dashboard.fetchUsersPage({ page: 1 }).pipe(
+                tap((res: Paginated<User>) => {
                   this.dashboard.dashboardPage.set('users');
-                  this.dashboard.users.set(res);
-                  this.dashboard.displayedUsers.set(res);
+                  this.applyUsersResponse(res);
                 }),
                 catchError(err => {
                   err.status === 403
@@ -158,76 +179,53 @@ export class MainComponent {
     direction: null,
   };
 
+  // All three list pages are sorted server-side (with pagination); reload page 1.
   sort(field: SortField): void {
     if (!field) return;
 
     const isSameField = this.sortState.field === field;
     const direction = !isSameField || this.sortState.direction === 'asc' ? 'desc' : 'asc';
-
-    // Titles are sorted server-side (with pagination); reload from page 1.
-    if (this.dashboard.dashboardPage() === 'titles') {
-      this.sortState = { field, direction };
-      this.loadTitles(1);
-      return;
-    }
-
-    let table: WritableSignal<any[]> | undefined;
-
-    switch (this.dashboard.dashboardPage()) {
-      case 'groups':
-        table = this.dashboard.displayedGroups;
-        break;
-      case 'users':
-        table = this.dashboard.displayedUsers;
-        break;
-    }
-
-    if (!table) return;
-
     this.sortState = { field, direction };
 
-    table.update(items =>
-      [...items].sort((a, b) => {
-        const aValue = a[field];
-        const bValue = b[field];
-
-        // Date comparison
-        if (['created_at', 'modified_at'].includes(field)) {
-          const aDate = new Date(aValue).getTime();
-          const bDate = new Date(bValue).getTime();
-
-          return direction === 'asc'
-            ? aDate - bDate
-            : bDate - aDate;
-        }
-
-        // Text comparison
-        const aStr = String(aValue ?? '').toLowerCase();
-        const bStr = String(bValue ?? '').toLowerCase();
-
-        return direction === 'asc'
-          ? bStr.localeCompare(aStr)
-          : aStr.localeCompare(bStr);
-      })
-    );
+    switch (this.dashboard.dashboardPage()) {
+      case 'titles': this.loadTitles(1); break;
+      case 'groups': this.loadGroups(1); break;
+      case 'users': this.loadUsers(1); break;
+    }
   }
 
 
   // ========== GROUPS ==========
   permissionDict = permissionDict;
-  
+
   get totalGroupsLabel(): string {
-    const length = this.dashboard.displayedGroups().length;
+    const length = this.dashboard.groupsTotal();
     return `Celkem ${length} skupin${length === 1 ? 'a' : [2, 3, 4].includes(length) ? 'y' : '' }`;
   }
 
+  // Debounced server-side search (resets to first page).
   filterGroups(): void {
-    const searchGroups = this.dashboard.searchGroups();
-    this.dashboard.displayedGroups.set(this.dashboard.groups().filter(g => 
-      g.name.toLowerCase().includes(searchGroups)
-      || g.description.toLowerCase().includes(searchGroups)
-      || g._id.toLowerCase().includes(searchGroups)
-    ));
+    clearTimeout(this.listSearchDebounce);
+    this.listSearchDebounce = setTimeout(() => this.loadGroups(1), 300);
+  }
+
+  private applyGroupsResponse(res: Paginated<Group>): void {
+    this.dashboard.groups.set(res.items);
+    this.dashboard.displayedGroups.set(res.items);
+    this.dashboard.groupsTotal.set(res.total);
+    this.dashboard.groupsPage.set(res.page);
+    this.dashboard.groupsPageSize.set(res.page_size);
+    this.dashboard.groupsTotalPages.set(res.total_pages);
+  }
+
+  loadGroups(page: number): void {
+    this.dashboard.fetchGroupsPage(this.buildListQuery(page, this.dashboard.searchGroups(), this.dashboard.groupsPageSize())).pipe(
+      catchError(err => {
+        this.ui.showToast('Při načítání skupin se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+        console.error('Fetching groups failed:', err);
+        return throwError(() => err);
+      })
+    ).subscribe((res: Paginated<Group>) => this.applyGroupsResponse(res));
   }
 
   getTags(group: Group): string[] {
@@ -319,25 +317,49 @@ export class MainComponent {
     ).subscribe((res: GroupPage) => this.applyTitlesResponse(res));
   }
 
-  // ----- Pagination controls -----
+  // ----- Pagination controls (shared across the active list page) -----
+  // Current page / total pages for whichever list is being shown.
+  currentListPage = computed<number>(() => {
+    switch (this.dashboard.dashboardPage()) {
+      case 'titles': return this.dashboard.titlesPage();
+      case 'groups': return this.dashboard.groupsPage();
+      case 'users': return this.dashboard.usersPage();
+      default: return 1;
+    }
+  });
+
+  currentListTotalPages = computed<number>(() => {
+    switch (this.dashboard.dashboardPage()) {
+      case 'titles': return this.dashboard.titlesTotalPages();
+      case 'groups': return this.dashboard.groupsTotalPages();
+      case 'users': return this.dashboard.usersTotalPages();
+      default: return 0;
+    }
+  });
+
   goToPage(page: number): void {
-    const total = this.dashboard.titlesTotalPages();
-    if (page < 1 || (total && page > total) || page === this.dashboard.titlesPage()) return;
-    this.loadTitles(page);
+    const total = this.currentListTotalPages();
+    if (page < 1 || (total && page > total) || page === this.currentListPage()) return;
+
+    switch (this.dashboard.dashboardPage()) {
+      case 'titles': this.loadTitles(page); break;
+      case 'groups': this.loadGroups(page); break;
+      case 'users': this.loadUsers(page); break;
+    }
   }
 
   prevPage(): void {
-    this.goToPage(this.dashboard.titlesPage() - 1);
+    this.goToPage(this.currentListPage() - 1);
   }
 
   nextPage(): void {
-    this.goToPage(this.dashboard.titlesPage() + 1);
+    this.goToPage(this.currentListPage() + 1);
   }
 
   // Page numbers to render, with -1 marking an ellipsis gap.
   pageNumbers = computed<number[]>(() => {
-    const total = this.dashboard.titlesTotalPages();
-    const current = this.dashboard.titlesPage();
+    const total = this.currentListTotalPages();
+    const current = this.currentListPage();
     if (total <= 1) return total === 1 ? [1] : [];
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
 
@@ -426,17 +448,33 @@ export class MainComponent {
 
   // ========== USERS ==========
   get totalUsersLabel(): string {
-    const length = this.dashboard.displayedUsers().length;
+    const length = this.dashboard.usersTotal();
     return `Celkem ${length} uživatel${[2, 3, 4].includes(length) ? 'é' : 'ů' }`;
   }
 
+  // Debounced server-side search (resets to first page).
   filterUsers(): void {
-    const searchUsers = this.dashboard.searchUsers();
-    this.dashboard.displayedUsers.set(this.dashboard.users().filter(u => 
-      u.full_name.toLowerCase().includes(searchUsers)
-      || u.email.toLowerCase().includes(searchUsers)
-      || u._id.toLowerCase().includes(searchUsers)
-    ));
+    clearTimeout(this.listSearchDebounce);
+    this.listSearchDebounce = setTimeout(() => this.loadUsers(1), 300);
+  }
+
+  private applyUsersResponse(res: Paginated<User>): void {
+    this.dashboard.users.set(res.items);
+    this.dashboard.displayedUsers.set(res.items);
+    this.dashboard.usersTotal.set(res.total);
+    this.dashboard.usersPage.set(res.page);
+    this.dashboard.usersPageSize.set(res.page_size);
+    this.dashboard.usersTotalPages.set(res.total_pages);
+  }
+
+  loadUsers(page: number): void {
+    this.dashboard.fetchUsersPage(this.buildListQuery(page, this.dashboard.searchUsers(), this.dashboard.usersPageSize())).pipe(
+      catchError(err => {
+        this.ui.showToast('Při načítání uživatelů se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+        console.error('Fetching users failed:', err);
+        return throwError(() => err);
+      })
+    ).subscribe((res: Paginated<User>) => this.applyUsersResponse(res));
   }
 
   getUserPermissions(perms: Permission[]): PermissionType[] {
