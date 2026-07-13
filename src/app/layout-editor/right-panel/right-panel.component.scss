@@ -289,7 +289,10 @@ input[type=number] {
   border-top: 1px solid var(--border-color);
 
   .read-mode-note {
-    @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+    // Match the save button's vertical footprint (padding x2 + line-height x6)
+    // so the footer keeps the same height and the bottom bar stays on one line.
+    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x6), var(--text-secondary));
+    padding: var(--spacing-x2) 0;
     text-align: center;
   }
 }
