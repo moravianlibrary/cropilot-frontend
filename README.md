@@ -1,145 +1,183 @@
-# OrezyFrontend
+# Cropilot frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.3.
+This repository contains the browser-based user interface for
+[Cropilot](https://github.com/moravianlibrary/cropilot), an AI-powered system
+for detecting, reviewing, and applying crop instructions to scanned documents.
 
-## Development
+The frontend connects to the Cropilot API. It does not contain the backend,
+processing workers, machine-learning models, or database required to run the
+complete system.
 
-### Run
+## Cropilot ecosystem
 
-`npm run start`
+| Repository | Responsibility |
+| --- | --- |
+| [moravianlibrary/cropilot](https://github.com/moravianlibrary/cropilot) | Main Cropilot backend, API, processing workers, model integration, persistence, and deployment documentation. |
+| This repository | Angular web application for administration and manual review of generated crop instructions. |
+| [moravianlibrary/cropilot-utils](https://github.com/moravianlibrary/cropilot-utils) | Model training code and batch tools for uploading scans, downloading crop instructions, and applying them to source files. |
 
-for a local dev server. Navigate to `http://localhost:4400/`.
-The application will automatically reload if you change any of the source files.
 
-## Build & Run
+## Technology
 
-### Build
+- Angular 19 and Angular CDK
+- TypeScript 5.7
+- RxJS
+- SCSS
+- OverlayScrollbars
 
-First define configuration in environment variables
+## Local development
 
-```shell
+### Prerequisites
+
+- Node.js and npm
+- A running [Cropilot API](https://github.com/moravianlibrary/cropilot)
+  instance accessible from the browser
+
+Install the locked dependencies:
+
+```bash
+npm ci
+```
+
+Create the ignored local environment file:
+
+```bash
+npm run prestart
+```
+
+Edit `src/environments/environment.local.ts` and point `serverBaseUrl` to the
+Cropilot API:
+
+```ts
+export const environment = {
+  useStaticRuntimeConfig: false,
+  devMode: true,
+  environmentName: 'local',
+  environmentCode: 'local',
+  serverBaseUrl: 'http://localhost:8000',
+  authToken: '',
+};
+```
+
+Start the development server:
+
+```bash
+npm start
+```
+
+The application is available at <http://localhost:4400/> and reloads when
+source files change.
+
+`npm start` runs two preparatory scripts automatically:
+
+- `scripts/bootstrap_file_environment-local-ts.js` creates
+  `environment.local.ts` when it is missing;
+- `scripts/collect-build-info.js` records the current Git revision and build
+  metadata.
+
+## Available commands
+
+| Command | Purpose |
+| --- | --- |
+| `npm start` | Start the Angular development server on port 4400. |
+| `npm run build` | Create a production build in `dist/orezy-frontend/browser/`. |
+| `npm run watch` | Rebuild continuously with the development configuration. |
+| `npm test` | Start the Karma/Jasmine test runner. |
+| `npm run ng -- <command>` | Run another Angular CLI command. |
+
+There are currently no committed application test specifications or
+end-to-end test runner in this repository. A production build is the primary
+project-wide compilation check.
+
+## Runtime configuration
+
+Production builds use `src/environments/environment.ts`, which loads
+`/assets/env.json` before the Angular application starts. This allows the same
+frontend bundle or container image to be configured for different Cropilot API
+instances.
+
+| Environment variable | Purpose | Default |
+| --- | --- | --- |
+| `APP_DATA_SERVER_URL` | Base URL of the Cropilot API. | Empty; required for a working deployment. |
+| `APP_DEV_MODE` | Boolean environment flag exposed in runtime metadata. | `false` |
+| `APP_ENV_NAME` | Human-readable environment name. | Empty during build, `docker runtime` in the container. |
+| `APP_ENV_CODE` | Short environment identifier. | Empty during build, `docker` in the container. |
+| `APP_DATA_SERVER_AUTH_TOKEN` | Compatibility value written to the browser runtime configuration. User login uses its own bearer access token. | Empty |
+
+All values in `env.json` are downloaded by the browser and must therefore be
+treated as public client-side configuration. Do not put confidential secrets
+in these variables.
+
+### Production build
+
+Set the runtime values and build the application:
+
+```bash
 export APP_DEV_MODE=false
-export APP_ENV_NAME="local npm run build"
-export APP_ENV_CODE="l-nrb"
-export APP_DATA_SERVER_URL="https://ai-orezy-data.test.api.trinera.cloud"
-export APP_DATA_SERVER_AUTH_TOKEN="SECRET"
+export APP_ENV_NAME=local-build
+export APP_ENV_CODE=local
+export APP_DATA_SERVER_URL=http://localhost:8000
+export APP_DATA_SERVER_AUTH_TOKEN=
+
+npm run build
 ```
 
+The `prebuild` lifecycle generates:
 
-Now run `npm run build` to build the project. 
+- `src/assets/env.json` from the `APP_*` variables;
+- `src/assets/build-info.json` with the Git commit, nearest tag, dirty state,
+  and build time.
 
-The build artifacts will be stored in the `dist/` directory.
+Both generated configuration files are ignored by Git.
 
-The environment configuration from `APP_*` variables will be stored into `dist/orezy-frontend/assets/env.json`
+## Docker
 
-### Run
+The multi-stage Dockerfile builds the Angular application and serves it from
+Nginx with single-page-application routing enabled.
 
-To test the the app you've just built 
-
-`npx serve dist/orezy-frontend/browser -l 8181` 
-
-And open in browser
-
-`http://localhost:8181`
-
-## Docker Build & Run
-
-### Build
-```
-docker build -t orezy-frontend .
-```
-
-possibly including version tag  
-```
-docker build -t trinera/orezy-frontend:1.0.0-dev .
-```
-
-or including version tag and tag `latest`
-```
-docker build -t trinera/orezy-frontend:latest -t trinera/orezy-frontend:1.0.0-dev .
-```
-
-### Push to Dockerhub
-
-Only if you have write access to Dockerhub repository trinera/orezy-frontend.
-You don't need this to run localy built Docker image.
-
-```
-docker push trinera/orezy-frontend:1.0.0-dev
-docker push trinera/orezy-frontend:latest
-```
-
-### Run Docker image
-
-#### Local image
-
-Run locally built Docker image
-
-##### Run
-```
-docker run -p 1234:80 \
-  -e APP_DEV_MODE=false \
-  -e APP_DATA_SERVER_URL=https://ai-orezy-data.test.api.trinera.cloud \
-  -e APP_DATA_SERVER_AUTH_TOKEN=SECRET \
-trinera/orezy-frontend
-```
-
-##### Run exact version:
-```
-docker run -p 1234:80 \
-  -e APP_DEV_MODE=false \
-  -e APP_DATA_SERVER_URL=https://ai-orezy-data.test.api.trinera.cloud \
-  -e APP_DATA_SERVER_AUTH_TOKEN=SECRET \
-trinera/orezy-frontend:latest
-```
-or
-
-```
-docker run -p 1234:80 \
-  -e APP_DEV_MODE=false \
-  -e APP_DATA_SERVER_URL=https://ai-orezy-data.test.api.trinera.cloud \
-  -e APP_DATA_SERVER_AUTH_TOKEN=SECRET \
-trinera/orezy-frontend:1.0.0-dev
-```
-
-#### Image pulled from Docker Hub
-
-Run image that someone built and pushed to Dockerhub.
-
-##### Run
-
-```
-docker pull trinera/orezy-frontend:latest
-docker run -p 1234:80 \
-  -e APP_DEV_MODE=false \
-  -e APP_DATA_SERVER_URL=https://ai-orezy-data.test.api.trinera.cloud \
-  -e APP_DATA_SERVER_AUTH_TOKEN=SECRET \
-trinera/orezy-frontend
-```
-
-And open in browser
-
-`http://localhost:1234`
-
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Build the image:
 
 ```bash
-ng test
+docker build -t cropilot-frontend .
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+Run it against a Cropilot API:
 
 ```bash
-ng e2e
+docker run --rm \
+  -p 8080:80 \
+  -e APP_DEV_MODE=false \
+  -e APP_ENV_NAME=local-docker \
+  -e APP_ENV_CODE=docker \
+  -e APP_DATA_SERVER_URL=http://localhost:8000 \
+  -e APP_DATA_SERVER_AUTH_TOKEN= \
+  cropilot-frontend
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Open <http://localhost:8080/>.
 
-## Additional Resources
+At container startup, `docker/entrypoint.sh` regenerates
+`/usr/share/nginx/html/assets/env.json`. A built image can therefore be reused
+without rebuilding it for every environment.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Project structure
+
+```text
+src/app/
+├── components/          Reusable dialogs, drawers, menus, inputs, and feedback
+├── layout-dashboard/    Group, title, and user administration UI
+├── layout-editor/       Scan list, canvas editor, properties, and zoom controls
+├── routes/              Login, dashboard, editor, and error route components
+├── services/            API, authentication, editor, dashboard, and UI state
+└── utils/               Editor geometry and shared helpers
+
+scripts/                 Runtime config and build metadata generators
+docker/                  Nginx configuration and container entrypoint
+.github/workflows/       Build and deployment automation
+main.tf                  Docker/Traefik Terraform deployment
+```
+
+## License
+
+This repository is licensed under the
+[GNU General Public License v3.0](LICENSE).
