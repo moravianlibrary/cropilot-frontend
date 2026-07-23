@@ -255,6 +255,7 @@
               <span
                 class="page-number"
                 [class.active]="page === currentListPage()"
+                [attr.aria-current]="page === currentListPage() ? 'page' : null"
                 (click)="goToPage(page)"
                 [tabindex]="dialogOrDrawerOpen ? -1 : 0"
               >{{ page }}</span>
@@ -640,6 +641,7 @@
               <span
                 class="page-number"
                 [class.active]="page === currentListPage()"
+                [attr.aria-current]="page === currentListPage() ? 'page' : null"
                 (click)="goToPage(page)"
                 [tabindex]="dialogOrDrawerOpen ? -1 : 0"
               >{{ page }}</span>
@@ -867,6 +869,7 @@
               <span
                 class="page-number"
                 [class.active]="page === currentListPage()"
+                [attr.aria-current]="page === currentListPage() ? 'page' : null"
                 (click)="goToPage(page)"
                 [tabindex]="dialogOrDrawerOpen ? -1 : 0"
               >{{ page }}</span>

@@ -468,14 +468,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-x2);
+  gap: var(--spacing-x1);
 
   .page-button,
   .page-number {
     user-select: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
 
     &:hover {
       cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }
   }
 
@@ -483,12 +489,13 @@
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-x1);
-    padding: var(--spacing-x1) var(--spacing-x3);
+    padding: var(--spacing-x1) var(--spacing-x2);
     border-radius: var(--spacing-x2);
-    @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+    @include styles.font(450, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
 
     app-icon {
       display: inline-flex;
+      color: currentColor;
     }
 
     &.prev app-icon {
@@ -500,11 +507,12 @@
     }
 
     &:hover {
-      background-color: var(--bg-base);
+      color: var(--text-secondary);
+      background-color: var(--bg-bright);
     }
 
     &.disabled {
-      color: var(--text-bright);
+      color: var(--text-disabled);
       pointer-events: none;
     }
   }
@@ -522,19 +530,23 @@
     align-items: center;
     justify-content: center;
     padding: 0 var(--spacing-x2);
-    border-radius: var(--spacing-x2);
-    @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+    border-radius: 999px;
+    @include styles.font(450, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
 
     &:hover {
-      background-color: var(--bg-base);
+      color: var(--text-secondary);
+      background-color: var(--bg-bright);
     }
 
     &.active {
-      background-color: var(--primary);
-      color: var(--text-bright);
+      color: var(--text-secondary);
+      background-color: var(--bg-main-bright);
+      font-weight: 600;
+      pointer-events: none;
 
       &:hover {
-        background-color: var(--primary);
+        background-color: var(--bg-main-bright);
+        cursor: default;
       }
     }
   }
