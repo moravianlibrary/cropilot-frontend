@@ -1667,7 +1667,7 @@ export class EditorService {
     const ui = this.ui;
     this.resetSettingsDraft();
     
-    ui.dialogWidth.set(680);
+    ui.dialogWidth.set(600);
     ui.dialogTitle.set('Nastavení');
     ui.dialogContent.set(true);
     ui.dialogContentType.set('settings');

@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, output } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
 import { EditorService } from '../../services/editor.service';
 import { defaultFitModeDict, dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridColorDict, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict } from '../../app.config';
@@ -10,10 +10,15 @@ import { UploadComponent } from '../upload/upload.component';
 import { UiService } from '../../services/ui.service';
 import { focusElement, waitForElement } from '../../utils/utils';
 import { IconComponent } from '../icon/icon.component';
+import {
+  SegmentedControlComponent,
+  SegmentedControlOption,
+  SegmentedControlValue
+} from '../segmented-control/segmented-control.component';
 
 @Component({
   selector: 'app-dialog',
-  imports: [FormsModule, SelectComponent, UploadComponent, IconComponent],
+  imports: [FormsModule, SelectComponent, UploadComponent, IconComponent, SegmentedControlComponent],
   templateUrl: './dialog.component.html',
   styleUrl: './dialog.component.scss'
 })
@@ -69,8 +74,102 @@ export class DialogComponent {
   defaultFitModeDict: Record<DefaultFitMode, string> = defaultFitModeDict;
   defaultFitModeDictKeys = Object.keys(defaultFitModeDict) as DefaultFitMode[];
 
+  settingsTab = signal<'editor' | 'behavior'>('editor');
+
+  gridModeOptions: SegmentedControlOption[] = this.gridModeDictKeys.map(value => ({
+    value,
+    label: this.gridModeDict[value]
+  }));
+
+  gridDensityOptions: SegmentedControlOption[] = this.gridDensityDictKeys.map(value => ({
+    value,
+    label: value
+  }));
+
+  gridColorOptions: SegmentedControlOption[] = this.gridColorDictKeys.map(value => ({
+    value,
+    label: value,
+    color: this.gridColorDict[value]
+  }));
+
+  gridLineWidthOptions: SegmentedControlOption[] = this.gridLineWidthDictKeys.map(value => ({
+    value,
+    label: value,
+    lineWidth: this.gridLineWidthDict[value]
+  }));
+
+  outlineWidthOptions: SegmentedControlOption[] = [...this.outlineWidthDictKeys]
+    .sort((a, b) => this.outlineWidthDict[a] - this.outlineWidthDict[b])
+    .map(value => ({
+      value,
+      label: value,
+      lineWidth: this.outlineWidthDict[value]
+    }));
+
+  dimColorOptions: SegmentedControlOption[] = this.dimColorDictKeys.map(value => ({
+    value,
+    label: value,
+    color: value === 'Žádná' ? undefined : `rgba(${this.dimColorDict[value]})`
+  }));
+
+  scanTypeOptions: SegmentedControlOption[] = this.filterScanTypeStartDictKeys.map(value => ({
+    value,
+    label: this.filterScanTypeStartDict[value]
+  }));
+
+  pageNumberOptions: SegmentedControlOption[] = this.filterPageNumberStartDictKeys.map(value => ({
+    value,
+    label: this.filterPageNumberStartDict[value]
+  }));
+
+  defaultFitModeOptions: SegmentedControlOption[] = this.defaultFitModeDictKeys.map(value => ({
+    value,
+    label: this.defaultFitModeDict[value],
+    icon: value === 'page' ? 'fit-to-screen' : 'fit-to-crops'
+  }));
+
   copied: boolean = false;
   private copiedTimer!: number;
+
+  selectSettingsTab(tab: 'editor' | 'behavior'): void {
+    this.settingsTab.set(tab);
+  }
+
+  setGridMode(value: SegmentedControlValue): void {
+    this.editor.gridRadio.set(value as GridMode);
+  }
+
+  setGridDensity(value: SegmentedControlValue): void {
+    this.editor.gridDensityRadio.set(value as GridDensityLabel);
+  }
+
+  setGridColor(value: SegmentedControlValue): void {
+    this.editor.gridColorRadio.set(value as GridColorLabel);
+  }
+
+  setGridLineWidth(value: SegmentedControlValue): void {
+    this.editor.gridLineWidthRadio.set(value as GridLineWidthLabel);
+  }
+
+  setOutlineWidth(value: SegmentedControlValue): void {
+    this.editor.outlineRadio.set(value as OutlineWidthLabel);
+  }
+
+  setDimColor(value: SegmentedControlValue): void {
+    this.editor.dimRadio.set(value as DimColor);
+  }
+
+  setScanType(value: SegmentedControlValue): void {
+    this.editor.scanTypeRadio.set(value as ScanType);
+  }
+
+  setPageNumber(value: SegmentedControlValue): void {
+    this.editor.pageNumberRadio.set(value as PageNumberType);
+  }
+
+  setDefaultFitMode(value: SegmentedControlValue): void {
+    this.editor.defaultFitModeRadio.set(value as DefaultFitMode);
+  }
 
   copy(): void {
     navigator.clipboard.writeText(this.dashboard.newPassword());

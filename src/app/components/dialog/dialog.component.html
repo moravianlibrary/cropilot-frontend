@@ -1,4 +1,7 @@
 @let dialogButtons = ui.dialogButtons();
+@let dialogContentType = ui.dialogContentType();
+@let canWriteTitle = auth.canWriteTitle();
+@let isAdmin = auth.isAdmin();
 
 <div
   class="dialog-backdrop"
@@ -9,6 +12,7 @@
 <div
   class="dialog-container"
   [class.open]="ui.dialogOpen()"
+  [class.settings-dialog]="dialogContentType === 'settings'"
   [style]="ui.dialogWidth() ? `width:min(90dvw, ${ui.dialogWidth()}px)` : ''"
 >
   <header class="dialog-header">
@@ -20,205 +24,193 @@
       (keydown.enter)="close()"
       tabindex="0"
     >
-      <app-icon name="close" [size]="24" />
+      <app-icon name="close" [size]="dialogContentType === 'settings' ? 22 : 24" />
     </span>
   </header>
+
+  @if (dialogContentType === 'settings') {
+    <nav class="settings-tabs" role="tablist" aria-label="Sekce nastavení">
+      @if (canWriteTitle) {
+        <button
+          type="button"
+          role="tab"
+          [class.active]="settingsTab() === 'editor'"
+          [attr.aria-selected]="settingsTab() === 'editor'"
+          (click)="selectSettingsTab('editor')"
+        >
+          Vzhled editoru
+        </button>
+      }
+      <button
+        type="button"
+        role="tab"
+        [class.active]="!canWriteTitle || settingsTab() === 'behavior'"
+        [attr.aria-selected]="!canWriteTitle || settingsTab() === 'behavior'"
+        (click)="selectSettingsTab('behavior')"
+      >
+        Chování aplikace
+      </button>
+    </nav>
+  }
 
   @if (ui.dialogContent()) {
     <section
       id="dialog-body"
       class="dialog-body os-pending"
+      [class.settings-body]="dialogContentType === 'settings'"
       [style]="dialogButtons.length ? 'border-radius:0' : ''"
     >
-      @let isAdmin = auth.isAdmin();
-      @let canWriteTitle = auth.canWriteTitle();
-      @let dialogContentType = ui.dialogContentType();
-
       <!-- Settings -->
       @if (dialogContentType === 'settings') {
         <div class="settings-content-wrapper">
-          @if (canWriteTitle) {
-            <div class="settings-block">
-              <div class="settings-block-label">Mřížka</div>
-              <div class="sublabel">Zobrazení</div>
-              <span class="radios-wrapper">
-                @for (gridMode of gridModeDictKeys; track gridMode) {
-                  <label class="radio">
+          @if (canWriteTitle && settingsTab() === 'editor') {
+            <div class="settings-panel" role="tabpanel">
+              <section class="settings-block">
+                <h3>Mřížka</h3>
+
+                <div class="settings-row">
+                  <div class="sublabel">Zobrazení</div>
+                  <app-segmented-control
+                    ariaLabel="Zobrazení mřížky"
+                    [options]="gridModeOptions"
+                    [value]="editor.gridRadio()"
+                    (valueChange)="setGridMode($event)"
+                  />
+                </div>
+
+                <div class="settings-row">
+                  <div class="sublabel">Hustota</div>
+                  <app-segmented-control
+                    ariaLabel="Hustota mřížky"
+                    [options]="gridDensityOptions"
+                    [value]="editor.gridDensityRadio()"
+                    (valueChange)="setGridDensity($event)"
+                  />
+                </div>
+
+                <div class="settings-row">
+                  <div class="sublabel">Barva</div>
+                  <app-segmented-control
+                    ariaLabel="Barva mřížky"
+                    variant="swatches"
+                    [options]="gridColorOptions"
+                    [value]="editor.gridColorRadio()"
+                    (valueChange)="setGridColor($event)"
+                  />
+                </div>
+
+                <div class="settings-row">
+                  <div class="sublabel">Tloušťka čáry</div>
+                  <app-segmented-control
+                    ariaLabel="Tloušťka čáry mřížky"
+                    variant="lines"
+                    [options]="gridLineWidthOptions"
+                    [value]="editor.gridLineWidthRadio()"
+                    (valueChange)="setGridLineWidth($event)"
+                  />
+                </div>
+              </section>
+
+              <section class="settings-block">
+                <h3>Obrys vybraného výřezu</h3>
+
+                <div class="settings-row">
+                  <div class="sublabel">Tloušťka</div>
+                  <app-segmented-control
+                    ariaLabel="Tloušťka obrysu"
+                    variant="lines"
+                    [options]="outlineWidthOptions"
+                    [value]="editor.outlineRadio()"
+                    (valueChange)="setOutlineWidth($event)"
+                  />
+                </div>
+
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    [checked]="editor.outlineDashed"
+                    (change)="editor.toggleOutlineDashed()"
+                  />
+                  <span class="slider"></span>
+                  <span>Čárkovaný obrys</span>
+                </label>
+              </section>
+
+              <section class="settings-block">
+                <h3>Barva clony</h3>
+                <app-segmented-control
+                  ariaLabel="Barva clony"
+                  variant="swatches"
+                  [options]="dimColorOptions"
+                  [value]="editor.dimRadio()"
+                  (valueChange)="setDimColor($event)"
+                />
+              </section>
+            </div>
+          }
+
+          @if (!canWriteTitle || settingsTab() === 'behavior') {
+            <div class="settings-panel" role="tabpanel">
+              <section class="settings-block">
+                <h3>Aktivní filtry při startu aplikace</h3>
+
+                <div class="settings-row">
+                  <div class="sublabel">Typ skenů</div>
+                  <app-segmented-control
+                    ariaLabel="Typ skenů při startu"
+                    [options]="scanTypeOptions"
+                    [value]="editor.scanTypeRadio()"
+                    (valueChange)="setScanType($event)"
+                  />
+                </div>
+
+                <div class="settings-row">
+                  <div class="sublabel">Strany</div>
+                  <app-segmented-control
+                    ariaLabel="Počet stran při startu"
+                    [options]="pageNumberOptions"
+                    [value]="editor.pageNumberRadio()"
+                    (valueChange)="setPageNumber($event)"
+                  />
+                </div>
+              </section>
+
+              <section class="settings-block">
+                <h3>Výchozí zobrazení skenu</h3>
+                <app-segmented-control
+                  ariaLabel="Výchozí zobrazení skenu"
+                  [options]="defaultFitModeOptions"
+                  [value]="editor.defaultFitModeRadio()"
+                  (valueChange)="setDefaultFitMode($event)"
+                />
+              </section>
+
+              <section class="settings-block settings-toggles">
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    [checked]="editor.rememberLastSelectedImageOfLastOpenTitle"
+                    (change)="editor.toggleLastSelectedScan()"
+                  />
+                  <span class="slider"></span>
+                  <span>Zapamatovat si naposledy zobrazený sken u naposledy otevřeného titulu</span>
+                </label>
+
+                @if (isAdmin) {
+                  <label class="toggle-switch">
                     <input
-                      type="radio"
-                      name="grid-mode"
-                      [checked]="gridMode === editor.gridRadio()"
-                      (change)="editor.gridRadio.set(gridMode)"
+                      type="checkbox"
+                      [checked]="editor.showPredictions"
+                      (change)="editor.togglePredictions()"
                     />
-                    <span class="radio-value">{{ gridModeDict[gridMode] }}</span>
-                  </label>
-                }
-              </span>
-              <div class="sublabel last-sublabel">Hustota</div>
-              <span class="radios-wrapper">
-                @for (gridDensity of gridDensityDictKeys; track gridDensity) {
-                  <label class="radio">
-                    <input
-                      type="radio"
-                      name="grid-density"
-                      [checked]="gridDensity === editor.gridDensityRadio()"
-                      (change)="editor.gridDensityRadio.set(gridDensity)"
-                    />
-                    <span class="radio-value">{{ gridDensity }}</span>
-                  </label>
-                }
-              </span>
-              <div class="sublabel last-sublabel">Barva</div>
-              <span class="radios-wrapper">
-                @for (gridColor of gridColorDictKeys; track gridColor) {
-                  <label class="radio">
-                    <input
-                      type="radio"
-                      name="grid-color"
-                      [checked]="gridColor === editor.gridColorRadio()"
-                      (change)="editor.gridColorRadio.set(gridColor)"
-                    />
-                    <span class="radio-value color-radio-value">
-                      <span class="color-swatch" [style.background]="gridColorDict[gridColor]"></span>
-                      {{ gridColor }}
+                    <span class="slider"></span>
+                    <span>Zobrazení původních predikcí</span>
+                    <span class="icon">
+                      <app-icon name="admin" [size]="16" />
                     </span>
                   </label>
                 }
-              </span>
-              <div class="sublabel last-sublabel">Tloušťka čáry</div>
-              <span class="radios-wrapper">
-                @for (gridLineWidth of gridLineWidthDictKeys; track gridLineWidth) {
-                  <label class="radio">
-                    <input
-                      type="radio"
-                      name="grid-line-width"
-                      [checked]="gridLineWidth === editor.gridLineWidthRadio()"
-                      (change)="editor.gridLineWidthRadio.set(gridLineWidth)"
-                    />
-                    <span class="radio-value">{{ gridLineWidth }}</span>
-                  </label>
-                }
-              </span>
-            </div>
-            <div class="settings-block">
-              <div class="settings-block-label">Obrys vybraného výřezu</div>
-              <div class="sublabel">Tloušťka</div>
-              <span class="radios-wrapper">
-                @for (outlineWidth of outlineWidthDictKeys; track outlineWidth) {
-                  <label class="radio">
-                    <input
-                      type="radio"
-                      name="outline-width"
-                      [checked]="outlineWidth === editor.outlineRadio()"
-                      (change)="editor.outlineRadio.set(outlineWidth)"
-                    />
-                    <span class="radio-value">{{ outlineWidth }}</span>
-                  </label>
-                }
-              </span>
-              <div class="sublabel last-sublabel">Typ</div>
-              <label class="settings-block-label toggle-switch outline-type">
-                <input
-                  type="checkbox"
-                  [checked]="editor.outlineDashed"
-                  (click)="editor.toggleOutlineDashed()"
-                />
-                <span class="slider"></span>
-                Čárkovaný
-              </label>
-            </div>
-            <div class="settings-block">
-              <div class="settings-block-label">Barva clony</div>
-              <span class="radios-wrapper">
-                @for (dimColor of dimColorDictKeys; track dimColor) {
-                  <label class="radio">
-                    <input
-                      type="radio"
-                      name="dim-color"
-                      [checked]="dimColor === editor.dimRadio()"
-                      (change)="editor.dimRadio.set(dimColor)"
-                    />
-                    <span class="radio-value">{{ dimColor }}</span>
-                  </label>
-                }
-              </span>
-            </div>
-          }
-          <div class="settings-block">
-            <div class="settings-block-label">Aktivní filtry při startu aplikace</div>
-            <div class="sublabel">Typ skenů</div>
-            <span class="radios-wrapper">
-              @for (scanType of filterScanTypeStartDictKeys; track scanType) {
-                <label class="radio">
-                  <input
-                    type="radio"
-                    name="scan-type"
-                    [checked]="scanType === editor.scanTypeRadio()"
-                    (change)="editor.scanTypeRadio.set(scanType)"
-                  />
-                  <span class="radio-value">{{ filterScanTypeStartDict[scanType] }}</span>
-                </label>
-              }
-            </span>
-            <div class="sublabel last-sublabel">Strany</div>
-            <span class="radios-wrapper">
-              @for (pageNumber of filterPageNumberStartDictKeys; track pageNumber) {
-                <label class="radio">
-                  <input
-                    type="radio"
-                    name="page-number"
-                    [checked]="pageNumber === editor.pageNumberRadio()"
-                    (change)="editor.pageNumberRadio.set(pageNumber)"
-                  />
-                  <span class="radio-value">{{ filterPageNumberStartDict[pageNumber] }}</span>
-                </label>
-              }
-            </span>
-          </div>
-          <div class="settings-block">
-            <div class="settings-block-label">Výchozí zobrazení skenu</div>
-            <span class="radios-wrapper">
-              @for (fitMode of defaultFitModeDictKeys; track fitMode) {
-                <label class="radio">
-                  <input
-                    type="radio"
-                    name="default-fit-mode"
-                    [checked]="fitMode === editor.defaultFitModeRadio()"
-                    (change)="editor.defaultFitModeRadio.set(fitMode)"
-                  />
-                  <span class="radio-value">{{ defaultFitModeDict[fitMode] }}</span>
-                </label>
-              }
-            </span>
-          </div>
-          <div
-            class="settings-block"
-            [class.last]="!isAdmin"
-          >
-            <label class="settings-block-label toggle-switch">
-              <input
-                type="checkbox"
-                [checked]="editor.rememberLastSelectedImageOfLastOpenTitle"
-                (click)="editor.toggleLastSelectedScan()"
-              />
-              <span class="slider"></span>
-              Zapamatovat si naposledy zobrazený sken u naposledy otevřeného titulu
-            </label>
-          </div>
-          @if (isAdmin) {
-            <div class="settings-block last">
-              <label class="settings-block-label toggle-switch">
-                <input
-                  type="checkbox"
-                  [checked]="editor.showPredictions"
-                  (click)="editor.togglePredictions()"
-                />
-                <span class="slider"></span>
-                Zobrazení původních predikcí
-                <span class="icon">
-                  <app-icon name="admin" [size]="16" />
-                </span>
-              </label>
+              </section>
             </div>
           }
         </div>
