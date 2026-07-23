@@ -33,13 +33,36 @@
       </span>
     }
   }
-  <div class="label">Otočení skenu</div>
+  <div class="label">Otočení</div>
   <div class="actions">
-    <span class="switch-container view-switch" aria-label="Zobrazení textu">
+    <span class="switch-container scope-switch" aria-label="Rozsah otočení">
+      <button
+        type="button"
+        class="switch-button"
+        [class.active]="editor.rotationScope() === 'current'"
+        [attr.aria-pressed]="editor.rotationScope() === 'current'"
+        (click)="editor.rotationScope.set('current')"
+      >
+        Tento sken
+      </button>
+      <button
+        type="button"
+        class="switch-button"
+        [class.active]="editor.rotationScope() === 'all'"
+        [attr.aria-pressed]="editor.rotationScope() === 'all'"
+        (click)="editor.rotationScope.set('all')"
+      >
+        Všechny skeny
+      </button>
+    </span>
+  </div>
+  <div class="actions">
+    <span class="switch-container view-switch" aria-label="Orientace skenu">
       <button
         type="button"
         class="switch-button hybrid"
-        [class.active]="editor.orientation() === 270"
+        [class.active]="editor.isOrientationActive(270)"
+        [attr.aria-pressed]="editor.isOrientationActive(270)"
         (click)="editor.rotate(270)"
       >
         <span class="icon">
@@ -49,7 +72,8 @@
       <button
         type="button"
         class="switch-button"
-        [class.active]="editor.orientation() === 0"
+        [class.active]="editor.isOrientationActive(0)"
+        [attr.aria-pressed]="editor.isOrientationActive(0)"
         (click)="editor.rotate(0)"
       >
         0°
@@ -57,7 +81,8 @@
       <button
         type="button"
         class="switch-button hybrid"
-        [class.active]="editor.orientation() === 90"
+        [class.active]="editor.isOrientationActive(90)"
+        [attr.aria-pressed]="editor.isOrientationActive(90)"
         (click)="editor.rotate(90)"
       >
         <span class="icon">
@@ -67,7 +92,8 @@
       <button
         type="button"
         class="switch-button"
-        [class.active]="editor.orientation() === 180"
+        [class.active]="editor.isOrientationActive(180)"
+        [attr.aria-pressed]="editor.isOrientationActive(180)"
         (click)="editor.rotate(180)"
       >
         180°

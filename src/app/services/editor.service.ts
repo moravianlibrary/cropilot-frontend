@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation } from '../app.types';
+import { DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation, RotationScope } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
 import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage, wait } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
@@ -79,6 +79,7 @@ export class EditorService {
   rotationStartMouseAngle: number = 0;
   gridMode = signal<GridMode>('when-rotating');
   orientation = signal<ImageOrientation>(0);
+  rotationScope = signal<RotationScope>('current');
 
   // Resize
   isResizing: boolean = false;
@@ -101,7 +102,7 @@ export class EditorService {
   viewport: Viewport = { x: 0, y: 0, scale: 1 };
   zoomFactor: number = 0.005;
   btnZoomFactor = this.zoomFactor * 40;
-  minZoom: number = 1;
+  minZoom: number = 0.95;
   maxZoom: number = 5;
   snapped: boolean = false;
   isPanning: boolean = false;
@@ -323,6 +324,10 @@ export class EditorService {
 
   // ========== MAIN IMAGE LOGIC & DRAWING ==========
   setMainImage(img: ImageItem): void {
+    if (img._id !== this.mainImageItem()._id) {
+      this.rotationScope.set('current');
+    }
+
     this.loadingMain.set(true);
     this.loadingFirstCurrentPage.set(true);
 
@@ -801,7 +806,7 @@ export class EditorService {
     const scale = clamp(newScale, this.minZoom, this.maxZoom);
     
     if (scale === oldScale) return;
-    if (scale <= 1) {
+    if (scale === 1) {
       this.resetZoom();
       return;
     }
@@ -863,6 +868,44 @@ export class EditorService {
     const scale = this.viewport.scale * (1 + (type === 'in' ? 1 : -1) * this.btnZoomFactor);
 
     this.setZoomAt(x, y, scale);
+  }
+
+  fitZoomToPages(safePadding: number = 32): void {
+    if (!this.c || !this.currentPages.length) return;
+
+    const { width: canvasWidth, height: canvasHeight } = this.c;
+    const { x, y, width, height } = this.imageRect;
+
+    const left = Math.min(...this.currentPages.map(page => x + width * page.left));
+    const right = Math.max(...this.currentPages.map(page => x + width * page.right));
+    const top = Math.min(...this.currentPages.map(page => y + height * page.top));
+    const bottom = Math.max(...this.currentPages.map(page => y + height * page.bottom));
+
+    const boundsWidth = right - left;
+    const boundsHeight = bottom - top;
+    if (boundsWidth <= 0 || boundsHeight <= 0) return;
+
+    const padding = Math.min(safePadding, canvasWidth / 4, canvasHeight / 4);
+    const availableWidth = canvasWidth - 2 * padding;
+    const availableHeight = canvasHeight - 2 * padding;
+    const scale = clamp(
+      Math.min(availableWidth / boundsWidth, availableHeight / boundsHeight),
+      this.minZoom,
+      this.maxZoom
+    );
+
+    const centerX = (left + right) / 2;
+    const centerY = (top + bottom) / 2;
+
+    this.viewport = {
+      scale,
+      x: canvasWidth / 2 - centerX * scale,
+      y: canvasHeight / 2 - centerY * scale,
+    };
+
+    this.snapped = false;
+    this.clampViewportToMinZoomEnvelope();
+    this.redrawAllPages();
   }
 
   // Zoom-snap to selected page
@@ -1101,6 +1144,11 @@ export class EditorService {
 
   // ========== ROTATING ==========
   rotate(orientation: ImageOrientation): void {
+    if (this.rotationScope() === 'all') {
+      this.rotateAll(orientation);
+      return;
+    }
+
     if (!this.auth.canEditTitle() || !this.displayedImagesFinal().length || !this.mainImage) return;
     if (orientation === this.orientation()) return;
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
@@ -1161,6 +1209,96 @@ export class EditorService {
     this.updateMainImageItem();
 
     this.imgWasEdited.set(true);
+    this.sthWasEdited = true;
+  }
+
+  isOrientationActive(orientation: ImageOrientation): boolean {
+    if (this.rotationScope() === 'current') {
+      return this.orientation() === orientation;
+    }
+
+    const images = this.images();
+    return images.length > 0
+      && images.every(image => this.normalizeOrientation(image.orientation) === orientation);
+  }
+
+  private rotateAll(orientation: ImageOrientation): void {
+    if (!this.auth.canEditTitle() || !this.images().length || !this.mainImage) return;
+
+    if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
+    this.updateImagesByCurrentPages();
+
+    const currentImageId = this.mainImageItem()._id;
+    if (this.imgWasEdited()) this.updateImagesByEdited(currentImageId);
+
+    const changedImageIds = new Set(
+      this.images()
+        .filter(image => this.normalizeOrientation(image.orientation) !== orientation)
+        .map(image => image._id)
+    );
+
+    if (!changedImageIds.size) return;
+
+    const updateOrientation = (image: ImageItem, edited: boolean): ImageItem => {
+      const currentOrientation = this.normalizeOrientation(image.orientation);
+      if (currentOrientation === orientation) return image;
+
+      const pagesInOriginalOrientation = currentOrientation === 0
+        ? image.pages
+        : image.pages.map(page =>
+            this.rotatePageGeometry(page, this.getInverseOrientation(currentOrientation))
+          );
+
+      return {
+        ...image,
+        orientation,
+        edited,
+        pages: pagesInOriginalOrientation.map(page =>
+          this.rotatePageGeometry(page, orientation)
+        ),
+      };
+    };
+
+    const updatedImages = this.images().map(image =>
+      updateOrientation(image, true)
+    );
+    const imagesById = new Map(updatedImages.map(image => [image._id, image]));
+
+    this.images.set(updatedImages);
+    this.displayedImages.update(images =>
+      images.map(image => imagesById.get(image._id) ?? image)
+    );
+    this.displayedImagesPages.update(images =>
+      images.map(image => imagesById.get(image._id) ?? image)
+    );
+
+    const updatedPredictedImages = this.predictedOrientedImages().map(image =>
+      updateOrientation(image, false)
+    );
+    this.predictedOrientedImages.set(updatedPredictedImages);
+
+    const updatedCurrentImage = imagesById.get(currentImageId);
+    if (!updatedCurrentImage) return;
+
+    this.updateImageRect(this.mainImage, orientation);
+
+    this.selectedPage = null;
+    this.lastSelectedPage = null;
+    this.lastPageCursorIsInside = null;
+    this.currentPages = updatedCurrentImage.pages;
+    this.currentPredictedPages =
+      updatedPredictedImages.find(image => image._id === currentImageId)?.pages ?? [];
+
+    this.mainImageItem.set({
+      ...updatedCurrentImage,
+      url: this.mainImageItem().url,
+    });
+
+    this.resetZoom();
+    this.redrawAllPages();
+    this.updateMainImageItem();
+
+    this.imgWasEdited.set(changedImageIds.has(currentImageId));
     this.sthWasEdited = true;
   }
 

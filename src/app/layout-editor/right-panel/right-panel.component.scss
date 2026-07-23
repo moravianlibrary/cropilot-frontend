@@ -116,6 +116,14 @@
         color: var(--text-base);
       }
     }
+
+    .scope-switch {
+      grid-template-columns: repeat(2, 1fr);
+
+      .switch-button {
+        padding-inline: var(--spacing-x2);
+      }
+    }
   }
 }
 
