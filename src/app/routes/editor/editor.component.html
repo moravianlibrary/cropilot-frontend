@@ -1,8 +1,8 @@
 <div 
   #mainWrapper
   class="main-wrapper"
-  (keydown)="edtSvc.onKeyDown($event)"
-  (keyup)="edtSvc.onKeyUp($event)"
+  (keydown)="editor.onKeyDown($event)"
+  (keyup)="editor.onKeyUp($event)"
   tabindex="0"
 >
   <app-left-panel-editor></app-left-panel-editor>
@@ -13,7 +13,7 @@
   <app-right-panel-editor></app-right-panel-editor>
 
   <app-dialog
-    [open]="uiSvc.dialogOpen()"
-    (closed)="uiSvc.closeDialog()"
+    [open]="ui.dialogOpen()"
+    (closed)="ui.closeDialog()"
   />
 </div>

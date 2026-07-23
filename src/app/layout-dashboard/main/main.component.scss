@@ -52,8 +52,8 @@
     label {
       position: relative;
 
-      svg {
-        fill: var(--icon-dark);
+      .icon {
+        color: var(--icon-dark);
         position: absolute;
         top: var(--spacing-x3);
         left: var(--spacing-x4);
@@ -157,7 +157,7 @@
             .filter-icon {
               font-size: 10px;
               transition: transform 0.2s ease;
-              fill: var(--primary);
+              color: var(--primary);
             }
 
             .active {
@@ -183,27 +183,27 @@
             &:hover {
               cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
 
-              .icon {
+              .icon-wrapper {
                 background-color: #8099B31A;
 
-                svg {
-                  fill: var(--primary-hover) !important;
+                .icon {
+                  color: var(--primary-hover) !important;
                 }
               }
             }
 
-            .icon {
+            .icon-wrapper {
               display: flex;
               justify-content: center;
               align-items: center;
               border-radius: var(--spacing-x2);
 
-              svg {
-                fill: var(--icon-inactive);
-                transition: transform .2s ease, fill .2s ease;
+              .icon {
+                color: var(--icon-inactive);
+                transition: transform .2s ease, color .2s ease;
 
                 &.active {
-                  fill: var(--primary);
+                  color: var(--primary);
                 }
 
                 &.oldest {
@@ -268,8 +268,8 @@
               gap: var(--spacing-x2);
               @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
 
-              svg {
-                fill: var(--primary);
+              .icon {
+                color: var(--primary);
               }
             }
 
@@ -310,8 +310,8 @@
               color: #08203C;
               background-color: #007BFF1A;
 
-              svg {
-                fill: #0C3D77;
+              .icon {
+                color: #0C3D77;
               }
             }
 
@@ -319,8 +319,8 @@
               color: #00310D;
               background-color: #34C7591A;
 
-              svg {
-                fill: #3F764D;
+              .icon {
+                color: #3F764D;
               }
             }
             
@@ -328,8 +328,8 @@
               color: #362000;
               background-color: #FF95001A;
 
-              svg {
-                fill: #775A32;
+              .icon {
+                color: #775A32;
               }
             }
 
@@ -337,8 +337,8 @@
               color: #390400;
               background-color: #FF3A301A;
 
-              svg {
-                fill: #853D38;
+              .icon {
+                color: #853D38;
               }
             }
 
@@ -400,8 +400,8 @@
                 border-color: var(--border-tertiary-hover);
                 outline: 5px solid var(--border-light);
 
-                svg {
-                  fill: var(--primary);
+                .icon {
+                  color: var(--primary);
                 }
               }
             }
@@ -461,5 +461,98 @@
         }
       }
     }
+  }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-x1);
+
+  .page-button,
+  .page-number {
+    user-select: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+  }
+
+  .page-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-x1);
+    padding: var(--spacing-x1) var(--spacing-x2);
+    border-radius: var(--spacing-x2);
+    @include styles.font(450, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+
+    app-icon {
+      display: inline-flex;
+      color: currentColor;
+    }
+
+    &.prev app-icon {
+      transform: rotate(90deg);
+    }
+
+    &.next app-icon {
+      transform: rotate(-90deg);
+    }
+
+    &:hover {
+      color: var(--text-secondary);
+      background-color: var(--bg-bright);
+    }
+
+    &.disabled {
+      color: var(--text-disabled);
+      pointer-events: none;
+    }
+  }
+
+  .pages {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-x1);
+  }
+
+  .page-number {
+    min-width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacing-x2);
+    border-radius: 999px;
+    @include styles.font(450, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+
+    &:hover {
+      color: var(--text-secondary);
+      background-color: var(--bg-bright);
+    }
+
+    &.active {
+      color: var(--text-secondary);
+      background-color: var(--bg-main-bright);
+      font-weight: 600;
+      pointer-events: none;
+
+      &:hover {
+        background-color: var(--bg-main-bright);
+        cursor: default;
+      }
+    }
+  }
+
+  .ellipsis {
+    padding: 0 var(--spacing-x1);
+    color: var(--text-light);
   }
 }

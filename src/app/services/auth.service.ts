@@ -12,7 +12,7 @@ import { LocalStorageService } from './local-storage.service';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private envSvc = inject(EnvironmentService);
+  private env = inject(EnvironmentService);
   private storage = inject(LocalStorageService);
 
   username = signal<string>('');
@@ -25,11 +25,15 @@ export class AuthService {
   canReadGroup = signal<string>('');
   canUpload = signal<boolean>(false);
   isAdmin = computed<boolean>(() => this.user()?.role === 'admin');
+  // Local editing (moving/adding/removing crops in the editor) is allowed for any
+  // authenticated viewer, including read-only users. Persisting changes still
+  // requires write permission (canWriteTitle).
+  canEditTitle = computed<boolean>(() => !!this.user());
 
   get baseUri(): string {
     return window.location.origin;
   }
-  get apiUrl(): string { return this.envSvc.get('serverBaseUrl') };
+  get apiUrl(): string { return this.env.get('serverBaseUrl') };
   authHeaders(type: string = 'json', contentType: boolean = false): HttpHeaders {
     const authType = 'Bearer';
     const accessToken = this.storage.get<string>('access_token', null, true);

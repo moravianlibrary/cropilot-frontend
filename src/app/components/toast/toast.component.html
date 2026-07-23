@@ -1,5 +1,5 @@
 <div class="toast-host" aria-live="polite" aria-relevant="additions removals">
-  @for (t of uiSvc.toasts(); track t.id) {
+  @for (t of ui.toasts(); track t.id) {
     <div
       class="toast"
       [ngClass]="'toast--' + (t.type ?? 'info')"
@@ -10,7 +10,7 @@
         type="button"
         class="toast__close"
         aria-label="Close notification"
-        (click)="uiSvc.dismissToast(t.id)"
+        (click)="ui.dismissToast(t.id)"
       >✕</button>
     </div>
   }

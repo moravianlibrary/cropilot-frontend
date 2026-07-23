@@ -1,75 +1,101 @@
-@let dialogButtons = uiSvc.dialogButtons();
+@let dialogButtons = ui.dialogButtons();
 
 <div
   class="dialog-backdrop"
-  [class.open]="uiSvc.dialogOpen()"
+  [class.open]="ui.dialogOpen()"
   (click)="onBackdropClick()"
 ></div>
 
 <div
   class="dialog-container"
-  [class.open]="uiSvc.dialogOpen()"
-  [style]="uiSvc.dialogWidth() ? `width:min(90dvw, ${uiSvc.dialogWidth()}px)` : ''"
+  [class.open]="ui.dialogOpen()"
+  [style]="ui.dialogWidth() ? `width:min(90dvw, ${ui.dialogWidth()}px)` : ''"
 >
   <header class="dialog-header">
-    <h2>{{ uiSvc.dialogTitle() }}</h2>
-
-    <svg
-      width="24" height="24" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg"
-      class="dialog-close"
+    <h2>{{ ui.dialogTitle() }}</h2>
+    <span
+      class="icon dialog-close"
       (click)="close()"
       (keydown.space)="close()"
       (keydown.enter)="close()"
       tabindex="0"
     >
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M5.46967 5.46967C5.76256 5.17678 6.23744 5.17678 6.53033 5.46967L12 10.9393L17.4697 5.46967C17.7626 5.17678 18.2374 5.17678 18.5303 5.46967C18.8232 5.76256 18.8232 6.23744 18.5303 6.53033L13.0607 12L18.5303 17.4697C18.8232 17.7626 18.8232 18.2374 18.5303 18.5303C18.2374 18.8232 17.7626 18.8232 17.4697 18.5303L12 13.0607L6.53033 18.5303C6.23744 18.8232 5.76256 18.8232 5.46967 18.5303C5.17678 18.2374 5.17678 17.7626 5.46967 17.4697L10.9393 12L5.46967 6.53033C5.17678 6.23744 5.17678 5.76256 5.46967 5.46967Z" fill="#263340"/>
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M5.46967 5.46967C5.76256 5.17678 6.23744 5.17678 6.53033 5.46967L12 10.9393L17.4697 5.46967C17.7626 5.17678 18.2374 5.17678 18.5303 5.46967C18.8232 5.76256 18.8232 6.23744 18.5303 6.53033L13.0607 12L18.5303 17.4697C18.8232 17.7626 18.8232 18.2374 18.5303 18.5303C18.2374 18.8232 17.7626 18.8232 17.4697 18.5303L12 13.0607L6.53033 18.5303C6.23744 18.8232 5.76256 18.8232 5.46967 18.5303C5.17678 18.2374 5.17678 17.7626 5.46967 17.4697L10.9393 12L5.46967 6.53033C5.17678 6.23744 5.17678 5.76256 5.46967 5.46967Z" fill="#263340"/>
-    </svg>
+      <app-icon name="close" [size]="24" />
+    </span>
   </header>
 
-  @if (uiSvc.dialogContent()) {
+  @if (ui.dialogContent()) {
     <section
       id="dialog-body"
       class="dialog-body os-pending"
       [style]="dialogButtons.length ? 'border-radius:0' : ''"
     >
-      @let canWriteTitle = authSvc.canWriteTitle();
-      @let dialogContentType = uiSvc.dialogContentType();
+      @let isAdmin = auth.isAdmin();
+      @let canWriteTitle = auth.canWriteTitle();
+      @let dialogContentType = ui.dialogContentType();
 
       <!-- Settings -->
       @if (dialogContentType === 'settings') {
         <div class="settings-content-wrapper">
-          @if (authSvc.isAdmin()) {
-            <div class="settings-block">
-              <label class="settings-block-label toggle-switch">
-                <input
-                  type="checkbox"
-                  [checked]="edtSvc.showPredictions"
-                  (click)="edtSvc.togglePredictions()"
-                />
-                <span class="slider"></span>
-                Zobrazení původních predikcí
-                <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M8.00347 1.85303C7.94693 1.91416 7.86771 2.03642 7.78855 2.24845L7.78826 2.24925L6.61365 5.37931C6.47259 5.74706 6.19574 6.03073 5.8294 6.14322C5.46306 6.2557 5.07412 6.17652 4.74886 5.95134L4.74252 5.94695L2.14177 4.08634C1.99367 3.97996 1.87505 3.91374 1.78612 3.87513C1.79853 3.97189 1.82941 4.10535 1.89109 4.27898L4.65207 12.0017C4.65725 12.0165 4.68241 12.0598 4.74202 12.1019C4.80173 12.1441 4.85131 12.1536 4.8668 12.1536H11.1335C11.1493 12.1536 11.2005 12.1439 11.264 12.1001C11.3234 12.0593 11.352 12.0172 11.3602 12.0001L14.0487 4.47356L14.0491 4.47264C14.1348 4.23005 14.1673 4.05504 14.172 3.94111C14.0645 3.97731 13.9065 4.05702 13.6984 4.20641L13.6971 4.20734L11.2544 5.94927C10.9309 6.17676 10.542 6.25586 10.1761 6.14305C9.81085 6.03042 9.53426 5.74682 9.3933 5.37931L9.392 5.37592L8.21868 2.24925L8.21838 2.24845C8.13922 2.03642 8.06 1.91416 8.00347 1.85303ZM9.155 1.89812C9.04801 1.6117 8.91029 1.35937 8.73409 1.17024C8.55609 0.979196 8.30838 0.823578 8.00347 0.823578C7.69855 0.823578 7.45084 0.979196 7.27284 1.17024C7.09664 1.35937 6.95892 1.6117 6.85192 1.89813L5.67943 5.02257C5.63386 5.14038 5.57106 5.17646 5.53587 5.18727C5.50083 5.19803 5.42737 5.20387 5.32074 5.13099L2.72517 3.27415C2.4631 3.08595 2.20158 2.94332 1.95218 2.8752C1.70836 2.80861 1.39089 2.79333 1.12401 2.9938C0.856973 3.19437 0.783189 3.50379 0.779457 3.75726C0.77564 4.01652 0.840188 4.3082 0.949005 4.61436L0.949316 4.61523L3.7082 12.3321L3.70884 12.3339C3.79721 12.5849 3.97497 12.7844 4.16491 12.9186C4.3552 13.0531 4.60229 13.1536 4.8668 13.1536H11.1335C11.3977 13.1536 11.6431 13.0533 11.8312 12.9237C12.0191 12.7943 12.1975 12.6029 12.2919 12.3638C12.2939 12.3587 12.2958 12.3536 12.2977 12.3484L14.991 4.80844L14.9915 4.80693C15.1087 4.47556 15.1768 4.16271 15.1724 3.88686C15.168 3.61687 15.0894 3.29639 14.815 3.08893C14.5401 2.881 14.2099 2.89344 13.9487 2.96421C13.6826 3.03632 13.4013 3.18877 13.1159 3.39356L13.1152 3.39408L10.6792 5.13123L10.6781 5.13204C10.5756 5.2037 10.5048 5.19792 10.4708 5.18744C10.4362 5.17678 10.3732 5.14063 10.3275 5.02261L9.155 1.89812Z" />
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M3.83333 14.6667C3.83333 14.3905 4.05719 14.1667 4.33333 14.1667H11.6667C11.9428 14.1667 12.1667 14.3905 12.1667 14.6667C12.1667 14.9428 11.9428 15.1667 11.6667 15.1667H4.33333C4.05719 15.1667 3.83333 14.9428 3.83333 14.6667Z" />
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M5.83333 9.33334C5.83333 9.0572 6.05719 8.83334 6.33333 8.83334H9.66667C9.94281 8.83334 10.1667 9.0572 10.1667 9.33334C10.1667 9.60949 9.94281 9.83334 9.66667 9.83334H6.33333C6.05719 9.83334 5.83333 9.60949 5.83333 9.33334Z" />
-                </svg>
-              </label>
-            </div>
-          }
           @if (canWriteTitle) {
             <div class="settings-block">
-              <div class="settings-block-label">Zobrazení mřížky</div>
+              <div class="settings-block-label">Mřížka</div>
+              <div class="sublabel">Zobrazení</div>
               <span class="radios-wrapper">
                 @for (gridMode of gridModeDictKeys; track gridMode) {
                   <label class="radio">
                     <input
                       type="radio"
                       name="grid-mode"
-                      [checked]="gridMode === edtSvc.gridRadio()"
-                      (change)="edtSvc.gridRadio.set(gridMode)"
+                      [checked]="gridMode === editor.gridRadio()"
+                      (change)="editor.gridRadio.set(gridMode)"
                     />
                     <span class="radio-value">{{ gridModeDict[gridMode] }}</span>
+                  </label>
+                }
+              </span>
+              <div class="sublabel last-sublabel">Hustota</div>
+              <span class="radios-wrapper">
+                @for (gridDensity of gridDensityDictKeys; track gridDensity) {
+                  <label class="radio">
+                    <input
+                      type="radio"
+                      name="grid-density"
+                      [checked]="gridDensity === editor.gridDensityRadio()"
+                      (change)="editor.gridDensityRadio.set(gridDensity)"
+                    />
+                    <span class="radio-value">{{ gridDensity }}</span>
+                  </label>
+                }
+              </span>
+              <div class="sublabel last-sublabel">Barva</div>
+              <span class="radios-wrapper">
+                @for (gridColor of gridColorDictKeys; track gridColor) {
+                  <label class="radio">
+                    <input
+                      type="radio"
+                      name="grid-color"
+                      [checked]="gridColor === editor.gridColorRadio()"
+                      (change)="editor.gridColorRadio.set(gridColor)"
+                    />
+                    <span class="radio-value color-radio-value">
+                      <span class="color-swatch" [style.background]="gridColorDict[gridColor]"></span>
+                      {{ gridColor }}
+                    </span>
+                  </label>
+                }
+              </span>
+              <div class="sublabel last-sublabel">Tloušťka čáry</div>
+              <span class="radios-wrapper">
+                @for (gridLineWidth of gridLineWidthDictKeys; track gridLineWidth) {
+                  <label class="radio">
+                    <input
+                      type="radio"
+                      name="grid-line-width"
+                      [checked]="gridLineWidth === editor.gridLineWidthRadio()"
+                      (change)="editor.gridLineWidthRadio.set(gridLineWidth)"
+                    />
+                    <span class="radio-value">{{ gridLineWidth }}</span>
                   </label>
                 }
               </span>
@@ -83,8 +109,8 @@
                     <input
                       type="radio"
                       name="outline-width"
-                      [checked]="outlineWidth === edtSvc.outlineWidthLabel()"
-                      (change)="edtSvc.outlineRadio.set(outlineWidth)"
+                      [checked]="outlineWidth === editor.outlineRadio()"
+                      (change)="editor.outlineRadio.set(outlineWidth)"
                     />
                     <span class="radio-value">{{ outlineWidth }}</span>
                   </label>
@@ -94,8 +120,8 @@
               <label class="settings-block-label toggle-switch outline-type">
                 <input
                   type="checkbox"
-                  [checked]="edtSvc.outlineDashed"
-                  (click)="edtSvc.toggleOutlineDashed()"
+                  [checked]="editor.outlineDashed"
+                  (click)="editor.toggleOutlineDashed()"
                 />
                 <span class="slider"></span>
                 Čárkovaný
@@ -109,8 +135,8 @@
                     <input
                       type="radio"
                       name="dim-color"
-                      [checked]="dimColor === edtSvc.dimRadio()"
-                      (change)="edtSvc.dimRadio.set(dimColor)"
+                      [checked]="dimColor === editor.dimRadio()"
+                      (change)="editor.dimRadio.set(dimColor)"
                     />
                     <span class="radio-value">{{ dimColor }}</span>
                   </label>
@@ -119,18 +145,6 @@
             </div>
           }
           <div class="settings-block">
-            <label class="settings-block-label toggle-switch">
-              <input
-                type="checkbox"
-                [checked]="edtSvc.rememberLastSelectedImageOfLastOpenTitle"
-                (click)="edtSvc.toggleLastSelectedScan()"
-              />
-              <span class="slider"></span>
-              Zapamatovat si naposledy zobrazený sken u naposledy otevřeného titulu
-            </label>
-            <!-- <span class="description">Například: Prohlížíte si titul A a jste na skenu č. 26. Aplikaci zavřete. Pokud mezitím na tomto počítači nikdo neotevře žádný jiný titul, při dalším otevření titulu A se automaticky zobrazí opět sken č. 26.</span> -->
-          </div>
-          <div class="settings-block last">
             <div class="settings-block-label">Aktivní filtry při startu aplikace</div>
             <div class="sublabel">Typ skenů</div>
             <span class="radios-wrapper">
@@ -139,8 +153,8 @@
                   <input
                     type="radio"
                     name="scan-type"
-                    [checked]="scanType === edtSvc.scanTypeRadio()"
-                    (change)="edtSvc.scanTypeRadio.set(scanType)"
+                    [checked]="scanType === editor.scanTypeRadio()"
+                    (change)="editor.scanTypeRadio.set(scanType)"
                   />
                   <span class="radio-value">{{ filterScanTypeStartDict[scanType] }}</span>
                 </label>
@@ -153,14 +167,60 @@
                   <input
                     type="radio"
                     name="page-number"
-                    [checked]="pageNumber === edtSvc.pageNumberRadio()"
-                    (change)="edtSvc.pageNumberRadio.set(pageNumber)"
+                    [checked]="pageNumber === editor.pageNumberRadio()"
+                    (change)="editor.pageNumberRadio.set(pageNumber)"
                   />
                   <span class="radio-value">{{ filterPageNumberStartDict[pageNumber] }}</span>
                 </label>
               }
             </span>
           </div>
+          <div class="settings-block">
+            <div class="settings-block-label">Výchozí zobrazení skenu</div>
+            <span class="radios-wrapper">
+              @for (fitMode of defaultFitModeDictKeys; track fitMode) {
+                <label class="radio">
+                  <input
+                    type="radio"
+                    name="default-fit-mode"
+                    [checked]="fitMode === editor.defaultFitModeRadio()"
+                    (change)="editor.defaultFitModeRadio.set(fitMode)"
+                  />
+                  <span class="radio-value">{{ defaultFitModeDict[fitMode] }}</span>
+                </label>
+              }
+            </span>
+          </div>
+          <div
+            class="settings-block"
+            [class.last]="!isAdmin"
+          >
+            <label class="settings-block-label toggle-switch">
+              <input
+                type="checkbox"
+                [checked]="editor.rememberLastSelectedImageOfLastOpenTitle"
+                (click)="editor.toggleLastSelectedScan()"
+              />
+              <span class="slider"></span>
+              Zapamatovat si naposledy zobrazený sken u naposledy otevřeného titulu
+            </label>
+          </div>
+          @if (isAdmin) {
+            <div class="settings-block last">
+              <label class="settings-block-label toggle-switch">
+                <input
+                  type="checkbox"
+                  [checked]="editor.showPredictions"
+                  (click)="editor.togglePredictions()"
+                />
+                <span class="slider"></span>
+                Zobrazení původních predikcí
+                <span class="icon">
+                  <app-icon name="admin" [size]="16" />
+                </span>
+              </label>
+            </div>
+          }
         </div>
       }
 
@@ -168,6 +228,7 @@
       @if (dialogContentType === 'shortcuts') {
         <div class="shortcuts-content-wrapper">
           <table cellspacing="0" cellpadding="0">
+            @if (isAdmin) { <tr><th>Ukazovat původní predikce</th><td>J</td></tr> }
             @if (canWriteTitle) {
               <tr><th>Vybrat výřez</th><td>1, 2</td></tr>
               <tr><th>Vybrat další výřez</th><td>Tab</td></tr>
@@ -178,6 +239,7 @@
               <tr><th>Změnit pozici výřezu (X, Y)</th><td>←, →, ↑, ↓</td></tr>
               <tr><th>Změnit šířku / výšku výřezu</th><td>Shift + ←, →, ↑, ↓</td></tr>
               <tr><th>Otočit výřez</th><td>A, S</td></tr>
+              <tr><th>Otočit sken o -90° / 0° / 90° / 180°</th><td>D, F, G, H</td></tr>
               <tr><th>Přepnout zobrazení mřížky</th><td>M</td></tr>
               <tr><th>Přepnout zobrazení obrysu</th><td>O</td></tr>
               <tr><th>Přepnout barvu clony</th><td>C</td></tr>
@@ -185,6 +247,7 @@
             @if (canWriteTitle) { <tr><th>Přiblížit / oddálit / vybraný výřez / reset</th><td>Q, W, E, R</td></tr> }
             @else { <tr><th>Přiblížit / oddálit / reset</th><td>Q, W, R</td></tr> }
             <tr><th>Předchozí / další sken</th><td>←, ↑, PageDown / Enter, →, ↓, PageUp, B</td></tr>
+            <tr><th>První / poslední sken</th><td>Home, End</td></tr>
             <tr><th>Přepnout filter</th><td>F1, F2, F3, F4</td></tr>
             <tr><th>Přepnout filter počet výřezů</th><td>Alt / Cmd + 1, 2</td></tr>
             @if (canWriteTitle) {
@@ -215,11 +278,11 @@
                   id="group-name"
                   name="group-name"
                   type="text"
-                  [(ngModel)]="dashSvc.groupName"
-                  (input)="dashSvc.checkGroupNameUniqueness()"
+                  [(ngModel)]="dashboard.groupName"
+                  (input)="dashboard.checkGroupNameUniqueness()"
                 />
               </label>
-              @let groupNameError = dashSvc.groupNameError();
+              @let groupNameError = dashboard.groupNameError();
               @if (groupNameError) {
                 <span class="error">{{ groupNameError }}</span>
               }
@@ -234,7 +297,7 @@
                   id="group-description"
                   name="group-description"
                   [class.edit-group]="dialogContentType === 'edit-group'"
-                  [(ngModel)]="dashSvc.groupDescription"
+                  [(ngModel)]="dashboard.groupDescription"
                 ></textarea>
               </label>
             </div>
@@ -245,14 +308,14 @@
               <label class="above-input select">
                 OŘEZOVÝ MODEL
                 <app-select
-                  [(ngModel)]="dashSvc.selectedCropModel"
+                  [(ngModel)]="dashboard.selectedCropModel"
                   [inputName]="'group-crop-model'"
                   location="dialog"
                   [width]="264"
                   [maxDropdownHeight]="192"
-                  [options]="dashSvc.availableCropModels()"
-                  [usedIn]="dashSvc.selectedCropModelUsed()"
-                  (usedOut)="dashSvc.onSelectCropModelUsed($event)"
+                  [options]="dashboard.availableCropModels()"
+                  [usedIn]="dashboard.selectedCropModelUsed()"
+                  (usedOut)="dashboard.onSelectCropModelUsed($event)"
                 ></app-select>
               </label>
             </div>
@@ -260,14 +323,14 @@
               <label class="above-input select">
                 ROTAČNÍ MODEL
                 <app-select
-                  [(ngModel)]="dashSvc.selectedRotationModel"
+                  [(ngModel)]="dashboard.selectedRotationModel"
                   [inputName]="'group-rotation-model'"
                   location="dialog"
                   [width]="264"
                   [maxDropdownHeight]="192"
-                  [options]="dashSvc.availableRotationModels()"
-                  [usedIn]="dashSvc.selectedRotationModelUsed()"
-                  (usedOut)="dashSvc.onSelectRotationModelUsed($event)"
+                  [options]="dashboard.availableRotationModels()"
+                  [usedIn]="dashboard.selectedRotationModelUsed()"
+                  (usedOut)="dashboard.onSelectRotationModelUsed($event)"
                 ></app-select>
               </label>
             </div>
@@ -277,52 +340,47 @@
             <div class="block permissions">
               <div class="header">
                 <div class="label">ČLENOVÉ A PRÁVA</div>
-                @let permissions = dashSvc.groupPermissions();
+                @let permissions = dashboard.groupPermissions();
                 <div class="add-permission-wrapper">
                   <div class="main">
                     <app-select
-                      [(ngModel)]="dashSvc.selectedUserId"
+                      [(ngModel)]="dashboard.selectedUserId"
                       [inputName]="'add-user-to-group'"
                       location="dialog"
                       [maxDropdownHeight]="192"
-                      [options]="dashSvc.availableUsers()"
+                      [options]="dashboard.availableUsers()"
                       [placeholder]="'Napište jméno'"
-                      [usedIn]="dashSvc.selectedUserUsed()"
-                      (usedOut)="dashSvc.onSelectUserUsed($event)"
+                      [usedIn]="dashboard.selectedUserUsed()"
+                      (usedOut)="dashboard.onSelectUserUsed($event)"
                     ></app-select>
                     <span
                       class="add-perm button real-button primary"
-                      [class.disabled]="!dashSvc.availableUsers().length"
-                      (click)="dashSvc.addUserToGroup(dashSvc.selectedUserId())"
-                      (keydown.space)="dashSvc.addUserToGroup(dashSvc.selectedUserId())"
-                      (keydown.enter)="dashSvc.addUserToGroup(dashSvc.selectedUserId())"
+                      [class.disabled]="!dashboard.availableUsers().length"
+                      (click)="dashboard.addUserToGroup(dashboard.selectedUserId())"
+                      (keydown.space)="dashboard.addUserToGroup(dashboard.selectedUserId())"
+                      (keydown.enter)="dashboard.addUserToGroup(dashboard.selectedUserId())"
                       tabindex="0"
                     >
-                      <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8 3.5C8.27614 3.5 8.5 3.72386 8.5 4V7.5H12C12.2761 7.5 12.5 7.72386 12.5 8C12.5 8.27614 12.2761 8.5 12 8.5H8.5V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V8.5H4C3.72386 8.5 3.5 8.27614 3.5 8C3.5 7.72386 3.72386 7.5 4 7.5H7.5V4C7.5 3.72386 7.72386 3.5 8 3.5Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8 3.5C8.27614 3.5 8.5 3.72386 8.5 4V7.5H12C12.2761 7.5 12.5 7.72386 12.5 8C12.5 8.27614 12.2761 8.5 12 8.5H8.5V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V8.5H4C3.72386 8.5 3.5 8.27614 3.5 8C3.5 7.72386 3.72386 7.5 4 7.5H7.5V4C7.5 3.72386 7.72386 3.5 8 3.5Z" />
-                      </svg>
+                      <span class="icon">
+                        <app-icon name="add" [size]="16" />
+                      </span>
                       Přidat
                     </span>
                     <span
                       class="button quaternary primary remove-all"
-                      [class.hidden]="dashSvc.groupPermissions().length < 2"
-                      (click)="dashSvc.removeAllUsers()"
-                      (keydown.space)="dashSvc.removeAllUsers()"
-                      (keydown.enter)="dashSvc.removeAllUsers()"
+                      [class.hidden]="dashboard.groupPermissions().length < 2"
+                      (click)="dashboard.removeAllUsers()"
+                      (keydown.space)="dashboard.removeAllUsers()"
+                      (keydown.enter)="dashboard.removeAllUsers()"
                       tabindex="0"
                     >
-                      <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M3.31052 3.35611C4.64689 3.22115 5.98341 3.15366 7.32004 3.15366C9.56362 3.15366 11.8134 3.26785 14.0493 3.48943C14.3241 3.51666 14.5248 3.7615 14.4976 4.0363C14.4704 4.31109 14.2255 4.51178 13.9507 4.48455C11.7467 4.26613 9.52978 4.15366 7.32004 4.15366C6.0169 4.15366 4.71367 4.21947 3.41029 4.35112L3.40882 4.35127L2.04882 4.4846C1.774 4.51155 1.52937 4.3106 1.50242 4.03577C1.47548 3.76095 1.67643 3.51632 1.95125 3.48938L3.31052 3.35611Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M6.30647 2.52305L6.15984 3.39615C6.11411 3.66848 5.85626 3.85217 5.58394 3.80644C5.31161 3.7607 5.12792 3.50286 5.17365 3.23053L5.32032 2.3572C5.32288 2.34199 5.32552 2.32606 5.32819 2.30993C5.37409 2.03267 5.44144 1.62592 5.71257 1.31847C6.02861 0.960088 6.51081 0.833344 7.12675 0.833344H8.87341C9.49684 0.833344 9.97856 0.970276 10.2927 1.33231C10.5642 1.64518 10.6299 2.05338 10.6737 2.32595C10.6759 2.33921 10.6779 2.35215 10.68 2.36475L10.8264 3.22991C10.8725 3.50219 10.6891 3.76026 10.4168 3.80633C10.1446 3.85241 9.8865 3.66904 9.84042 3.39677L9.69325 2.52714C9.63749 2.18512 9.60221 2.06236 9.53744 1.98771C9.5016 1.94641 9.37665 1.83334 8.87341 1.83334H7.12675C6.61601 1.83334 6.49488 1.94327 6.46259 1.97988C6.40118 2.04952 6.36652 2.16652 6.30647 2.52305Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12.5985 5.59417C12.8741 5.61195 13.083 5.84977 13.0653 6.12533L12.6317 12.8414L12.6309 12.8541C12.6133 13.1049 12.594 13.3807 12.5423 13.6374C12.4887 13.9035 12.3942 14.1843 12.2028 14.4335C11.802 14.9553 11.12 15.1665 10.1396 15.1665H5.85963C4.87925 15.1665 4.19721 14.9553 3.79643 14.4335C3.60503 14.1843 3.51056 13.9035 3.45697 13.6374C3.40528 13.3807 3.38597 13.1049 3.3684 12.8541L3.36733 12.8387L2.934 6.12533C2.91621 5.84977 3.12518 5.61195 3.40075 5.59417C3.67632 5.57638 3.91413 5.78535 3.93192 6.06092L4.36507 12.7715L4.36517 12.7729C4.38398 13.0414 4.39991 13.2543 4.43729 13.4399C4.47369 13.6207 4.52423 13.7394 4.58949 13.8244C4.70205 13.9709 4.98 14.1665 5.85963 14.1665H10.1396C11.0193 14.1665 11.2972 13.9709 11.4098 13.8244C11.475 13.7394 11.5256 13.6207 11.562 13.4399C11.5993 13.2543 11.6153 13.0414 11.6341 12.7729L11.6342 12.7715L12.0673 6.06092C12.0851 5.78535 12.3229 5.57638 12.5985 5.59417Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M6.38672 11C6.38672 10.7239 6.61058 10.5 6.88672 10.5H9.10672C9.38286 10.5 9.60672 10.7239 9.60672 11C9.60672 11.2762 9.38286 11.5 9.10672 11.5H6.88672C6.61058 11.5 6.38672 11.2762 6.38672 11Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M5.83333 8.33334C5.83333 8.0572 6.05719 7.83334 6.33333 7.83334H9.66667C9.94281 7.83334 10.1667 8.0572 10.1667 8.33334C10.1667 8.60949 9.94281 8.83334 9.66667 8.83334H6.33333C6.05719 8.83334 5.83333 8.60949 5.83333 8.33334Z" />
-                      </svg>
+                      <span class="icon">
+                        <app-icon name="delete" [size]="16" />
+                      </span>
                       Odebrat vše
                     </span>
                   </div>
-                  @let selectedUserError = dashSvc.selectedUserError();
+                  @let selectedUserError = dashboard.selectedUserError();
                   @if (selectedUserError) {
                     <span class="error">{{ selectedUserError }}</span>
                   }
@@ -343,22 +401,16 @@
                           [id]="`${user._id}-upload`"
                           [name]="`${user._id}-upload`"
                           [checked]="isUploadTitle"
-                          (change)="dashSvc.toggleUserPermission(user._id, 'upload')"
-                          (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'upload')"
+                          (change)="dashboard.toggleUserPermission(user._id, 'upload')"
+                          (keydown.enter)="dashboard.toggleUserPermission(user._id, 'upload')"
                         />
-                        <svg
-                          width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
-                          class="check-mark"
-                        >
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.62335 0.195262C9.8837 0.455612 9.8837 0.877722 9.62335 1.13807L3.49509 7.26633L0.195262 3.9665C-0.0650874 3.70615 -0.0650874 3.28404 0.195262 3.02369C0.455612 2.76334 0.877722 2.76334 1.13807 3.02369L3.49509 5.38071L8.68054 0.195262C8.94089 -0.0650874 9.363 -0.0650874 9.62335 0.195262Z" />
-                        </svg>
+                        <span class="check-mark">
+                          <app-icon name="checkmark" [size]="16" />
+                        </span>
                         Správa
-                        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M10.7492 7.99981C10.7492 9.51821 9.5183 10.7491 7.9999 10.7491C6.4815 10.7491 5.25059 9.51821 5.25059 7.99981C5.25059 6.48141 6.4815 5.2505 7.9999 5.2505C9.5183 5.2505 10.7492 6.48141 10.7492 7.99981ZM9.7492 7.99981C9.7492 8.96592 8.96601 9.74911 7.9999 9.74911C7.03378 9.74911 6.25059 8.96592 6.25059 7.99981C6.25059 7.03369 7.03378 6.2505 7.9999 6.2505C8.96601 6.2505 9.7492 7.03369 9.7492 7.99981Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5715 1.6493C7.0733 0.339109 8.92689 0.339109 9.42868 1.6493C9.74244 2.46852 10.6794 2.85663 11.4806 2.49921C12.7618 1.92759 14.0725 3.23828 13.5009 4.51954C13.1435 5.32067 13.5316 6.25766 14.3508 6.57141C15.661 7.0732 15.661 8.9268 14.3508 9.42859C13.5316 9.74234 13.1435 10.6793 13.5009 11.4805C14.0725 12.7617 12.7618 14.0724 11.4806 13.5008C10.6794 13.1434 9.74244 13.5315 9.42868 14.3507C8.92689 15.6609 7.0733 15.6609 6.5715 14.3507C6.25775 13.5315 5.32077 13.1434 4.51963 13.5008C3.23837 14.0724 1.92768 12.7617 2.4993 11.4805C2.85672 10.6793 2.46861 9.74234 1.64939 9.42859C0.3392 8.9268 0.3392 7.0732 1.64939 6.57141C2.46861 6.25766 2.85672 5.32067 2.4993 4.51954C1.92768 3.23828 3.23837 1.92759 4.51963 2.49921C5.32077 2.85663 6.25775 2.46852 6.5715 1.6493ZM4.1122 3.41245C5.43703 4.00351 6.98651 3.36169 7.50536 2.00696C7.67913 1.55322 8.32105 1.55322 8.49483 2.00696C9.01368 3.36169 10.5632 4.00351 11.888 3.41245C12.3317 3.21449 12.7856 3.66839 12.5876 4.11211C11.9966 5.43693 12.6384 6.98641 13.9931 7.50527C14.4469 7.67904 14.4469 8.32096 13.9931 8.49474C12.6384 9.01359 11.9966 10.5631 12.5876 11.8879C12.7856 12.3316 12.3317 12.7855 11.888 12.5876C10.5632 11.9965 9.01368 12.6383 8.49483 13.993C8.32105 14.4468 7.67913 14.4468 7.50536 13.993C6.98651 12.6383 5.43703 11.9965 4.1122 12.5876C3.66849 12.7855 3.21458 12.3316 3.41254 11.8879C4.0036 10.5631 3.36178 9.01359 2.00705 8.49474C1.55331 8.32096 1.55331 7.67904 2.00705 7.50527C3.36178 6.98641 4.0036 5.43693 3.41254 4.11211C3.21458 3.66839 3.66849 3.21449 4.1122 3.41245Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M10.7492 7.99981C10.7492 9.51821 9.5183 10.7491 7.9999 10.7491C6.4815 10.7491 5.25059 9.51821 5.25059 7.99981C5.25059 6.48141 6.4815 5.2505 7.9999 5.2505C9.5183 5.2505 10.7492 6.48141 10.7492 7.99981ZM9.7492 7.99981C9.7492 8.96592 8.96601 9.74911 7.9999 9.74911C7.03378 9.74911 6.25059 8.96592 6.25059 7.99981C6.25059 7.03369 7.03378 6.2505 7.9999 6.2505C8.96601 6.2505 9.7492 7.03369 9.7492 7.99981Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5715 1.6493C7.0733 0.339109 8.92689 0.339109 9.42868 1.6493C9.74244 2.46852 10.6794 2.85663 11.4806 2.49921C12.7618 1.92759 14.0725 3.23828 13.5009 4.51954C13.1435 5.32067 13.5316 6.25766 14.3508 6.57141C15.661 7.0732 15.661 8.9268 14.3508 9.42859C13.5316 9.74234 13.1435 10.6793 13.5009 11.4805C14.0725 12.7617 12.7618 14.0724 11.4806 13.5008C10.6794 13.1434 9.74244 13.5315 9.42868 14.3507C8.92689 15.6609 7.0733 15.6609 6.5715 14.3507C6.25775 13.5315 5.32077 13.1434 4.51963 13.5008C3.23837 14.0724 1.92768 12.7617 2.4993 11.4805C2.85672 10.6793 2.46861 9.74234 1.64939 9.42859C0.3392 8.9268 0.3392 7.0732 1.64939 6.57141C2.46861 6.25766 2.85672 5.32067 2.4993 4.51954C1.92768 3.23828 3.23837 1.92759 4.51963 2.49921C5.32077 2.85663 6.25775 2.46852 6.5715 1.6493ZM4.1122 3.41245C5.43703 4.00351 6.98651 3.36169 7.50536 2.00696C7.67913 1.55322 8.32105 1.55322 8.49483 2.00696C9.01368 3.36169 10.5632 4.00351 11.888 3.41245C12.3317 3.21449 12.7856 3.66839 12.5876 4.11211C11.9966 5.43693 12.6384 6.98641 13.9931 7.50527C14.4469 7.67904 14.4469 8.32096 13.9931 8.49474C12.6384 9.01359 11.9966 10.5631 12.5876 11.8879C12.7856 12.3316 12.3317 12.7855 11.888 12.5876C10.5632 11.9965 9.01368 12.6383 8.49483 13.993C8.32105 14.4468 7.67913 14.4468 7.50536 13.993C6.98651 12.6383 5.43703 11.9965 4.1122 12.5876C3.66849 12.7855 3.21458 12.3316 3.41254 11.8879C4.0036 10.5631 3.36178 9.01359 2.00705 8.49474C1.55331 8.32096 1.55331 7.67904 2.00705 7.50527C3.36178 6.98641 4.0036 5.43693 3.41254 4.11211C3.21458 3.66839 3.66849 3.21449 4.1122 3.41245Z" />
-                        </svg>
+                        <span class="icon">
+                          <app-icon name="settings" [size]="16" />
+                        </span>
                       </label>
                       <label [for]="`${user._id}-write`" class="permission">
                         <input
@@ -366,21 +418,16 @@
                           [id]="`${user._id}-write`"
                           [name]="`${user._id}-write`"
                           [checked]="isWriteTitle"
-                          (change)="dashSvc.toggleUserPermission(user._id, 'write')"
-                          (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'write')"
+                          (change)="dashboard.toggleUserPermission(user._id, 'write')"
+                          (keydown.enter)="dashboard.toggleUserPermission(user._id, 'write')"
                         />
-                        <svg
-                          width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
-                          class="check-mark"
-                        >
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.62335 0.195262C9.8837 0.455612 9.8837 0.877722 9.62335 1.13807L3.49509 7.26633L0.195262 3.9665C-0.0650874 3.70615 -0.0650874 3.28404 0.195262 3.02369C0.455612 2.76334 0.877722 2.76334 1.13807 3.02369L3.49509 5.38071L8.68054 0.195262C8.94089 -0.0650874 9.363 -0.0650874 9.62335 0.195262Z" />
-                        </svg>
+                        <span class="check-mark">
+                          <app-icon name="checkmark" [size]="16" />
+                        </span>
                         Úpravy
-                        <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M10.3451 0.958477C11.1229 0.859013 11.9098 1.17709 12.7094 1.92946L12.7104 1.93033C13.5127 2.68905 13.8779 3.45872 13.8231 4.24264C13.7701 5.00014 13.331 5.64128 12.8303 6.17031M12.8303 6.17031L7.35964 11.9608C7.20542 12.1287 6.99776 12.271 6.80089 12.3762C6.6015 12.4828 6.37086 12.5741 6.15433 12.6126L6.151 12.6131L4.0051 12.9797C3.48472 13.0694 2.98572 12.9393 2.63025 12.6022C2.27528 12.2656 2.11843 11.7747 2.17654 11.2517L2.17671 11.2502L2.42444 9.08085C2.45322 8.86505 2.53336 8.63153 2.62783 8.42895C2.72196 8.2271 2.8504 8.01306 3.00239 7.85127L3.00336 7.85023L8.4767 2.0569C8.97772 1.52765 9.59341 1.05459 10.3451 0.958477M9.20325 2.74401V2.74401L3.73124 8.53594V8.53594C3.67659 8.59425 3.60152 8.70708 3.53413 8.8516C3.46795 8.99349 3.42821 9.12477 3.41629 9.20915L3.17042 11.3622L3.17034 11.3628C3.14201 11.6195 3.22176 11.785 3.31837 11.8766C3.41457 11.9679 3.58223 12.0378 3.83519 11.9942L3.83596 11.9941L5.9807 11.6277C6.06422 11.6126 6.19289 11.5673 6.3294 11.4943C6.46779 11.4203 6.57189 11.3405 6.624 11.2834L6.62997 11.2768L12.1034 5.48357C12.5491 5.01267 12.7968 4.58357 12.8255 4.17291C12.8524 3.7886 12.6944 3.29176 12.0238 2.6574C11.3569 2.03007 10.854 1.90154 10.4719 1.9504C10.0636 2.00261 9.6488 2.27342 9.20325 2.74401Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M7.84953 2.87255C8.12238 2.83004 8.37803 3.01677 8.42054 3.28962C8.67196 4.90336 9.98164 6.13844 11.6099 6.30244C11.8847 6.33011 12.085 6.57528 12.0573 6.85003C12.0296 7.12478 11.7845 7.32508 11.5097 7.2974C9.43136 7.08807 7.75438 5.50981 7.43246 3.44356C7.38995 3.17071 7.57668 2.91506 7.84953 2.87255Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 14.6666C1.5 14.3905 1.72386 14.1666 2 14.1666H14C14.2761 14.1666 14.5 14.3905 14.5 14.6666C14.5 14.9428 14.2761 15.1666 14 15.1666H2C1.72386 15.1666 1.5 14.9428 1.5 14.6666Z" />
-                        </svg>  
+                        <span class="icon">
+                          <app-icon name="edit" [size]="16" />
+                        </span>
                       </label>
                       <label [for]="`${user._id}-read-title`" class="permission">
                         <input
@@ -388,22 +435,16 @@
                           [id]="`${user._id}-read-title`"
                           [name]="`${user._id}-read-title`"
                           [checked]="isReadTitle"
-                          (change)="dashSvc.toggleUserPermission(user._id, 'read_title')"
-                          (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_title')"
+                          (change)="dashboard.toggleUserPermission(user._id, 'read_title')"
+                          (keydown.enter)="dashboard.toggleUserPermission(user._id, 'read_title')"
                         />
-                        <svg
-                          width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
-                          class="check-mark"
-                        >
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.62335 0.195262C9.8837 0.455612 9.8837 0.877722 9.62335 1.13807L3.49509 7.26633L0.195262 3.9665C-0.0650874 3.70615 -0.0650874 3.28404 0.195262 3.02369C0.455612 2.76334 0.877722 2.76334 1.13807 3.02369L3.49509 5.38071L8.68054 0.195262C8.94089 -0.0650874 9.363 -0.0650874 9.62335 0.195262Z" />
-                        </svg>
+                        <span class="check-mark">
+                          <app-icon name="checkmark" [size]="16" />
+                        </span>
                         Zobrazení titulů
-                        <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M0.833008 3.10649C0.833008 2.02279 1.72746 1.19062 2.81411 1.28151C4.29318 1.40144 6.48652 2.1325 7.74053 2.91324L7.90969 3.01474C7.91139 3.01554 7.91844 3.01877 7.93201 3.02215C7.95016 3.02668 7.97358 3.02982 7.99967 3.02982C8.02577 3.02982 8.04919 3.02668 8.06734 3.02215C8.0802 3.01895 8.08721 3.01588 8.08935 3.01488L8.20004 2.94326C9.45422 2.15411 11.6576 1.41512 13.137 1.28832C13.1512 1.2871 13.1654 1.28649 13.1797 1.28649H13.2002C14.2725 1.20866 15.1663 2.02529 15.1663 3.11316V11.1598C15.1663 12.0481 14.4624 12.8642 13.5684 12.976L13.5665 12.9762L13.3494 13.0025C11.9591 13.1881 9.78343 13.9067 8.55793 14.5824C8.37723 14.6852 8.17217 14.7215 7.99551 14.7215C7.82 14.7215 7.61975 14.6857 7.44143 14.5897L7.42275 14.5804C7.41726 14.5776 7.41182 14.5748 7.40644 14.5718C6.18012 13.9012 4.00563 13.1872 2.62011 13.0021L2.61802 13.0018L2.4276 12.9755C1.53513 12.8621 0.833008 12.0469 0.833008 11.1598V3.10649ZM2.73114 2.27807C2.23147 2.23608 1.83301 2.60377 1.83301 3.10649V11.1598C1.83301 11.5516 2.1691 11.9354 2.55503 11.9837L2.56133 11.9845L2.75257 12.0109L2.75365 12.011C4.25838 12.2123 6.54348 12.9622 7.87803 13.69L7.8966 13.6993C7.90282 13.7024 7.90897 13.7056 7.91505 13.709C7.91505 13.709 7.92149 13.712 7.93558 13.7152C7.95197 13.719 7.97274 13.7215 7.99551 13.7215C8.01832 13.7215 8.03807 13.7189 8.05256 13.7156C8.06005 13.7139 8.06444 13.7123 8.06612 13.7117L8.07131 13.7087C9.40556 12.9721 11.7052 12.2124 13.2204 12.0109L13.2262 12.0101L13.4443 11.9837L13.4451 11.9836C13.8307 11.9349 14.1663 11.5513 14.1663 11.1598V3.11316C14.1663 2.6086 13.766 2.24234 13.2615 2.28473C13.2476 2.2859 13.2336 2.28649 13.2197 2.28649H13.2016C11.8813 2.40497 9.84909 3.08812 8.73524 3.78804L8.61674 3.86472C8.42229 3.98541 8.19654 4.02982 7.99967 4.02982C7.80408 4.02982 7.58003 3.98591 7.38643 3.86697L7.21507 3.76415C6.09534 3.06589 4.05212 2.38501 2.73266 2.27819L2.73114 2.27807Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M7.99967 3.16014C8.27582 3.16014 8.49967 3.38399 8.49967 3.66014V13.6601C8.49967 13.9363 8.27582 14.1601 7.99967 14.1601C7.72353 14.1601 7.49967 13.9363 7.49967 13.6601V3.66014C7.49967 3.38399 7.72353 3.16014 7.99967 3.16014Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M3.16634 5.66014C3.16634 5.38399 3.3902 5.16014 3.66634 5.16014H5.16634C5.44248 5.16014 5.66634 5.38399 5.66634 5.66014C5.66634 5.93628 5.44248 6.16014 5.16634 6.16014H3.66634C3.3902 6.16014 3.16634 5.93628 3.16634 5.66014Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M3.16634 7.66014C3.16634 7.38399 3.3902 7.16014 3.66634 7.16014H5.66634C5.94248 7.16014 6.16634 7.38399 6.16634 7.66014C6.16634 7.93628 5.94248 8.16014 5.66634 8.16014H3.66634C3.3902 8.16014 3.16634 7.93628 3.16634 7.66014Z" />
-                        </svg>
+                        <span class="icon">
+                          <app-icon name="book" [size]="16" />
+                        </span>
                       </label>
                       <label [for]="`${user._id}-read-group`" class="permission">
                         <input
@@ -411,41 +452,32 @@
                           [id]="`${user._id}-read-group`"
                           [name]="`${user._id}-read-group`"
                           [checked]="isReadGroup"
-                          (change)="dashSvc.toggleUserPermission(user._id, 'read_group')"
-                          (keydown.enter)="dashSvc.toggleUserPermission(user._id, 'read_group')"
+                          (change)="dashboard.toggleUserPermission(user._id, 'read_group')"
+                          (keydown.enter)="dashboard.toggleUserPermission(user._id, 'read_group')"
                         />
-                        <svg
-                          width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
-                          class="check-mark"
-                        >
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.62335 0.195262C9.8837 0.455612 9.8837 0.877722 9.62335 1.13807L3.49509 7.26633L0.195262 3.9665C-0.0650874 3.70615 -0.0650874 3.28404 0.195262 3.02369C0.455612 2.76334 0.877722 2.76334 1.13807 3.02369L3.49509 5.38071L8.68054 0.195262C8.94089 -0.0650874 9.363 -0.0650874 9.62335 0.195262Z" />
-                        </svg>
+                        <span class="check-mark">
+                          <app-icon name="checkmark" [size]="16" />
+                        </span>
                         Zobrazení skupiny
-                        <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M3.54019 7.83333C3.07465 7.83333 2.66142 8.04253 2.38665 8.37725L2.37109 8.39621L2.36174 8.40555C2.13502 8.70019 2.01193 9.07781 2.05121 9.48536L2.05199 9.49346L2.31824 12.8223C2.37237 13.3735 2.41712 13.6535 2.56376 13.8366C2.67831 13.9796 2.95446 14.1667 3.80685 14.1667H12.1935C13.0459 14.1667 13.3221 13.9796 13.4366 13.8366C13.5833 13.6535 13.628 13.3735 13.6821 12.8223L13.949 9.48676L13.9497 9.48007C13.9943 9.06386 13.8622 8.68307 13.6155 8.38612L13.5454 8.30163C13.2776 8.01505 12.894 7.83333 12.4602 7.83333H3.54019ZM13.6333 8.40022C13.6372 8.40415 13.6358 8.4029 13.6311 8.39803L13.6333 8.40022ZM1.63026 7.72282C2.08887 7.17581 2.77498 6.83333 3.54019 6.83333H12.4602C13.228 6.83333 13.9083 7.17799 14.3596 7.71306C14.3682 7.72234 14.3816 7.73738 14.396 7.75667C14.4011 7.76341 14.4086 7.77366 14.4174 7.78719C14.8023 8.27015 15.0159 8.89745 14.9448 9.57952L14.6779 12.9155C14.6759 12.9353 14.6739 12.9553 14.672 12.9757C14.6277 13.4337 14.571 14.0199 14.2171 14.4618C13.815 14.9637 13.1478 15.1667 12.1935 15.1667H3.80685C2.85258 15.1667 2.18539 14.9637 1.78328 14.4618C1.42936 14.0199 1.37269 13.4337 1.32842 12.9757C1.32646 12.9553 1.32451 12.9353 1.32257 12.9155L1.3217 12.9065L1.05542 9.57704C0.990261 8.88915 1.20693 8.24991 1.59577 7.76179L1.61335 7.73973L1.63026 7.72282Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M3.25388 2.27374C2.98788 2.53973 2.83366 3.04994 2.83366 4.18685V7.62018C2.83366 7.89633 2.6098 8.12018 2.33366 8.12018C2.05752 8.12018 1.83366 7.89633 1.83366 7.62018V4.18685C1.83366 3.05709 1.96277 2.15063 2.54677 1.56663C3.13078 0.982625 4.03723 0.853516 5.16699 0.853516H6.01366C6.48193 0.853516 6.84513 0.922543 7.14868 1.10493C7.42928 1.27353 7.60988 1.51476 7.75598 1.70991C7.76193 1.71786 7.76782 1.72573 7.77366 1.73352L7.77422 1.73427L8.61946 2.86568C8.73824 3.02152 8.76728 3.05088 8.80043 3.07099C8.82041 3.08311 8.89033 3.12018 9.12699 3.12018H10.827C11.9568 3.12018 12.8632 3.24929 13.4472 3.8333C14.0312 4.4173 14.1603 5.32376 14.1603 6.45352V7.64685C14.1603 7.92299 13.9365 8.14685 13.6603 8.14685C13.3842 8.14685 13.1603 7.92299 13.1603 7.64685V6.45352C13.1603 5.31661 13.0061 4.8064 12.7401 4.5404C12.4741 4.27441 11.9639 4.12018 10.827 4.12018H9.12699C8.79699 4.12018 8.52024 4.07059 8.28189 3.92604C8.07138 3.79838 7.93453 3.61764 7.84132 3.49453C7.83488 3.48602 7.82864 3.47779 7.82261 3.46987L7.81974 3.46611L6.97366 2.33352C6.97357 2.33339 6.97375 2.33364 6.97366 2.33352C6.8031 2.10612 6.7299 2.01994 6.63364 1.9621C6.54885 1.91116 6.39205 1.85352 6.01366 1.85352H5.16699C4.03009 1.85352 3.51988 2.00774 3.25388 2.27374Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M5.78678 11.3333C5.78678 11.0572 6.01064 10.8333 6.28678 10.8333H9.71345C9.98959 10.8333 10.2135 11.0572 10.2135 11.3333C10.2135 11.6095 9.98959 11.8333 9.71345 11.8333H6.28678C6.01064 11.8333 5.78678 11.6095 5.78678 11.3333Z" />
-                        </svg>
+                        <span class="icon">
+                          <app-icon name="open-folder" [size]="16" />
+                        </span>
                       </label>
                     </div>
                     <span
                       class="remove"
-                      (click)="dashSvc.removeFromGroup(user._id)"
-                      (keydown.space)="dashSvc.removeFromGroup(user._id)"
-                      (keydown.enter)="dashSvc.removeFromGroup(user._id)"
+                      (click)="dashboard.removeFromGroup(user._id)"
+                      (keydown.space)="dashboard.removeFromGroup(user._id)"
+                      (keydown.enter)="dashboard.removeFromGroup(user._id)"
                       tabindex="0"
                     >
-                      <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M3.31052 3.35611C4.64689 3.22115 5.98341 3.15366 7.32004 3.15366C9.56362 3.15366 11.8134 3.26785 14.0493 3.48943C14.3241 3.51666 14.5248 3.7615 14.4976 4.0363C14.4704 4.31109 14.2255 4.51178 13.9507 4.48455C11.7467 4.26613 9.52978 4.15366 7.32004 4.15366C6.0169 4.15366 4.71367 4.21947 3.41029 4.35112L3.40882 4.35127L2.04882 4.4846C1.774 4.51155 1.52937 4.3106 1.50242 4.03577C1.47548 3.76095 1.67643 3.51632 1.95125 3.48938L3.31052 3.35611Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M6.30647 2.52305L6.15984 3.39615C6.11411 3.66848 5.85626 3.85217 5.58394 3.80644C5.31161 3.7607 5.12792 3.50286 5.17365 3.23053L5.32032 2.3572C5.32288 2.34199 5.32552 2.32606 5.32819 2.30993C5.37409 2.03267 5.44144 1.62592 5.71257 1.31847C6.02861 0.960088 6.51081 0.833344 7.12675 0.833344H8.87341C9.49684 0.833344 9.97856 0.970276 10.2927 1.33231C10.5642 1.64518 10.6299 2.05338 10.6737 2.32595C10.6759 2.33921 10.6779 2.35215 10.68 2.36475L10.8264 3.22991C10.8725 3.50219 10.6891 3.76026 10.4168 3.80633C10.1446 3.85241 9.8865 3.66904 9.84042 3.39677L9.69325 2.52714C9.63749 2.18512 9.60221 2.06236 9.53744 1.98771C9.5016 1.94641 9.37665 1.83334 8.87341 1.83334H7.12675C6.61601 1.83334 6.49488 1.94327 6.46259 1.97988C6.40118 2.04952 6.36652 2.16652 6.30647 2.52305Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12.5985 5.59417C12.8741 5.61195 13.083 5.84977 13.0653 6.12533L12.6317 12.8414L12.6309 12.8541C12.6133 13.1049 12.594 13.3807 12.5423 13.6374C12.4887 13.9035 12.3942 14.1843 12.2028 14.4335C11.802 14.9553 11.12 15.1665 10.1396 15.1665H5.85963C4.87925 15.1665 4.19721 14.9553 3.79643 14.4335C3.60503 14.1843 3.51056 13.9035 3.45697 13.6374C3.40528 13.3807 3.38597 13.1049 3.3684 12.8541L3.36733 12.8387L2.934 6.12533C2.91621 5.84977 3.12518 5.61195 3.40075 5.59417C3.67632 5.57638 3.91413 5.78535 3.93192 6.06092L4.36507 12.7715L4.36517 12.7729C4.38398 13.0414 4.39991 13.2543 4.43729 13.4399C4.47369 13.6207 4.52423 13.7394 4.58949 13.8244C4.70205 13.9709 4.98 14.1665 5.85963 14.1665H10.1396C11.0193 14.1665 11.2972 13.9709 11.4098 13.8244C11.475 13.7394 11.5256 13.6207 11.562 13.4399C11.5993 13.2543 11.6153 13.0414 11.6341 12.7729L11.6342 12.7715L12.0673 6.06092C12.0851 5.78535 12.3229 5.57638 12.5985 5.59417Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M6.38672 11C6.38672 10.7239 6.61058 10.5 6.88672 10.5H9.10672C9.38286 10.5 9.60672 10.7239 9.60672 11C9.60672 11.2762 9.38286 11.5 9.10672 11.5H6.88672C6.61058 11.5 6.38672 11.2762 6.38672 11Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M5.83333 8.33334C5.83333 8.0572 6.05719 7.83334 6.33333 7.83334H9.66667C9.94281 7.83334 10.1667 8.0572 10.1667 8.33334C10.1667 8.60949 9.94281 8.83334 9.66667 8.83334H6.33333C6.05719 8.83334 5.83333 8.60949 5.83333 8.33334Z" />
-                      </svg>
+                      <span class="icon">
+                        <app-icon name="delete" [size]="16" />
+                      </span>
                     </span>
                   </div>
-                  @if (dashSvc.userPermissionsError[user._id]) {
-                    <span class="permission-error error">{{ dashSvc.userPermissionsError[user._id] }}</span>
+                  @if (dashboard.userPermissionsError[user._id]) {
+                    <span class="permission-error error">{{ dashboard.userPermissionsError[user._id] }}</span>
                   }
                 }
               </div>
@@ -464,11 +496,11 @@
                 id="new-title-name"
                 name="new-title-name"
                 type="text"
-                [(ngModel)]="dashSvc.titleName"
-                (input)="dashSvc.checkTitleName()"
+                [(ngModel)]="dashboard.titleName"
+                (input)="dashboard.checkTitleName()"
               />
             </label>
-            @let titleNameError = dashSvc.titleNameError();
+            @let titleNameError = dashboard.titleNameError();
             @if (titleNameError) {
               <span class="error">{{ titleNameError }}</span>
             }
@@ -479,14 +511,14 @@
               <label class="above-input select">
                 OŘEZOVÝ MODEL
                 <app-select
-                  [(ngModel)]="dashSvc.selectedCropModel"
+                  [(ngModel)]="dashboard.selectedCropModel"
                   [inputName]="'title-crop-model'"
                   location="dialog"
                   [width]="264"
                   [maxDropdownHeight]="dialogContentType === 'edit-title' ? 144 : 240"
-                  [options]="dashSvc.availableCropModels()"
-                  [usedIn]="dashSvc.selectedCropModelUsed()"
-                  (usedOut)="dashSvc.onSelectCropModelUsed($event)"
+                  [options]="dashboard.availableCropModels()"
+                  [usedIn]="dashboard.selectedCropModelUsed()"
+                  (usedOut)="dashboard.onSelectCropModelUsed($event)"
                 ></app-select>
               </label>
             </div>
@@ -494,25 +526,23 @@
               <label class="above-input select">
                 ROTAČNÍ MODEL
                 <app-select
-                  [(ngModel)]="dashSvc.selectedRotationModel"
+                  [(ngModel)]="dashboard.selectedRotationModel"
                   [inputName]="'title-rotation-model'"
                   location="dialog"
                   [width]="264"
                   [maxDropdownHeight]="dialogContentType === 'edit-title' ? 144 : 240"
-                  [options]="dashSvc.availableRotationModels()"
-                  [usedIn]="dashSvc.selectedRotationModelUsed()"
-                  (usedOut)="dashSvc.onSelectRotationModelUsed($event)"
+                  [options]="dashboard.availableRotationModels()"
+                  [usedIn]="dashboard.selectedRotationModelUsed()"
+                  (usedOut)="dashboard.onSelectRotationModelUsed($event)"
                 ></app-select>
               </label>
             </div>
           </div>
           @if (dialogContentType === 'edit-title') {
             <div class="warning">
-              <svg width="24" height="24" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M1.25 12C1.25 6.08579 6.08579 1.25 12 1.25C17.9142 1.25 22.75 6.08579 22.75 12C22.75 17.9142 17.9142 22.75 12 22.75C6.08579 22.75 1.25 17.9142 1.25 12ZM12 2.75C6.91421 2.75 2.75 6.91421 2.75 12C2.75 17.0858 6.91421 21.25 12 21.25C17.0858 21.25 21.25 17.0858 21.25 12C21.25 6.91421 17.0858 2.75 12 2.75Z" />
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 7.25C12.4142 7.25 12.75 7.58579 12.75 8V13C12.75 13.4142 12.4142 13.75 12 13.75C11.5858 13.75 11.25 13.4142 11.25 13V8C11.25 7.58579 11.5858 7.25 12 7.25Z" />
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M10.9941 16C10.9941 15.4477 11.4419 15 11.9941 15H12.0031C12.5554 15 13.0031 15.4477 13.0031 16C13.0031 16.5523 12.5554 17 12.0031 17H11.9941C11.4419 17 10.9941 16.5523 10.9941 16Z" />
-              </svg>
+              <span class="icon">
+                <app-icon name="warning-round" [size]="24" />
+              </span>
               <span class="text">Změnou kteréhokoliv modelu ztratíte všechny úpravy.</span>
             </div>
           }
@@ -521,10 +551,10 @@
             <div class="block">
               <label class="above-input upload-wrapper">
                 SKENY
-                @let files = dashSvc.files();
+                @let files = dashboard.files();
                 <app-upload
                   id="new-title-upload"
-                  (filesSelected)="dashSvc.uploadFiles($event)"
+                  (filesSelected)="dashboard.uploadFiles($event)"
                   [h3]="
                     files.length === 0
                     ? 'Přetáhněte sem'
@@ -535,7 +565,7 @@
                 >
                 </app-upload>
               </label>
-              @let uploadFilesError = dashSvc.uploadFilesError();
+              @let uploadFilesError = dashboard.uploadFilesError();
               @if (uploadFilesError) {
                 <span class="error">{{ uploadFilesError }}</span>
               }
@@ -555,19 +585,18 @@
             <div class="block">
               <label for="user-fullname">JMÉNO</label>
               <label for="user-fullname" #newNameLabel>
-                <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1.83334C6.43519 1.83334 5.16667 3.10187 5.16667 4.66668C5.16667 6.23148 6.43519 7.50001 8 7.50001C9.56481 7.50001 10.8333 6.23148 10.8333 4.66668C10.8333 3.10187 9.56481 1.83334 8 1.83334ZM4.16667 4.66668C4.16667 2.54959 5.88291 0.833344 8 0.833344C10.1171 0.833344 11.8333 2.54959 11.8333 4.66668C11.8333 6.78377 10.1171 8.50001 8 8.50001C5.88291 8.50001 4.16667 6.78377 4.16667 4.66668Z" />
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M1.77344 14.6667C1.77344 11.7194 4.66485 9.50001 8.0001 9.50001C11.3354 9.50001 14.2268 11.7194 14.2268 14.6667C14.2268 14.9428 14.0029 15.1667 13.7268 15.1667C13.4506 15.1667 13.2268 14.9428 13.2268 14.6667C13.2268 12.4539 10.9849 10.5 8.0001 10.5C5.01535 10.5 2.77344 12.4539 2.77344 14.6667C2.77344 14.9428 2.54958 15.1667 2.27344 15.1667C1.9973 15.1667 1.77344 14.9428 1.77344 14.6667Z" />
-                </svg>
+                <span class="icon">
+                  <app-icon name="user" [size]="16" />
+                </span>
                 <input
                   id="user-fullname"
                   name="user-fullname"
                   type="text"
-                  [(ngModel)]="dashSvc.userFullname"
-                  (input)="dashSvc.checkUserName()"
+                  [(ngModel)]="dashboard.userFullname"
+                  (input)="dashboard.checkUserName()"
                 />
               </label>
-              @let userNameError = dashSvc.userNameError();
+              @let userNameError = dashboard.userNameError();
               @if (userNameError) {
                 <span class="error">{{ userNameError }}</span>
               }
@@ -575,35 +604,32 @@
             <div class="block">
               <label for="user-email">E-MAIL</label>
               <label for="user-email">
-                <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M2.5899 3.49141C2.1366 3.91233 1.83301 4.59531 1.83301 5.66668V10.3333C1.83301 11.4047 2.1366 12.0877 2.5899 12.5086C3.04991 12.9358 3.74299 13.1667 4.66634 13.1667H11.333C12.2564 13.1667 12.9494 12.9358 13.4094 12.5086C13.8628 12.0877 14.1663 11.4047 14.1663 10.3333V5.66668C14.1663 4.59531 13.8628 3.91233 13.4094 3.49141C12.9494 3.06425 12.2564 2.83334 11.333 2.83334H4.66634C3.74299 2.83334 3.04991 3.06425 2.5899 3.49141ZM1.90945 2.75861C2.61611 2.10243 3.58969 1.83334 4.66634 1.83334H11.333C12.4097 1.83334 13.3832 2.10243 14.0899 2.75861C14.8033 3.42102 15.1663 4.40471 15.1663 5.66668V10.3333C15.1663 11.5953 14.8033 12.579 14.0899 13.2414C13.3832 13.8976 12.4097 14.1667 11.333 14.1667H4.66634C3.58969 14.1667 2.61611 13.8976 1.90945 13.2414C1.19608 12.579 0.833008 11.5953 0.833008 10.3333V5.66668C0.833008 4.40471 1.19608 3.42102 1.90945 2.75861Z" />
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M11.7237 5.68797C11.896 5.90373 11.8608 6.21835 11.6451 6.39069L9.55776 8.05785C8.68883 8.74962 7.30384 8.74962 6.43492 8.05785L6.43368 8.05687L4.35369 6.3902C4.13819 6.21753 4.10348 5.90285 4.27615 5.68736C4.44882 5.47186 4.7635 5.43715 4.97899 5.60982L7.05834 7.27596C7.56275 7.67701 8.43043 7.67692 8.93468 7.27569L11.021 5.60933C11.2367 5.437 11.5514 5.4722 11.7237 5.68797Z" />
-                </svg>
+                <span class="icon">
+                  <app-icon name="email" [size]="16" />
+                </span>
                 <input
                   id="user-email"
                   name="user-email"
                   type="email"
-                  [(ngModel)]="dashSvc.userEmail"
-                  (input)="dashSvc.checkUserEmail()"
+                  [(ngModel)]="dashboard.userEmail"
+                  (input)="dashboard.checkUserEmail()"
                 />
               </label>
-              @let userEmailError = dashSvc.userEmailError();
+              @let userEmailError = dashboard.userEmailError();
               @if (userEmailError) {
                 <span class="error">{{ userEmailError }}</span>
               }
               @if (dialogContentType === 'edit-user') {
                 <span
                   class="button primary soft reset-password"
-                  (click)="dashSvc.resetPasswordDialog(dashSvc.selectedUser()?._id ?? '')"
-                  (keydown.space)="dashSvc.resetPasswordDialog(dashSvc.selectedUser()?._id ?? '')"
-                  (keydown.enter)="dashSvc.resetPasswordDialog(dashSvc.selectedUser()?._id ?? '')"
+                  (click)="dashboard.resetPasswordDialog(dashboard.selectedUser()?._id ?? '')"
+                  (keydown.space)="dashboard.resetPasswordDialog(dashboard.selectedUser()?._id ?? '')"
+                  (keydown.enter)="dashboard.resetPasswordDialog(dashboard.selectedUser()?._id ?? '')"
                   tabindex="0"
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.00022 3.6003C7.34816 3.6003 6.75652 3.70471 6.21672 3.86603C5.95214 3.9451 5.67355 3.79472 5.59448 3.53014C5.51541 3.26556 5.6658 2.98697 5.93038 2.9079C6.55057 2.72256 7.23893 2.6003 8.00022 2.6003C11.4697 2.6003 14.2802 5.41083 14.2802 8.8803C14.2802 12.3498 11.4697 15.1603 8.00022 15.1603C4.53074 15.1603 1.72021 12.3498 1.72021 8.8803C1.72021 7.59122 2.11153 6.38861 2.77752 5.38962C2.9307 5.15985 3.24113 5.09777 3.4709 5.25094C3.70066 5.40412 3.76275 5.71455 3.60957 5.94432C3.0489 6.78532 2.72021 7.79605 2.72021 8.8803C2.72021 11.7975 5.08302 14.1603 8.00022 14.1603C10.9174 14.1603 13.2802 11.7975 13.2802 8.8803C13.2802 5.96311 10.9174 3.6003 8.00022 3.6003Z" />
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M7.50187 0.95625C7.71015 1.13756 7.73202 1.45338 7.55071 1.66167L5.62405 3.875C5.44274 4.08329 5.12691 4.10515 4.91863 3.92385C4.71034 3.74254 4.68848 3.42671 4.86978 3.21843L6.79645 1.0051C6.97776 0.796811 7.29358 0.774942 7.50187 0.95625Z" />
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M4.84309 3.25215C5.00591 3.02911 5.3187 2.98029 5.54174 3.1431L7.78841 4.7831C8.01145 4.94591 8.06027 5.25871 7.89746 5.48175C7.73465 5.70479 7.42185 5.75361 7.19881 5.5908L4.95214 3.9508C4.7291 3.78799 4.68028 3.47519 4.84309 3.25215Z" />
-                  </svg>
+                  <span class="icon">
+                    <app-icon name="reset" [size]="16" />
+                  </span>
                   Resetovat heslo
                 </span>
               }
@@ -614,53 +640,48 @@
             <div class="block permissions">
               <div class="header">
                 <div class="label">SKUPINY A PRÁVA</div>
-                @let permissions = dashSvc.userPermissions();
-                @if (permissions.length < dashSvc.groups().length) {
+                @let permissions = dashboard.userPermissions();
+                @if (permissions.length < dashboard.groups().length) {
                   <div class="add-permission-wrapper">
                     <div class="main">
                       <app-select
-                        [(ngModel)]="dashSvc.selectedGroupId"
+                        [(ngModel)]="dashboard.selectedGroupId"
                         [inputName]="'assign-group-to-user'"
                         location="dialog"
                         [maxDropdownHeight]="192"
-                        [options]="dashSvc.availableGroups()"
+                        [options]="dashboard.availableGroups()"
                         [placeholder]="'Napište název'"
-                        [usedIn]="dashSvc.selectedGroupUsed()"
-                        (usedOut)="dashSvc.onSelectGroupUsed($event)"
+                        [usedIn]="dashboard.selectedGroupUsed()"
+                        (usedOut)="dashboard.onSelectGroupUsed($event)"
                       ></app-select>
                       <span
                         class="add-perm button real-button primary"
-                        [class.disabled]="!dashSvc.availableGroups().length"
-                        (click)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
-                        (keydown.space)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
-                        (keydown.enter)="dashSvc.assignGroupToUser(dashSvc.selectedGroupId())"
+                        [class.disabled]="!dashboard.availableGroups().length"
+                        (click)="dashboard.assignGroupToUser(dashboard.selectedGroupId())"
+                        (keydown.space)="dashboard.assignGroupToUser(dashboard.selectedGroupId())"
+                        (keydown.enter)="dashboard.assignGroupToUser(dashboard.selectedGroupId())"
                         tabindex="0"
                       >
-                        <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M8 3.5C8.27614 3.5 8.5 3.72386 8.5 4V7.5H12C12.2761 7.5 12.5 7.72386 12.5 8C12.5 8.27614 12.2761 8.5 12 8.5H8.5V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V8.5H4C3.72386 8.5 3.5 8.27614 3.5 8C3.5 7.72386 3.72386 7.5 4 7.5H7.5V4C7.5 3.72386 7.72386 3.5 8 3.5Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M8 3.5C8.27614 3.5 8.5 3.72386 8.5 4V7.5H12C12.2761 7.5 12.5 7.72386 12.5 8C12.5 8.27614 12.2761 8.5 12 8.5H8.5V12C8.5 12.2761 8.27614 12.5 8 12.5C7.72386 12.5 7.5 12.2761 7.5 12V8.5H4C3.72386 8.5 3.5 8.27614 3.5 8C3.5 7.72386 3.72386 7.5 4 7.5H7.5V4C7.5 3.72386 7.72386 3.5 8 3.5Z" />
-                        </svg>
+                        <span class="icon">
+                          <app-icon name="add" [size]="16" />
+                        </span>
                         Přidat
                       </span>
                       <span
                         class="button quaternary primary remove-all"
-                        [class.hidden]="dashSvc.userPermissions().length < 2"
-                        (click)="dashSvc.removeFromAllGroups()"
-                        (keydown.space)="dashSvc.removeFromAllGroups()"
-                        (keydown.enter)="dashSvc.removeFromAllGroups()"
+                        [class.hidden]="dashboard.userPermissions().length < 2"
+                        (click)="dashboard.removeFromAllGroups()"
+                        (keydown.space)="dashboard.removeFromAllGroups()"
+                        (keydown.enter)="dashboard.removeFromAllGroups()"
                         tabindex="0"
                       >
-                        <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M3.31052 3.35611C4.64689 3.22115 5.98341 3.15366 7.32004 3.15366C9.56362 3.15366 11.8134 3.26785 14.0493 3.48943C14.3241 3.51666 14.5248 3.7615 14.4976 4.0363C14.4704 4.31109 14.2255 4.51178 13.9507 4.48455C11.7467 4.26613 9.52978 4.15366 7.32004 4.15366C6.0169 4.15366 4.71367 4.21947 3.41029 4.35112L3.40882 4.35127L2.04882 4.4846C1.774 4.51155 1.52937 4.3106 1.50242 4.03577C1.47548 3.76095 1.67643 3.51632 1.95125 3.48938L3.31052 3.35611Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.30647 2.52305L6.15984 3.39615C6.11411 3.66848 5.85626 3.85217 5.58394 3.80644C5.31161 3.7607 5.12792 3.50286 5.17365 3.23053L5.32032 2.3572C5.32288 2.34199 5.32552 2.32606 5.32819 2.30993C5.37409 2.03267 5.44144 1.62592 5.71257 1.31847C6.02861 0.960088 6.51081 0.833344 7.12675 0.833344H8.87341C9.49684 0.833344 9.97856 0.970276 10.2927 1.33231C10.5642 1.64518 10.6299 2.05338 10.6737 2.32595C10.6759 2.33921 10.6779 2.35215 10.68 2.36475L10.8264 3.22991C10.8725 3.50219 10.6891 3.76026 10.4168 3.80633C10.1446 3.85241 9.8865 3.66904 9.84042 3.39677L9.69325 2.52714C9.63749 2.18512 9.60221 2.06236 9.53744 1.98771C9.5016 1.94641 9.37665 1.83334 8.87341 1.83334H7.12675C6.61601 1.83334 6.49488 1.94327 6.46259 1.97988C6.40118 2.04952 6.36652 2.16652 6.30647 2.52305Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M12.5985 5.59417C12.8741 5.61195 13.083 5.84977 13.0653 6.12533L12.6317 12.8414L12.6309 12.8541C12.6133 13.1049 12.594 13.3807 12.5423 13.6374C12.4887 13.9035 12.3942 14.1843 12.2028 14.4335C11.802 14.9553 11.12 15.1665 10.1396 15.1665H5.85963C4.87925 15.1665 4.19721 14.9553 3.79643 14.4335C3.60503 14.1843 3.51056 13.9035 3.45697 13.6374C3.40528 13.3807 3.38597 13.1049 3.3684 12.8541L3.36733 12.8387L2.934 6.12533C2.91621 5.84977 3.12518 5.61195 3.40075 5.59417C3.67632 5.57638 3.91413 5.78535 3.93192 6.06092L4.36507 12.7715L4.36517 12.7729C4.38398 13.0414 4.39991 13.2543 4.43729 13.4399C4.47369 13.6207 4.52423 13.7394 4.58949 13.8244C4.70205 13.9709 4.98 14.1665 5.85963 14.1665H10.1396C11.0193 14.1665 11.2972 13.9709 11.4098 13.8244C11.475 13.7394 11.5256 13.6207 11.562 13.4399C11.5993 13.2543 11.6153 13.0414 11.6341 12.7729L11.6342 12.7715L12.0673 6.06092C12.0851 5.78535 12.3229 5.57638 12.5985 5.59417Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.38672 11C6.38672 10.7239 6.61058 10.5 6.88672 10.5H9.10672C9.38286 10.5 9.60672 10.7239 9.60672 11C9.60672 11.2762 9.38286 11.5 9.10672 11.5H6.88672C6.61058 11.5 6.38672 11.2762 6.38672 11Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M5.83333 8.33334C5.83333 8.0572 6.05719 7.83334 6.33333 7.83334H9.66667C9.94281 7.83334 10.1667 8.0572 10.1667 8.33334C10.1667 8.60949 9.94281 8.83334 9.66667 8.83334H6.33333C6.05719 8.83334 5.83333 8.60949 5.83333 8.33334Z" />
-                        </svg>
+                        <span class="icon">
+                          <app-icon name="delete" [size]="16" />
+                        </span>
                         Odebrat vše
                       </span>
                     </div>
-                    @let selectedGroupError = dashSvc.selectedGroupError();
+                    @let selectedGroupError = dashboard.selectedGroupError();
                     @if (selectedGroupError) {
                       <span class="error">{{ selectedGroupError }}</span>
                     }
@@ -682,22 +703,16 @@
                           [id]="`${group.group_id}-upload`"
                           [name]="`${group.group_id}-upload`"
                           [checked]="isUploadTitle"
-                          (change)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
-                          (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'upload')"
+                          (change)="dashboard.toggleGroupPermission(group.group_id, 'upload')"
+                          (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'upload')"
                         />
-                        <svg
-                          width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
-                          class="check-mark"
-                        >
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.62335 0.195262C9.8837 0.455612 9.8837 0.877722 9.62335 1.13807L3.49509 7.26633L0.195262 3.9665C-0.0650874 3.70615 -0.0650874 3.28404 0.195262 3.02369C0.455612 2.76334 0.877722 2.76334 1.13807 3.02369L3.49509 5.38071L8.68054 0.195262C8.94089 -0.0650874 9.363 -0.0650874 9.62335 0.195262Z" />
-                        </svg>
+                        <span class="check-mark">
+                          <app-icon name="checkmark" [size]="16" />
+                        </span>
                         Správa
-                        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M10.7492 7.99981C10.7492 9.51821 9.5183 10.7491 7.9999 10.7491C6.4815 10.7491 5.25059 9.51821 5.25059 7.99981C5.25059 6.48141 6.4815 5.2505 7.9999 5.2505C9.5183 5.2505 10.7492 6.48141 10.7492 7.99981ZM9.7492 7.99981C9.7492 8.96592 8.96601 9.74911 7.9999 9.74911C7.03378 9.74911 6.25059 8.96592 6.25059 7.99981C6.25059 7.03369 7.03378 6.2505 7.9999 6.2505C8.96601 6.2505 9.7492 7.03369 9.7492 7.99981Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5715 1.6493C7.0733 0.339109 8.92689 0.339109 9.42868 1.6493C9.74244 2.46852 10.6794 2.85663 11.4806 2.49921C12.7618 1.92759 14.0725 3.23828 13.5009 4.51954C13.1435 5.32067 13.5316 6.25766 14.3508 6.57141C15.661 7.0732 15.661 8.9268 14.3508 9.42859C13.5316 9.74234 13.1435 10.6793 13.5009 11.4805C14.0725 12.7617 12.7618 14.0724 11.4806 13.5008C10.6794 13.1434 9.74244 13.5315 9.42868 14.3507C8.92689 15.6609 7.0733 15.6609 6.5715 14.3507C6.25775 13.5315 5.32077 13.1434 4.51963 13.5008C3.23837 14.0724 1.92768 12.7617 2.4993 11.4805C2.85672 10.6793 2.46861 9.74234 1.64939 9.42859C0.3392 8.9268 0.3392 7.0732 1.64939 6.57141C2.46861 6.25766 2.85672 5.32067 2.4993 4.51954C1.92768 3.23828 3.23837 1.92759 4.51963 2.49921C5.32077 2.85663 6.25775 2.46852 6.5715 1.6493ZM4.1122 3.41245C5.43703 4.00351 6.98651 3.36169 7.50536 2.00696C7.67913 1.55322 8.32105 1.55322 8.49483 2.00696C9.01368 3.36169 10.5632 4.00351 11.888 3.41245C12.3317 3.21449 12.7856 3.66839 12.5876 4.11211C11.9966 5.43693 12.6384 6.98641 13.9931 7.50527C14.4469 7.67904 14.4469 8.32096 13.9931 8.49474C12.6384 9.01359 11.9966 10.5631 12.5876 11.8879C12.7856 12.3316 12.3317 12.7855 11.888 12.5876C10.5632 11.9965 9.01368 12.6383 8.49483 13.993C8.32105 14.4468 7.67913 14.4468 7.50536 13.993C6.98651 12.6383 5.43703 11.9965 4.1122 12.5876C3.66849 12.7855 3.21458 12.3316 3.41254 11.8879C4.0036 10.5631 3.36178 9.01359 2.00705 8.49474C1.55331 8.32096 1.55331 7.67904 2.00705 7.50527C3.36178 6.98641 4.0036 5.43693 3.41254 4.11211C3.21458 3.66839 3.66849 3.21449 4.1122 3.41245Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M10.7492 7.99981C10.7492 9.51821 9.5183 10.7491 7.9999 10.7491C6.4815 10.7491 5.25059 9.51821 5.25059 7.99981C5.25059 6.48141 6.4815 5.2505 7.9999 5.2505C9.5183 5.2505 10.7492 6.48141 10.7492 7.99981ZM9.7492 7.99981C9.7492 8.96592 8.96601 9.74911 7.9999 9.74911C7.03378 9.74911 6.25059 8.96592 6.25059 7.99981C6.25059 7.03369 7.03378 6.2505 7.9999 6.2505C8.96601 6.2505 9.7492 7.03369 9.7492 7.99981Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5715 1.6493C7.0733 0.339109 8.92689 0.339109 9.42868 1.6493C9.74244 2.46852 10.6794 2.85663 11.4806 2.49921C12.7618 1.92759 14.0725 3.23828 13.5009 4.51954C13.1435 5.32067 13.5316 6.25766 14.3508 6.57141C15.661 7.0732 15.661 8.9268 14.3508 9.42859C13.5316 9.74234 13.1435 10.6793 13.5009 11.4805C14.0725 12.7617 12.7618 14.0724 11.4806 13.5008C10.6794 13.1434 9.74244 13.5315 9.42868 14.3507C8.92689 15.6609 7.0733 15.6609 6.5715 14.3507C6.25775 13.5315 5.32077 13.1434 4.51963 13.5008C3.23837 14.0724 1.92768 12.7617 2.4993 11.4805C2.85672 10.6793 2.46861 9.74234 1.64939 9.42859C0.3392 8.9268 0.3392 7.0732 1.64939 6.57141C2.46861 6.25766 2.85672 5.32067 2.4993 4.51954C1.92768 3.23828 3.23837 1.92759 4.51963 2.49921C5.32077 2.85663 6.25775 2.46852 6.5715 1.6493ZM4.1122 3.41245C5.43703 4.00351 6.98651 3.36169 7.50536 2.00696C7.67913 1.55322 8.32105 1.55322 8.49483 2.00696C9.01368 3.36169 10.5632 4.00351 11.888 3.41245C12.3317 3.21449 12.7856 3.66839 12.5876 4.11211C11.9966 5.43693 12.6384 6.98641 13.9931 7.50527C14.4469 7.67904 14.4469 8.32096 13.9931 8.49474C12.6384 9.01359 11.9966 10.5631 12.5876 11.8879C12.7856 12.3316 12.3317 12.7855 11.888 12.5876C10.5632 11.9965 9.01368 12.6383 8.49483 13.993C8.32105 14.4468 7.67913 14.4468 7.50536 13.993C6.98651 12.6383 5.43703 11.9965 4.1122 12.5876C3.66849 12.7855 3.21458 12.3316 3.41254 11.8879C4.0036 10.5631 3.36178 9.01359 2.00705 8.49474C1.55331 8.32096 1.55331 7.67904 2.00705 7.50527C3.36178 6.98641 4.0036 5.43693 3.41254 4.11211C3.21458 3.66839 3.66849 3.21449 4.1122 3.41245Z" />
-                        </svg>
+                        <span class="icon">
+                          <app-icon name="settings" [size]="16" />
+                        </span>
                       </label>
                       <label [for]="`${group.group_id}-write`" class="permission">
                         <input
@@ -705,21 +720,16 @@
                           [id]="`${group.group_id}-write`"
                           [name]="`${group.group_id}-write`"
                           [checked]="isWriteTitle"
-                          (change)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
-                          (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'write')"
+                          (change)="dashboard.toggleGroupPermission(group.group_id, 'write')"
+                          (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'write')"
                         />
-                        <svg
-                          width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
-                          class="check-mark"
-                        >
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.62335 0.195262C9.8837 0.455612 9.8837 0.877722 9.62335 1.13807L3.49509 7.26633L0.195262 3.9665C-0.0650874 3.70615 -0.0650874 3.28404 0.195262 3.02369C0.455612 2.76334 0.877722 2.76334 1.13807 3.02369L3.49509 5.38071L8.68054 0.195262C8.94089 -0.0650874 9.363 -0.0650874 9.62335 0.195262Z" />
-                        </svg>
+                        <span class="check-mark">
+                          <app-icon name="checkmark" [size]="16" />
+                        </span>
                         Úpravy
-                        <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M10.3451 0.958477C11.1229 0.859013 11.9098 1.17709 12.7094 1.92946L12.7104 1.93033C13.5127 2.68905 13.8779 3.45872 13.8231 4.24264C13.7701 5.00014 13.331 5.64128 12.8303 6.17031M12.8303 6.17031L7.35964 11.9608C7.20542 12.1287 6.99776 12.271 6.80089 12.3762C6.6015 12.4828 6.37086 12.5741 6.15433 12.6126L6.151 12.6131L4.0051 12.9797C3.48472 13.0694 2.98572 12.9393 2.63025 12.6022C2.27528 12.2656 2.11843 11.7747 2.17654 11.2517L2.17671 11.2502L2.42444 9.08085C2.45322 8.86505 2.53336 8.63153 2.62783 8.42895C2.72196 8.2271 2.8504 8.01306 3.00239 7.85127L3.00336 7.85023L8.4767 2.0569C8.97772 1.52765 9.59341 1.05459 10.3451 0.958477M9.20325 2.74401V2.74401L3.73124 8.53594V8.53594C3.67659 8.59425 3.60152 8.70708 3.53413 8.8516C3.46795 8.99349 3.42821 9.12477 3.41629 9.20915L3.17042 11.3622L3.17034 11.3628C3.14201 11.6195 3.22176 11.785 3.31837 11.8766C3.41457 11.9679 3.58223 12.0378 3.83519 11.9942L3.83596 11.9941L5.9807 11.6277C6.06422 11.6126 6.19289 11.5673 6.3294 11.4943C6.46779 11.4203 6.57189 11.3405 6.624 11.2834L6.62997 11.2768L12.1034 5.48357C12.5491 5.01267 12.7968 4.58357 12.8255 4.17291C12.8524 3.7886 12.6944 3.29176 12.0238 2.6574C11.3569 2.03007 10.854 1.90154 10.4719 1.9504C10.0636 2.00261 9.6488 2.27342 9.20325 2.74401Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M7.84953 2.87255C8.12238 2.83004 8.37803 3.01677 8.42054 3.28962C8.67196 4.90336 9.98164 6.13844 11.6099 6.30244C11.8847 6.33011 12.085 6.57528 12.0573 6.85003C12.0296 7.12478 11.7845 7.32508 11.5097 7.2974C9.43136 7.08807 7.75438 5.50981 7.43246 3.44356C7.38995 3.17071 7.57668 2.91506 7.84953 2.87255Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 14.6666C1.5 14.3905 1.72386 14.1666 2 14.1666H14C14.2761 14.1666 14.5 14.3905 14.5 14.6666C14.5 14.9428 14.2761 15.1666 14 15.1666H2C1.72386 15.1666 1.5 14.9428 1.5 14.6666Z" />
-                        </svg>  
+                        <span class="icon">
+                          <app-icon name="edit" [size]="16" />
+                        </span>
                       </label>
                       <label [for]="`${group.group_id}-read-title`" class="permission">
                         <input
@@ -727,22 +737,16 @@
                           [id]="`${group.group_id}-read-title`"
                           [name]="`${group.group_id}-read-title`"
                           [checked]="isReadTitle"
-                          (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
-                          (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_title')"
+                          (change)="dashboard.toggleGroupPermission(group.group_id, 'read_title')"
+                          (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'read_title')"
                         />
-                        <svg
-                          width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
-                          class="check-mark"
-                        >
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.62335 0.195262C9.8837 0.455612 9.8837 0.877722 9.62335 1.13807L3.49509 7.26633L0.195262 3.9665C-0.0650874 3.70615 -0.0650874 3.28404 0.195262 3.02369C0.455612 2.76334 0.877722 2.76334 1.13807 3.02369L3.49509 5.38071L8.68054 0.195262C8.94089 -0.0650874 9.363 -0.0650874 9.62335 0.195262Z" />
-                        </svg>
+                        <span class="check-mark">
+                          <app-icon name="checkmark" [size]="16" />
+                        </span>
                         Zobrazení titulů
-                        <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M0.833008 3.10649C0.833008 2.02279 1.72746 1.19062 2.81411 1.28151C4.29318 1.40144 6.48652 2.1325 7.74053 2.91324L7.90969 3.01474C7.91139 3.01554 7.91844 3.01877 7.93201 3.02215C7.95016 3.02668 7.97358 3.02982 7.99967 3.02982C8.02577 3.02982 8.04919 3.02668 8.06734 3.02215C8.0802 3.01895 8.08721 3.01588 8.08935 3.01488L8.20004 2.94326C9.45422 2.15411 11.6576 1.41512 13.137 1.28832C13.1512 1.2871 13.1654 1.28649 13.1797 1.28649H13.2002C14.2725 1.20866 15.1663 2.02529 15.1663 3.11316V11.1598C15.1663 12.0481 14.4624 12.8642 13.5684 12.976L13.5665 12.9762L13.3494 13.0025C11.9591 13.1881 9.78343 13.9067 8.55793 14.5824C8.37723 14.6852 8.17217 14.7215 7.99551 14.7215C7.82 14.7215 7.61975 14.6857 7.44143 14.5897L7.42275 14.5804C7.41726 14.5776 7.41182 14.5748 7.40644 14.5718C6.18012 13.9012 4.00563 13.1872 2.62011 13.0021L2.61802 13.0018L2.4276 12.9755C1.53513 12.8621 0.833008 12.0469 0.833008 11.1598V3.10649ZM2.73114 2.27807C2.23147 2.23608 1.83301 2.60377 1.83301 3.10649V11.1598C1.83301 11.5516 2.1691 11.9354 2.55503 11.9837L2.56133 11.9845L2.75257 12.0109L2.75365 12.011C4.25838 12.2123 6.54348 12.9622 7.87803 13.69L7.8966 13.6993C7.90282 13.7024 7.90897 13.7056 7.91505 13.709C7.91505 13.709 7.92149 13.712 7.93558 13.7152C7.95197 13.719 7.97274 13.7215 7.99551 13.7215C8.01832 13.7215 8.03807 13.7189 8.05256 13.7156C8.06005 13.7139 8.06444 13.7123 8.06612 13.7117L8.07131 13.7087C9.40556 12.9721 11.7052 12.2124 13.2204 12.0109L13.2262 12.0101L13.4443 11.9837L13.4451 11.9836C13.8307 11.9349 14.1663 11.5513 14.1663 11.1598V3.11316C14.1663 2.6086 13.766 2.24234 13.2615 2.28473C13.2476 2.2859 13.2336 2.28649 13.2197 2.28649H13.2016C11.8813 2.40497 9.84909 3.08812 8.73524 3.78804L8.61674 3.86472C8.42229 3.98541 8.19654 4.02982 7.99967 4.02982C7.80408 4.02982 7.58003 3.98591 7.38643 3.86697L7.21507 3.76415C6.09534 3.06589 4.05212 2.38501 2.73266 2.27819L2.73114 2.27807Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M7.99967 3.16014C8.27582 3.16014 8.49967 3.38399 8.49967 3.66014V13.6601C8.49967 13.9363 8.27582 14.1601 7.99967 14.1601C7.72353 14.1601 7.49967 13.9363 7.49967 13.6601V3.66014C7.49967 3.38399 7.72353 3.16014 7.99967 3.16014Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M3.16634 5.66014C3.16634 5.38399 3.3902 5.16014 3.66634 5.16014H5.16634C5.44248 5.16014 5.66634 5.38399 5.66634 5.66014C5.66634 5.93628 5.44248 6.16014 5.16634 6.16014H3.66634C3.3902 6.16014 3.16634 5.93628 3.16634 5.66014Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M3.16634 7.66014C3.16634 7.38399 3.3902 7.16014 3.66634 7.16014H5.66634C5.94248 7.16014 6.16634 7.38399 6.16634 7.66014C6.16634 7.93628 5.94248 8.16014 5.66634 8.16014H3.66634C3.3902 8.16014 3.16634 7.93628 3.16634 7.66014Z" />
-                        </svg>
+                        <span class="icon">
+                          <app-icon name="book" [size]="16" />
+                        </span>
                       </label>
                       <label [for]="`${group.group_id}-read-group`" class="permission">
                         <input
@@ -750,41 +754,32 @@
                           [id]="`${group.group_id}-read-group`"
                           [name]="`${group.group_id}-read-group`"
                           [checked]="isReadGroup"
-                          (change)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
-                          (keydown.enter)="dashSvc.toggleGroupPermission(group.group_id, 'read_group')"
+                          (change)="dashboard.toggleGroupPermission(group.group_id, 'read_group')"
+                          (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'read_group')"
                         />
-                        <svg
-                          width="10" height="8" viewBox="0 0 10 8"  xmlns="http://www.w3.org/2000/svg"
-                          class="check-mark"
-                        >
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.62335 0.195262C9.8837 0.455612 9.8837 0.877722 9.62335 1.13807L3.49509 7.26633L0.195262 3.9665C-0.0650874 3.70615 -0.0650874 3.28404 0.195262 3.02369C0.455612 2.76334 0.877722 2.76334 1.13807 3.02369L3.49509 5.38071L8.68054 0.195262C8.94089 -0.0650874 9.363 -0.0650874 9.62335 0.195262Z" />
-                        </svg>
+                        <span class="check-mark">
+                          <app-icon name="checkmark" [size]="16" />
+                        </span>
                         Zobrazení skupiny
-                        <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M3.54019 7.83333C3.07465 7.83333 2.66142 8.04253 2.38665 8.37725L2.37109 8.39621L2.36174 8.40555C2.13502 8.70019 2.01193 9.07781 2.05121 9.48536L2.05199 9.49346L2.31824 12.8223C2.37237 13.3735 2.41712 13.6535 2.56376 13.8366C2.67831 13.9796 2.95446 14.1667 3.80685 14.1667H12.1935C13.0459 14.1667 13.3221 13.9796 13.4366 13.8366C13.5833 13.6535 13.628 13.3735 13.6821 12.8223L13.949 9.48676L13.9497 9.48007C13.9943 9.06386 13.8622 8.68307 13.6155 8.38612L13.5454 8.30163C13.2776 8.01505 12.894 7.83333 12.4602 7.83333H3.54019ZM13.6333 8.40022C13.6372 8.40415 13.6358 8.4029 13.6311 8.39803L13.6333 8.40022ZM1.63026 7.72282C2.08887 7.17581 2.77498 6.83333 3.54019 6.83333H12.4602C13.228 6.83333 13.9083 7.17799 14.3596 7.71306C14.3682 7.72234 14.3816 7.73738 14.396 7.75667C14.4011 7.76341 14.4086 7.77366 14.4174 7.78719C14.8023 8.27015 15.0159 8.89745 14.9448 9.57952L14.6779 12.9155C14.6759 12.9353 14.6739 12.9553 14.672 12.9757C14.6277 13.4337 14.571 14.0199 14.2171 14.4618C13.815 14.9637 13.1478 15.1667 12.1935 15.1667H3.80685C2.85258 15.1667 2.18539 14.9637 1.78328 14.4618C1.42936 14.0199 1.37269 13.4337 1.32842 12.9757C1.32646 12.9553 1.32451 12.9353 1.32257 12.9155L1.3217 12.9065L1.05542 9.57704C0.990261 8.88915 1.20693 8.24991 1.59577 7.76179L1.61335 7.73973L1.63026 7.72282Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M3.25388 2.27374C2.98788 2.53973 2.83366 3.04994 2.83366 4.18685V7.62018C2.83366 7.89633 2.6098 8.12018 2.33366 8.12018C2.05752 8.12018 1.83366 7.89633 1.83366 7.62018V4.18685C1.83366 3.05709 1.96277 2.15063 2.54677 1.56663C3.13078 0.982625 4.03723 0.853516 5.16699 0.853516H6.01366C6.48193 0.853516 6.84513 0.922543 7.14868 1.10493C7.42928 1.27353 7.60988 1.51476 7.75598 1.70991C7.76193 1.71786 7.76782 1.72573 7.77366 1.73352L7.77422 1.73427L8.61946 2.86568C8.73824 3.02152 8.76728 3.05088 8.80043 3.07099C8.82041 3.08311 8.89033 3.12018 9.12699 3.12018H10.827C11.9568 3.12018 12.8632 3.24929 13.4472 3.8333C14.0312 4.4173 14.1603 5.32376 14.1603 6.45352V7.64685C14.1603 7.92299 13.9365 8.14685 13.6603 8.14685C13.3842 8.14685 13.1603 7.92299 13.1603 7.64685V6.45352C13.1603 5.31661 13.0061 4.8064 12.7401 4.5404C12.4741 4.27441 11.9639 4.12018 10.827 4.12018H9.12699C8.79699 4.12018 8.52024 4.07059 8.28189 3.92604C8.07138 3.79838 7.93453 3.61764 7.84132 3.49453C7.83488 3.48602 7.82864 3.47779 7.82261 3.46987L7.81974 3.46611L6.97366 2.33352C6.97357 2.33339 6.97375 2.33364 6.97366 2.33352C6.8031 2.10612 6.7299 2.01994 6.63364 1.9621C6.54885 1.91116 6.39205 1.85352 6.01366 1.85352H5.16699C4.03009 1.85352 3.51988 2.00774 3.25388 2.27374Z" />
-                          <path fill-rule="evenodd" clip-rule="evenodd" d="M5.78678 11.3333C5.78678 11.0572 6.01064 10.8333 6.28678 10.8333H9.71345C9.98959 10.8333 10.2135 11.0572 10.2135 11.3333C10.2135 11.6095 9.98959 11.8333 9.71345 11.8333H6.28678C6.01064 11.8333 5.78678 11.6095 5.78678 11.3333Z" />
-                        </svg>
+                        <span class="icon">
+                          <app-icon name="open-folder" [size]="16" />
+                        </span>
                       </label>
                     </div>
                     <span
                       class="remove"
-                      (click)="dashSvc.unassignGroupFromUser(group.group_id)"
-                      (keydown.space)="dashSvc.unassignGroupFromUser(group.group_id)"
-                      (keydown.enter)="dashSvc.unassignGroupFromUser(group.group_id)"
+                      (click)="dashboard.unassignGroupFromUser(group.group_id)"
+                      (keydown.space)="dashboard.unassignGroupFromUser(group.group_id)"
+                      (keydown.enter)="dashboard.unassignGroupFromUser(group.group_id)"
                       tabindex="0"
                     >
-                      <svg width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M3.31052 3.35611C4.64689 3.22115 5.98341 3.15366 7.32004 3.15366C9.56362 3.15366 11.8134 3.26785 14.0493 3.48943C14.3241 3.51666 14.5248 3.7615 14.4976 4.0363C14.4704 4.31109 14.2255 4.51178 13.9507 4.48455C11.7467 4.26613 9.52978 4.15366 7.32004 4.15366C6.0169 4.15366 4.71367 4.21947 3.41029 4.35112L3.40882 4.35127L2.04882 4.4846C1.774 4.51155 1.52937 4.3106 1.50242 4.03577C1.47548 3.76095 1.67643 3.51632 1.95125 3.48938L3.31052 3.35611Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M6.30647 2.52305L6.15984 3.39615C6.11411 3.66848 5.85626 3.85217 5.58394 3.80644C5.31161 3.7607 5.12792 3.50286 5.17365 3.23053L5.32032 2.3572C5.32288 2.34199 5.32552 2.32606 5.32819 2.30993C5.37409 2.03267 5.44144 1.62592 5.71257 1.31847C6.02861 0.960088 6.51081 0.833344 7.12675 0.833344H8.87341C9.49684 0.833344 9.97856 0.970276 10.2927 1.33231C10.5642 1.64518 10.6299 2.05338 10.6737 2.32595C10.6759 2.33921 10.6779 2.35215 10.68 2.36475L10.8264 3.22991C10.8725 3.50219 10.6891 3.76026 10.4168 3.80633C10.1446 3.85241 9.8865 3.66904 9.84042 3.39677L9.69325 2.52714C9.63749 2.18512 9.60221 2.06236 9.53744 1.98771C9.5016 1.94641 9.37665 1.83334 8.87341 1.83334H7.12675C6.61601 1.83334 6.49488 1.94327 6.46259 1.97988C6.40118 2.04952 6.36652 2.16652 6.30647 2.52305Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12.5985 5.59417C12.8741 5.61195 13.083 5.84977 13.0653 6.12533L12.6317 12.8414L12.6309 12.8541C12.6133 13.1049 12.594 13.3807 12.5423 13.6374C12.4887 13.9035 12.3942 14.1843 12.2028 14.4335C11.802 14.9553 11.12 15.1665 10.1396 15.1665H5.85963C4.87925 15.1665 4.19721 14.9553 3.79643 14.4335C3.60503 14.1843 3.51056 13.9035 3.45697 13.6374C3.40528 13.3807 3.38597 13.1049 3.3684 12.8541L3.36733 12.8387L2.934 6.12533C2.91621 5.84977 3.12518 5.61195 3.40075 5.59417C3.67632 5.57638 3.91413 5.78535 3.93192 6.06092L4.36507 12.7715L4.36517 12.7729C4.38398 13.0414 4.39991 13.2543 4.43729 13.4399C4.47369 13.6207 4.52423 13.7394 4.58949 13.8244C4.70205 13.9709 4.98 14.1665 5.85963 14.1665H10.1396C11.0193 14.1665 11.2972 13.9709 11.4098 13.8244C11.475 13.7394 11.5256 13.6207 11.562 13.4399C11.5993 13.2543 11.6153 13.0414 11.6341 12.7729L11.6342 12.7715L12.0673 6.06092C12.0851 5.78535 12.3229 5.57638 12.5985 5.59417Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M6.38672 11C6.38672 10.7239 6.61058 10.5 6.88672 10.5H9.10672C9.38286 10.5 9.60672 10.7239 9.60672 11C9.60672 11.2762 9.38286 11.5 9.10672 11.5H6.88672C6.61058 11.5 6.38672 11.2762 6.38672 11Z" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M5.83333 8.33334C5.83333 8.0572 6.05719 7.83334 6.33333 7.83334H9.66667C9.94281 7.83334 10.1667 8.0572 10.1667 8.33334C10.1667 8.60949 9.94281 8.83334 9.66667 8.83334H6.33333C6.05719 8.83334 5.83333 8.60949 5.83333 8.33334Z" />
-                      </svg>
+                      <span class="icon">
+                        <app-icon name="delete" [size]="16" />
+                      </span>
                     </span>
                   </div>
-                  @if (dashSvc.groupPermissionsError[group.group_id]) {
-                    <span class="permission-error error">{{ dashSvc.groupPermissionsError[group.group_id] }}</span>
+                  @if (dashboard.groupPermissionsError[group.group_id]) {
+                    <span class="permission-error error">{{ dashboard.groupPermissionsError[group.group_id] }}</span>
                   }
                 }
               </div>
@@ -798,41 +793,29 @@
         <div class="new-edit-content-wrapper user-password">
           <div class="block">
             <div class="warning">
-              <svg width="24" height="24" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M1.25 12C1.25 6.08579 6.08579 1.25 12 1.25C17.9142 1.25 22.75 6.08579 22.75 12C22.75 17.9142 17.9142 22.75 12 22.75C6.08579 22.75 1.25 17.9142 1.25 12ZM12 2.75C6.91421 2.75 2.75 6.91421 2.75 12C2.75 17.0858 6.91421 21.25 12 21.25C17.0858 21.25 21.25 17.0858 21.25 12C21.25 6.91421 17.0858 2.75 12 2.75Z" />
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 7.25C12.4142 7.25 12.75 7.58579 12.75 8V13C12.75 13.4142 12.4142 13.75 12 13.75C11.5858 13.75 11.25 13.4142 11.25 13V8C11.25 7.58579 11.5858 7.25 12 7.25Z" />
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M10.9941 16C10.9941 15.4477 11.4419 15 11.9941 15H12.0031C12.5554 15 13.0031 15.4477 13.0031 16C13.0031 16.5523 12.5554 17 12.0031 17H11.9941C11.4419 17 10.9941 16.5523 10.9941 16Z" />
-              </svg>
+              <span class="icon">
+                <app-icon name="warning-round" [size]="24" />
+              </span>
               <span class="text">Zkopírujte jednorázové heslo a pošlete uživateli. Podruhé se nezobrazí.</span>
             </div>
             <div class="label">
-              <svg
-                width="24" height="24" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg"
-                class="front"
-              >
-                <path d="M0 12C0 5.37258 5.37258 0 12 0C18.6274 0 24 5.37258 24 12C24 18.6274 18.6274 24 12 24C5.37258 24 0 18.6274 0 12Z" fill="#EAF6FA"/>
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M9.85454 8.11462C9.50015 8.55456 9.375 9.19493 9.375 10V11C9.375 11.2071 9.20711 11.375 9 11.375C8.79289 11.375 8.625 11.2071 8.625 11V10C8.625 9.15007 8.74985 8.29044 9.27046 7.64413C9.80519 6.98031 10.6858 6.625 12 6.625C13.3142 6.625 14.1948 6.98031 14.7295 7.64413C15.2502 8.29044 15.375 9.15007 15.375 10V11C15.375 11.2071 15.2071 11.375 15 11.375C14.7929 11.375 14.625 11.2071 14.625 11V10C14.625 9.19493 14.4998 8.55456 14.1455 8.11462C13.8052 7.69219 13.1858 7.375 12 7.375C10.8142 7.375 10.1948 7.69219 9.85454 8.11462Z" fill="#263340"/>
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.76517 11.7652C7.50942 12.0209 7.375 12.4973 7.375 13.5V14.5C7.375 15.5027 7.50942 15.9791 7.76517 16.2348C8.02091 16.4906 8.49732 16.625 9.5 16.625H14.5C15.5027 16.625 15.9791 16.4906 16.2348 16.2348C16.4906 15.9791 16.625 15.5027 16.625 14.5V13.5C16.625 12.4973 16.4906 12.0209 16.2348 11.7652C15.9791 11.5094 15.5027 11.375 14.5 11.375H9.5C8.49732 11.375 8.02091 11.5094 7.76517 11.7652ZM7.23483 11.2348C7.72909 10.7406 8.50268 10.625 9.5 10.625H14.5C15.4973 10.625 16.2709 10.7406 16.7652 11.2348C17.2594 11.7291 17.375 12.5027 17.375 13.5V14.5C17.375 15.4973 17.2594 16.2709 16.7652 16.7652C16.2709 17.2594 15.4973 17.375 14.5 17.375H9.5C8.50268 17.375 7.72909 17.2594 7.23483 16.7652C6.74058 16.2709 6.625 15.4973 6.625 14.5V13.5C6.625 12.5027 6.74058 11.7291 7.23483 11.2348Z" fill="#263340"/>
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M13.498 14C13.498 13.7239 13.7219 13.5 13.998 13.5H14.0025C14.2787 13.5 14.5025 13.7239 14.5025 14C14.5025 14.2761 14.2787 14.5 14.0025 14.5H13.998C13.7219 14.5 13.498 14.2761 13.498 14Z" fill="#263340"/>
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M11.4976 14C11.4976 13.7239 11.7214 13.5 11.9976 13.5H12.002C12.2782 13.5 12.502 13.7239 12.502 14C12.502 14.2761 12.2782 14.5 12.002 14.5H11.9976C11.7214 14.5 11.4976 14.2761 11.4976 14Z" fill="#263340"/>
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M9.49707 14C9.49707 13.7239 9.72093 13.5 9.99707 13.5H10.0016C10.2777 13.5 10.5016 13.7239 10.5016 14C10.5016 14.2761 10.2777 14.5 10.0016 14.5H9.99707C9.72093 14.5 9.49707 14.2761 9.49707 14Z" fill="#263340"/>
-              </svg>
+              <span class="icon front">
+                <app-icon name="new-password" [size]="24" />
+              </span>
               <input
                 id="new-user-password"
                 name="new-user-password"
                 type="text"
-                [value]="dashSvc.newPassword()"
+                [value]="dashboard.newPassword()"
                 readonly
               />
               <span class="copy-wrap">
-                <svg
-                  width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg"
-                  class="copy-password"
+                <span
+                  class="icon copy-password"
                   (click)="copy()"
                 >
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M2.44538 6.44522C2.06003 6.83058 1.8335 7.48265 1.8335 8.6V11.4C1.8335 12.5174 2.06003 13.1694 2.44538 13.5548C2.83074 13.9401 3.48281 14.1667 4.60016 14.1667H7.40016C8.51751 14.1667 9.16959 13.9401 9.55494 13.5548C9.9403 13.1694 10.1668 12.5174 10.1668 11.4V8.6C10.1668 7.48265 9.9403 6.83058 9.55494 6.44522C9.16959 6.05987 8.51751 5.83334 7.40016 5.83334H4.60016C3.48281 5.83334 2.83074 6.05987 2.44538 6.44522ZM1.73828 5.73812C2.40292 5.07347 3.38418 4.83334 4.60016 4.83334H7.40016C8.61614 4.83334 9.5974 5.07347 10.262 5.73812C10.9267 6.40276 11.1668 7.38402 11.1668 8.6V11.4C11.1668 12.616 10.9267 13.5972 10.262 14.2619C9.5974 14.9265 8.61614 15.1667 7.40016 15.1667H4.60016C3.38418 15.1667 2.40292 14.9265 1.73828 14.2619C1.07363 13.5972 0.833496 12.616 0.833496 11.4V8.6C0.833496 7.38402 1.07363 6.40276 1.73828 5.73812Z" />
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M6.44538 2.44522C6.06003 2.83058 5.8335 3.48265 5.8335 4.6V4.83334H7.40016C8.61614 4.83334 9.5974 5.07347 10.262 5.73812C10.9267 6.40276 11.1668 7.38402 11.1668 8.6V10.1667H11.4002C12.5175 10.1667 13.1696 9.94014 13.5549 9.55478C13.9403 9.16943 14.1668 8.51735 14.1668 7.4V4.6C14.1668 3.48265 13.9403 2.83058 13.5549 2.44522C13.1696 2.05987 12.5175 1.83334 11.4002 1.83334H8.60016C7.48281 1.83334 6.83074 2.05987 6.44538 2.44522ZM5.73828 1.73812C6.40292 1.07347 7.38418 0.833336 8.60016 0.833336H11.4002C12.6161 0.833336 13.5974 1.07347 14.262 1.73812C14.9267 2.40276 15.1668 3.38402 15.1668 4.6V7.4C15.1668 8.61598 14.9267 9.59724 14.262 10.2619C13.5974 10.9265 12.6161 11.1667 11.4002 11.1667H10.6668C10.3907 11.1667 10.1668 10.9428 10.1668 10.6667V8.6C10.1668 7.48265 9.9403 6.83058 9.55494 6.44522C9.16959 6.05987 8.51751 5.83334 7.40016 5.83334H5.3335C5.05735 5.83334 4.8335 5.60948 4.8335 5.33334V4.6C4.8335 3.38402 5.07363 2.40276 5.73828 1.73812Z" />
-                </svg>
+                  <app-icon name="copy" [size]="16" />
+                </span>
                 <span class="tooltip" [class.show]="copied">Zkopírováno!</span>
               </span>
             </div>
@@ -843,8 +826,8 @@
         </div>
       }
     </section>
-  } @else if (uiSvc.dialogDescription()) {
-    <p class="dialog-description single">{{ uiSvc.dialogDescription() }}</p>
+  } @else if (ui.dialogDescription()) {
+    <p class="dialog-description single">{{ ui.dialogDescription() }}</p>
   }
 
   @if (dialogButtons.length) {
@@ -855,7 +838,7 @@
           [class.tertiary]="!btn.primary"
           [class.primary]="btn.primary"
           [class.destructive]="btn.destructive"
-          [class.disabled]="(btn.primary && uiSvc.dialogContent() && uiSvc.dialogContentType() === 'edit-title' && !dashSvc.titleChanged()) || uiSvc.confirmBtnDisabled()"
+          [class.disabled]="(btn.primary && ui.dialogContent() && ui.dialogContentType() === 'edit-title' && !dashboard.titleChanged()) || ui.confirmBtnDisabled()"
           (click)="btn.action ? btn.action() : close()"
           (keydown.space)="btn.action ? btn.action() : close()"
           (keydown.enter)="btn.action ? btn.action() : close()"

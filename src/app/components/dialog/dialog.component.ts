@@ -1,26 +1,27 @@
 import { Component, effect, inject, input, output } from '@angular/core';
-import { DimColor, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
+import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
 import { EditorService } from '../../services/editor.service';
-import { dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridModeDict, outlineWidthDict } from '../../app.config';
+import { defaultFitModeDict, dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridColorDict, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict } from '../../app.config';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../services/dashboard.service';
 import { AuthService } from '../../services/auth.service';
 import { SelectComponent } from '../select/select.component';
 import { UploadComponent } from '../upload/upload.component';
 import { UiService } from '../../services/ui.service';
-import { defer, focusElement, waitForElement } from '../../utils/utils';
+import { focusElement, waitForElement } from '../../utils/utils';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-dialog',
-  imports: [FormsModule, SelectComponent, UploadComponent],
+  imports: [FormsModule, SelectComponent, UploadComponent, IconComponent],
   templateUrl: './dialog.component.html',
   styleUrl: './dialog.component.scss'
 })
 export class DialogComponent {
-  dashSvc = inject(DashboardService);
-  edtSvc = inject(EditorService);
-  authSvc = inject(AuthService);
-  uiSvc = inject(UiService);
+  dashboard = inject(DashboardService);
+  editor = inject(EditorService);
+  auth = inject(AuthService);
+  ui = inject(UiService);
   
   open = input<boolean>(false);
   closed = output<void>();
@@ -30,8 +31,8 @@ export class DialogComponent {
 
   autoFocus = effect(() => {
     const open = this.open();
-    const dialogContent = this.uiSvc.dialogContent();
-    const dialogContentType = this.uiSvc.dialogContentType();
+    const dialogContent = this.ui.dialogContent();
+    const dialogContentType = this.ui.dialogContentType();
     if (open && dialogContent && !['shortcuts', 'settings'].includes(dialogContentType ?? '')) {
       if (this.focusTimer) clearTimeout(this.focusTimer);
       this.focusTimer = setTimeout(async () => {
@@ -43,6 +44,15 @@ export class DialogComponent {
 
   gridModeDict: Record<GridMode, string> = gridModeDict;
   gridModeDictKeys = Object.keys(gridModeDict) as GridMode[];
+
+  gridDensityDict: Record<GridDensityLabel, number> = gridDensityDict;
+  gridDensityDictKeys = Object.keys(gridDensityDict) as GridDensityLabel[];
+
+  gridColorDict: Record<GridColorLabel, string> = gridColorDict;
+  gridColorDictKeys = Object.keys(gridColorDict) as GridColorLabel[];
+
+  gridLineWidthDict: Record<GridLineWidthLabel, number> = gridLineWidthDict;
+  gridLineWidthDictKeys = Object.keys(gridLineWidthDict) as GridLineWidthLabel[];
 
   outlineWidthDict: Record<OutlineWidthLabel, number> = outlineWidthDict;
   outlineWidthDictKeys = Object.keys(outlineWidthDict) as OutlineWidthLabel[];
@@ -56,11 +66,14 @@ export class DialogComponent {
   filterPageNumberStartDict: Record<PageNumberType, string> = filterPageNumberStartDict;
   filterPageNumberStartDictKeys = Object.keys(filterPageNumberStartDict) as PageNumberType[];
 
+  defaultFitModeDict: Record<DefaultFitMode, string> = defaultFitModeDict;
+  defaultFitModeDictKeys = Object.keys(defaultFitModeDict) as DefaultFitMode[];
+
   copied: boolean = false;
   private copiedTimer!: number;
 
   copy(): void {
-    navigator.clipboard.writeText(this.dashSvc.newPassword());
+    navigator.clipboard.writeText(this.dashboard.newPassword());
 
     this.copied = true;
     window.clearTimeout(this.copiedTimer);
@@ -68,6 +81,7 @@ export class DialogComponent {
   }
 
   close(): void {
+    if (this.ui.dialogTitle() === 'Nastavení') this.editor.resetSettingsDraft();
     this.closed.emit();
   }
 
@@ -75,7 +89,6 @@ export class DialogComponent {
     this.backdropClick.emit();
     this.close();
 
-    if (this.uiSvc.dialogTitle() === 'Nastavení') this.edtSvc.gridRadio.set(this.edtSvc.gridMode());
-    if (['Úprava titulu', 'Smazat titul'].includes(this.uiSvc.dialogTitle())) this.dashSvc.selectedTitle.set(null);
+    if (['Úprava titulu', 'Smazat titul'].includes(this.ui.dialogTitle())) this.dashboard.selectedTitle.set(null);
   }
 }

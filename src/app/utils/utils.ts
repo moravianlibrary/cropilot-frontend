@@ -1,9 +1,7 @@
 import { defaultColor, editedColor, errorColor, warningColor } from '../app.config';
 import { Page } from '../app.types';
 
-/* ------------------------------
-  MATH
------------------------------- */
+// ========== MATH ==========
 export const degreeToRadian = (angle: number): number => {
   return (angle * Math.PI) / 180;
 }
@@ -21,9 +19,7 @@ export const clamp = (value: number, min: number = 0, max: number = 1): number =
 }
 
 
-/* ------------------------------
-  FORMATTING
------------------------------- */
+// ========== FORMATTING ==========
 export const getDate = (input: string): string[] => {
   const date = new Date(input);
   return date
@@ -50,9 +46,7 @@ export const checkEmailValidity = (email: string): boolean => {
 }
 
 
-/* ------------------------------
-  UI
------------------------------- */
+// ========== UI ==========
 export const defer = (fn: () => void, delay: number = 0) => {
   return setTimeout(fn, delay);
 }
@@ -119,17 +113,11 @@ export const waitForElement = (selector: string, root: ParentNode = document): P
 }
 
 
-/* ------------------------------
-    PAGES
-  ------------------------------ */
+// ========== PAGES ==========
 export const getColor = (page: Page): string => {
   if (page.edited) return editedColor;
 
-  const errorFlags = [
-    // 'page_count_mismatch',
-    // 'no_prediction',
-    'prediction_overlap',
-  ];
+  const errorFlags = ['prediction_overlap', 'bad_split'];
   if (page.flags.some(f => errorFlags.includes(f))) {
     return errorColor;
   }

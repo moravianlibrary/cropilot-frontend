@@ -1,22 +1,22 @@
 <div 
   #mainWrapper
   class="main-wrapper"
-  (click)="!uiSvc.dialogOpen() ? dashSvc.selectedTitle.set(null) : null"
-  (keydown)="dashSvc.onKeyDown($event)"
+  (click)="!ui.dialogOpen() ? dashboard.selectedTitle.set(null) : null"
+  (keydown)="dashboard.onKeyDown($event)"
   tabindex="0"
 >
   <app-top-panel-dashboard></app-top-panel-dashboard>
   <app-main-dashboard></app-main-dashboard>
-  @if (uiSvc.drawerOpen()) {
+  @if (ui.drawerOpen()) {
     <div
       class="drawer-backdrop"
-      (click)="dashSvc.closeDrawer()"
+      (click)="dashboard.closeDrawer()"
       aria-hidden="true"
     ></div>
   }
   <app-drawer />
   <app-dialog
-    [open]="uiSvc.dialogOpen()"
-    (closed)="uiSvc.closeDialog()"
+    [open]="ui.dialogOpen()"
+    (closed)="ui.closeDialog()"
   />
 </div>

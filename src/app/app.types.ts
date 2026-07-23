@@ -1,6 +1,4 @@
-/* ------------------------------
-    DASHBOARD
-  ------------------------------ */
+// ========== DASHBOARD ==========
 export type DashboardPage = 'groups' | 'titles' | 'users';
 export type PermissionType = 'read_group' | 'read_title' | 'write' | 'upload';
 
@@ -36,6 +34,45 @@ export interface GroupPage {
   created_at: string;
   modified_at: string;
   titles: Title[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  // Only returned on the first page; null on subsequent pages (options don't change).
+  filter_options: {
+    crop_models: string[];
+    rotation_models: string[];
+  } | null;
+}
+
+// Generic paginated response envelope returned by list endpoints.
+export interface Paginated<T> {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+// Shared pagination/search/sort query for the groups & users list endpoints.
+export interface PagedQuery {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  sort_field?: Exclude<SortField, null>;
+  sort_direction?: Exclude<SortDirection, null>;
+  group_id?: string;
+}
+
+export interface TitlesQuery {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  sort_field?: Exclude<SortField, null>;
+  sort_direction?: Exclude<SortDirection, null>;
+  state?: string;
+  crop_model?: string;
+  rotation_model?: string;
 }
 
 export interface NewGroup {
@@ -125,9 +162,7 @@ export interface SortState {
 
 
 
-/* ------------------------------
-    EDITOR
-  ------------------------------ */
+// ========== EDITOR ==========
 export interface Page {
   _id: string;
   xc: number;
@@ -148,10 +183,24 @@ export interface ImageItem {
   scan_name?: string;
   url?: string;
   thumbnailUrl?: string;
+  orientation?: ImageOrientation;
   edited: boolean;
   flags: string[];
   pages: Page[];
 }
+
+export interface UpdatePagePayload {
+  xc: number;
+  yc: number;
+  width: number;
+  height: number;
+  angle: number;
+}
+
+export type UpdateImagePayload = Omit<ImageItem, 'pages'> & {
+  orientation: ImageOrientation;
+  pages: UpdatePagePayload[];
+};
 
 export interface ImageRect {
   x: number;
@@ -160,11 +209,17 @@ export interface ImageRect {
   height: number;
 }
 
+export type ImageOrientation = 0 | 90 | 180 | 270;
+export type RotationScope = 'current' | 'all';
+export type DefaultFitMode = 'page' | 'selection';
 export type ScanType = 'all' | 'flagged' | 'edited' | 'ok';
 export type PageNumberType = 'all' | 'single' | 'double';
 export type InputType = 'left' | 'top' | 'width' | 'height' | 'angle';
 export type Role = 'admin' | 'user';
 export type GridMode = 'always' | 'never' | 'when-rotating';
+export type GridDensityLabel = 'Řídká' | 'Běžná' | 'Hustá' | 'Velmi hustá';
+export type GridColorLabel = 'Modrá' | 'Azurová' | 'Žlutá' | 'Červená';
+export type GridLineWidthLabel = 'Tenká' | 'Střední' | 'Silná' | 'Výrazná';
 export type OutlineWidthLabel = 'Silný' | 'Střední' | 'Tenký' | 'Žádný';
 export type DimColor = 'Černá' | 'Červená' | 'Bílá' | 'Žádná';
 export type TitleState = 'new' | 'scheduled' | 'in_progress' | 'failed' | 'ready' | 'user_approved' | 'retrain' | 'completed';
@@ -192,9 +247,7 @@ export interface Viewport {
 
 
 
-/* ------------------------------
-    UI
-  ------------------------------ */
+// ========== UI ==========
 
 // Drawer
 export type DrawerContentType = 'groups' | 'titles' | 'users';
@@ -229,4 +282,30 @@ export interface Toast {
 export interface SelectOption {
   value: number | string;
   label: string;
+};
+
+
+
+// ========== GEOMETRY UTILS ==========
+export type PageRectPx = {
+  centerX: number;
+  centerY: number;
+  width: number;
+  height: number;
+};
+
+export type HitTestOptions = {
+  edgeHitTolerance: number;
+  cornerHitTolerance: number;
+  rotateHandleOffset: number;
+  rotateHitTolerance: number;
+  cornerSize: number;
+};
+
+export type LocalSide = EdgeSide;
+
+export type ResizeOrientation = {
+  signX: 1 | -1;
+  signY: 1 | -1;
+  baseAngle: number;
 };

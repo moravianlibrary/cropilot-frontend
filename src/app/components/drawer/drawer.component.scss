@@ -41,8 +41,8 @@
       align-items: center;
       cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
       
-      svg {
-        fill: var(--icon-gray);
+      .icon {
+        color: var(--icon-gray);
       }
 
       &:focus-visible {
@@ -66,8 +66,8 @@
         border-radius: var(--spacing-x2);
         border: 1px solid var(--border-tertiary-color);
 
-        svg {
-          fill: var(--icon-dark);
+        .icon {
+          color: var(--icon-dark);
         }
       };
     }
@@ -121,8 +121,8 @@
         gap: var(--spacing-x2);
         @include styles.font(400, var(--font-size-x1), var(--spacing-x5), var(--text-light));
 
-        svg {
-          fill: var(--primary);
+        .icon {
+          color: var(--primary);
 
           &:hover { 
             cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
@@ -133,8 +133,8 @@
       label {
         position: relative;
 
-        svg {
-          fill: var(--icon-dark);
+        .icon {
+          color: var(--icon-dark);
           position: absolute;
           top: var(--spacing-x4);
           left: var(--spacing-x4);
@@ -193,8 +193,9 @@
         display: inline-flex;
         align-items: center;
 
-        svg {
-          fill: var(--primary);
+        .icon {
+          color: var(--primary);
+
           &:hover { 
             cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
           }
@@ -230,42 +231,6 @@
         gap: var(--spacing-x2);
         overflow-wrap: break-word;
 
-        .tag {
-          display: flex;
-          gap: var(--spacing-x2);
-          width: fit-content;
-          @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
-          border-radius: var(--spacing-x1);
-          padding: var(--spacing-x1) var(--spacing-x2);
-        }
-
-        .info {
-          color: #08203C;
-          background-color: #007BFF1A;
-          .tag-label { color: inherit; }
-        }
-
-        .success {
-          fill: #3F764D;
-          color: #00310D;
-          background-color: #34C7591A;
-          .tag-label { color: inherit; }
-        }
-        
-        .pending {
-          fill: #775A32;
-          color: #362000;
-          background-color: #FF95001A;
-          .tag-label { color: inherit; }
-        }
-
-        .error {
-          fill: #853D38;
-          color: #390400;
-          background-color: #FF3A301A;
-          .tag-label { color: inherit; }
-        }
-
         .date {
           @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-base));
         }
@@ -297,54 +262,6 @@
 
         .user-fullname {
           @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
-        }
-
-        .tag {
-          display: flex;
-          gap: var(--spacing-x2);
-          width: fit-content;
-          @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
-          border-radius: var(--spacing-x1);
-          padding: var(--spacing-x1) var(--spacing-x2);
-
-          .tag-label {
-            @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
-          }
-
-          svg {
-            background-color: transparent;
-          }
-        }
-
-        .common {
-          border: 1px solid var(--border-color);
-        }
-
-        .info {
-          color: #08203C;
-          background-color: #007BFF1A;
-          .tag-label { color: inherit; }
-        }
-
-        .success {
-          fill: #3F764D;
-          color: #00310D;
-          background-color: #34C7591A;
-          .tag-label { color: inherit; }
-        }
-        
-        .pending {
-          fill: #775A32;
-          color: #362000;
-          background-color: #FF95001A;
-          .tag-label { color: inherit; }
-        }
-
-        .error {
-          fill: #853D38;
-          color: #390400;
-          background-color: #FF3A301A;
-          .tag-label { color: inherit; }
         }
       }
     }
@@ -462,15 +379,13 @@
             }
 
             .check-mark {
-              fill: var(--icon-white);
+              color: var(--icon-white);
               position: absolute;
-              top: 4.5px;
-              left: 3px;
             }
 
-            svg {
+            .icon {
               position: initial;
-              fill: var(--icon-gray);
+              color: var(--icon-gray);
             }
           }
         }
@@ -487,8 +402,8 @@
           align-items: center;
           gap: var(--spacing-x2);
 
-          svg {
-            fill: var(--icon-gray);
+          .icon {
+            color: var(--icon-gray);
           }
         }
       }
@@ -525,8 +440,8 @@
             border-radius: var(--spacing-x2);
           }
           
-          svg {
-            fill: var(--icon-dark);
+          .icon {
+            color: var(--icon-dark);
           }
         }
       }

@@ -6,7 +6,7 @@ import { LeftPanelComponent } from '../../layout-editor/left-panel/left-panel.co
 import { RightPanelComponent } from '../../layout-editor/right-panel/right-panel.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, forkJoin, map, Observable, of, Subscription, switchMap, tap, throwError } from 'rxjs';
-import { DimColor, GridMode, ImageItem, OutlineWidthLabel, PageNumberType, ScanType, TitleDetail } from '../../app.types';
+import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, ImageItem, OutlineWidthLabel, PageNumberType, ScanType, TitleDetail } from '../../app.types';
 import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
 import { UiService } from '../../services/ui.service';
@@ -21,9 +21,9 @@ import { LocalStorageService } from '../../services/local-storage.service';
   styleUrl: './editor.component.scss'
 })
 export class EditorComponent {
-  edtSvc = inject(EditorService);
-  authSvc = inject(AuthService);
-  uiSvc = inject(UiService);
+  editor = inject(EditorService);
+  auth = inject(AuthService);
+  ui = inject(UiService);
   private storage = inject(LocalStorageService);
   private router = inject(Router);
   private title = inject(Title);
@@ -35,7 +35,8 @@ export class EditorComponent {
   // Changes not saved alert
   @HostListener('window:beforeunload', ['$event'])
   handleBeforeUnload(event: BeforeUnloadEvent) {
-    if (this.edtSvc.sthWasEdited) {
+    // Read-only users can't save, so don't warn them about unsaved changes.
+    if (this.editor.sthWasEdited && this.auth.canWriteTitle()) {
       event.preventDefault();
       return false;
     }
@@ -44,7 +45,7 @@ export class EditorComponent {
   }
 
   ngOnInit() {
-    const edtSvc = this.edtSvc;
+    const editor = this.editor;
     
     // Subscribe to params
     this.paramsOnBookId = this.activatedRoute.paramMap
@@ -56,19 +57,19 @@ export class EditorComponent {
             return;
           };
 
-          edtSvc.book.set(book_id);
-          edtSvc.loadingLeft = true;
-          edtSvc.loadingMain.set(true);
+          editor.book.set(book_id);
+          editor.loadingLeft = true;
+          editor.loadingMain.set(true);
         }),
         switchMap(() => {
-          edtSvc.showPredictions = !!this.storage.get('showPredictions', null, true);
-          const book = edtSvc.book();
+          editor.showPredictions = !!this.storage.get('showPredictions', null, true);
+          const book = editor.book();
           
           const requests: [Observable<TitleDetail | null>, Observable<TitleDetail>] = [
-            edtSvc.showPredictions
-              ? edtSvc.fetchPredictedScans(book)
+            editor.showPredictions
+              ? editor.fetchPredictedScans(book)
               : of(null),
-            edtSvc.fetchScans(book)];
+            editor.fetchScans(book)];
 
           return forkJoin(requests);
         }),
@@ -86,46 +87,59 @@ export class EditorComponent {
         this.title.setTitle(`${res.external_id} | CROPILOT`);
 
         // Set images
-        const imgItemsPredicted: ImageItem[] | undefined = resPredicted?.scans;
-        const imgItems: ImageItem[] = res.scans;
-        edtSvc.loadingLeft = false;
-        edtSvc.images.set(imgItems);
-        edtSvc.originalImages.set(imgItems);
-        edtSvc.predictedImages.set(imgItemsPredicted ?? []);
+        const imgItems: ImageItem[] = res.scans.map(img => editor.normalizeImageForDisplay(img));
+        const imgItemsPredicted: ImageItem[] | undefined = resPredicted?.scans?.map(img => editor.normalizeImageForDisplay(img));
+        editor.loadingLeft = false;
+        editor.images.set(imgItems);
+        editor.originalImages.set(imgItems);
+        editor.predictedImages.set(imgItemsPredicted ?? []);
+        editor.predictedOrientedImages.set(imgItemsPredicted ?? []);
 
         // Set settings stuff
-        edtSvc.dimColor.set(this.storage.get('dimColor', 'Černá', true) as DimColor);
-        edtSvc.dimRadio.set(edtSvc.dimColor());
-        edtSvc.gridMode.set(this.storage.get('gridMode', 'when-rotating', true) as GridMode);
-        edtSvc.gridRadio.set(edtSvc.gridMode());
-        edtSvc.outlineWidthLabel.set(this.storage.get('outlineWidthLabel', 'Silný', true) as OutlineWidthLabel);
-        edtSvc.outlineRadio.set(edtSvc.outlineWidthLabel());
-        edtSvc.outlineDashed = !!this.storage.get('outlineDashed', false, true);
-        edtSvc.rememberLastSelectedImageOfLastOpenTitle = !!this.storage.get('rememberLastSelectedImageOfLastOpenTitle', null, true);
-        edtSvc.lastSelectedImageId = this.storage.get('lastSelectedImageId', '', true) ?? '';
-        edtSvc.selectedFilter = this.storage.get('filterScanTypeStart', 'all', true) as ScanType;
-        edtSvc.scanTypeRadio.set(edtSvc.selectedFilter);
-        edtSvc.selectedPageNumberFilter.set(this.storage.get('filterPageNumberStart', 'all', true) as PageNumberType);
-        edtSvc.pageNumberRadio.set(edtSvc.selectedPageNumberFilter() ?? 'all');
+        editor.dimColor.set(this.storage.get('dimColor', 'Černá', true) as DimColor);
+        editor.dimRadio.set(editor.dimColor());
+        editor.gridMode.set(this.storage.get('gridMode', 'when-rotating', true) as GridMode);
+        editor.gridRadio.set(editor.gridMode());
+        editor.gridDensityLabel.set(this.storage.get('gridDensityLabel', 'Hustá', true) as GridDensityLabel);
+        editor.gridDensityRadio.set(editor.gridDensityLabel());
+        editor.gridColorLabel.set(this.storage.get('gridColorLabel', 'Modrá', true) as GridColorLabel);
+        editor.gridColorRadio.set(editor.gridColorLabel());
+        editor.gridLineWidthLabel.set(this.storage.get('gridLineWidthLabel', 'Tenká', true) as GridLineWidthLabel);
+        editor.gridLineWidthRadio.set(editor.gridLineWidthLabel());
+        editor.outlineWidthLabel.set(this.storage.get('outlineWidthLabel', 'Silný', true) as OutlineWidthLabel);
+        editor.outlineRadio.set(editor.outlineWidthLabel());
+        editor.outlineDashed = !!this.storage.get('outlineDashed', false, true);
+        const storedDefaultFitMode = this.storage.get<DefaultFitMode>('defaultFitMode', 'page', true) ?? 'page';
+        const defaultFitMode = ['page', 'selection'].includes(storedDefaultFitMode)
+          ? storedDefaultFitMode
+          : 'page';
+        editor.defaultFitMode.set(defaultFitMode);
+        editor.defaultFitModeRadio.set(defaultFitMode);
+        editor.rememberLastSelectedImageOfLastOpenTitle = !!this.storage.get('rememberLastSelectedImageOfLastOpenTitle', null, true);
+        editor.lastSelectedImageId = this.storage.get('lastSelectedImageId', '', true) ?? '';
+        editor.selectedFilter = this.storage.get('filterScanTypeStart', 'all', true) as ScanType;
+        editor.scanTypeRadio.set(editor.selectedFilter);
+        editor.selectedPageNumberFilter.set(this.storage.get('filterPageNumberStart', 'all', true) as PageNumberType);
+        editor.pageNumberRadio.set(editor.selectedPageNumberFilter() ?? 'all');
         
         // Set displayed images and main image
-        edtSvc.setDisplayedImages();
-        const imageList = edtSvc.displayedImagesFinal();
-        if (!imageList.length) edtSvc.loadingMain.set(false);
-        const shouldUseLastSelectedImage = res._id === this.storage.get('lastTitleId', '', true) && edtSvc.rememberLastSelectedImageOfLastOpenTitle;
+        editor.setDisplayedImages();
+        const imageList = editor.displayedImagesFinal();
+        if (!imageList.length) editor.loadingMain.set(false);
+        const shouldUseLastSelectedImage = res._id === this.storage.get('lastTitleId', '', true) && editor.rememberLastSelectedImageOfLastOpenTitle;
         const newImage = shouldUseLastSelectedImage
-          ? (imageList.find(img => img._id === edtSvc.lastSelectedImageId) ?? imageList[0])
-          : (imageList.find(img => img._id === edtSvc.mainImageItem()._id) || imageList[0] || { url: '' });
-        edtSvc.setMainImage(newImage);
+          ? (imageList.find(img => img._id === editor.lastSelectedImageId) ?? imageList[0])
+          : (imageList.find(img => img._id === editor.mainImageItem()._id) || imageList[0] || { url: '' });
+        editor.setMainImage(newImage);
         if (shouldUseLastSelectedImage) {
-          const el = await waitForElement(`#thumbnail-wrapper-${edtSvc.lastSelectedImageId}`);
+          const el = await waitForElement(`#thumbnail-wrapper-${editor.lastSelectedImageId}`);
           scrollToElement(el);
         }
 
         // Store titleId
         this.storage.set('lastTitleId', res._id);
         if (!shouldUseLastSelectedImage) this.storage.remove('lastSelectedImageId');
-        if (this.authSvc.canReadGroup()) this.storage.set('backFromTitleId', res._id);
+        if (this.auth.canReadGroup()) this.storage.set('backFromTitleId', res._id);
       });
   }
 

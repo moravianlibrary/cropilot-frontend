@@ -9,26 +9,25 @@ import { AuthService } from '../../services/auth.service';
 import { DashboardService } from '../../services/dashboard.service';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { LocalStorageService } from '../../services/local-storage.service';
+import { IconComponent } from "../../components/icon/icon.component";
 
 @Component({
   selector: 'app-left-panel-editor',
-  imports: [LoaderComponent, NgClass, MenuComponent],
+  imports: [LoaderComponent, NgClass, MenuComponent, IconComponent],
   templateUrl: './left-panel.component.html',
   styleUrl: './left-panel.component.scss'
 })
 export class LeftPanelComponent {
-  edtSvc = inject(EditorService);
-  dashSvc = inject(DashboardService);
-  authSvc = inject(AuthService);
+  editor = inject(EditorService);
+  dashboard = inject(DashboardService);
+  auth = inject(AuthService);
   private storage = inject(LocalStorageService);
 
   thumbnailsScroll = viewChild<ElementRef<HTMLDivElement>>('thumbnailsScroll');
   private osInstance?: ReturnType<typeof OverlayScrollbars>;
 
 
-  /* ------------------------------
-    LAZY IMAGES LOADING
-  ------------------------------ */
+  // ========== LAZY IMAGES LOADING ==========
   images = viewChildren<ElementRef<HTMLImageElement>>('lazyImg');
 
   private observer = new IntersectionObserver(entries => {
@@ -37,7 +36,7 @@ export class LeftPanelComponent {
 
       const img = entry.target as HTMLImageElement;
       const id = img.dataset['id']!;
-      const targetImg = this.edtSvc.images().find(img => img._id === id);
+      const targetImg = this.editor.images().find(img => img._id === id);
 
       if (targetImg?.thumbnailUrl) {
         img.src = targetImg.thumbnailUrl;
@@ -45,12 +44,12 @@ export class LeftPanelComponent {
         return;
       }
 
-      this.edtSvc.fetchThumbnail(id).subscribe(thumbnail => {
+      this.editor.fetchThumbnail(id).subscribe(thumbnail => {
         const thumbnailUrl = URL.createObjectURL(thumbnail);
 
         img.src = thumbnailUrl;
 
-        this.edtSvc.images.update(prev =>
+        this.editor.images.update(prev =>
           prev.map(img =>
             img._id === id
               ? {
@@ -92,28 +91,40 @@ export class LeftPanelComponent {
     this.images().forEach(img => this.observer.observe(img.nativeElement));
   }
 
+  thumbnailTransform(image: ImageItem): string {
+    return `rotate(${this.normalizeOrientation(image.orientation)}deg)`;
+  }
 
-  /* ------------------------------
-    CLICKS
-  ------------------------------ */
+  isThumbnailQuarterTurn(image: ImageItem): boolean {
+    const orientation = this.normalizeOrientation(image.orientation);
+    return orientation === 90 || orientation === 270;
+  }
+
+  private normalizeOrientation(orientation?: number): number {
+    const normalized = ((orientation ?? 0) % 360 + 360) % 360;
+    return [0, 90, 180, 270].includes(normalized) ? normalized : 0;
+  }
+
+
+  // ========== CLICKS ==========
   backToMyGroupsTitles(groupId: string): void {
-    this.dashSvc.dashboardPage.set('titles');
-    window.location.href = `${this.authSvc.baseUri}/group/${groupId}`;
+    this.dashboard.dashboardPage.set('titles');
+    window.location.href = `${this.auth.baseUri}/group/${groupId}`;
   }
 
   backToHomepage(): void {
-    this.dashSvc.dashboardPage.set('groups');
+    this.dashboard.dashboardPage.set('groups');
   }
 
   clickThumbnail(image: ImageItem): void {
-    const edtSvc = this.edtSvc;
-    if (image._id === edtSvc.mainImageItem()._id) return;
+    const editor = this.editor;
+    if (image._id === editor.mainImageItem()._id) return;
     
-    edtSvc.updateImagesByCurrentPages();
-    edtSvc.setMainImage(image);
+    editor.updateImagesByCurrentPages();
+    editor.setMainImage(image);
 
-    if (edtSvc.rememberLastSelectedImageOfLastOpenTitle) {
-      edtSvc.lastSelectedImageId = image._id;
+    if (editor.rememberLastSelectedImageOfLastOpenTitle) {
+      editor.lastSelectedImageId = image._id;
       this.storage.set('lastSelectedImageId', `${image._id}`);
       return;
     }

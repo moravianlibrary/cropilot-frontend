@@ -80,9 +80,7 @@
 }
 
 
-/* ------------------------------
-  SETTINGS DIALOG
------------------------------- */
+// ========== SETTINGS DIALOG ==========
 .settings-content-wrapper {
   display: flex;
   flex-direction: column;
@@ -113,6 +111,16 @@
 
     .last-sublabel {
       margin-top: var(--spacing-x1);
+    }
+
+    .color-radio-value {
+      .color-swatch {
+        display: inline-block;
+        width: var(--spacing-x3-5);
+        height: var(--spacing-x3-5);
+        border: 1px solid var(--border-tertiary-color);
+        border-radius: var(--spacing-x1);
+      }
     }
 
     .toggle-switch {
@@ -161,8 +169,8 @@
         transform: translateX(var(--spacing-x3-5));
       }
 
-      svg {
-        fill: var(--primary);
+      .icon {
+        color: var(--primary);
       }
     }
 
@@ -178,9 +186,7 @@
 }
 
 
-/* ------------------------------
-  SHORTCUTS DIALOG
------------------------------- */
+// ========== SHORTCUTS DIALOG ==========
 .shortcuts-content-wrapper {
   height: 100%;
   padding: var(--spacing-x4);
@@ -214,9 +220,7 @@
 }
 
 
-/* ------------------------------
-  NEW GROUP & TITLE & USER DIALOG
------------------------------- */
+// ========== NEW GROUP & TITLE & USER DIALOG ==========
 .new-edit-content-wrapper {
   display: flex;
   flex-direction: column;
@@ -243,8 +247,8 @@
       gap: var(--spacing-x2);
       @include styles.font(400, var(--font-size-x1), var(--spacing-x5), var(--text-light));
 
-      svg {
-        fill: var(--icon-dark);
+      .icon {
+        color: var(--icon-dark);
         position: absolute;
         top: var(--spacing-x4);
         left: var(--spacing-x4);
@@ -374,9 +378,9 @@
         .remove-all {
           padding: 0;
 
-          svg {
+          .icon {
             position: initial;
-            fill: var(--primary);      
+            color: var(--primary);      
           }
         }
       }
@@ -454,15 +458,13 @@
           }
 
           .check-mark {
-            fill: var(--icon-white);
+            color: var(--icon-white);
             position: absolute;
-            top: 4.5px;
-            left: 3px;
           }
 
-          svg {
+          .icon {
             position: initial;
-            fill: var(--icon-gray);
+            color: var(--icon-gray);
           }
         }
       }
@@ -497,8 +499,8 @@
           border-color: var(--primary) !important;
         }
         
-        svg {
-          fill: var(--icon-dark);
+        .icon {
+          color: var(--icon-dark);
         }
       }
     }
@@ -567,8 +569,8 @@
       flex-wrap: wrap;
       @include styles.font(450, var(--font-size-x2), var(--spacing-x6), var(--text-destructive));
 
-      svg {
-        fill: var(--icon-destructive);
+      .icon {
+        color: var(--icon-destructive);
         flex: 0 0 auto;
       }
       
@@ -608,7 +610,7 @@
           top: 0 !important;
           right: 0 !important;
           left: auto !important;
-          fill: var(--primary);
+          color: var(--primary);
           &:hover { 
             cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
           }

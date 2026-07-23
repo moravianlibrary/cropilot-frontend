@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { DimColor, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, Viewport } from '../app.types';
+import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation, RotationScope } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
-import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
+import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage, wait } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
-import { dimColorDict, gridColor, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
+import { dimColorDict, gridColorDict, gridDensityDict, gridLineWidthDict, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
 import { AuthService } from './auth.service';
 import { UiService } from './ui.service';
 import { LocalStorageService } from './local-storage.service';
@@ -14,17 +14,15 @@ import { LocalStorageService } from './local-storage.service';
 })
 export class EditorService {
   private http = inject(HttpClient);
-  private envService = inject(EnvironmentService);
-  private authSvc = inject(AuthService);
-  private uiSvc = inject(UiService);
+  private env = inject(EnvironmentService);
+  private auth = inject(AuthService);
+  private ui = inject(UiService);
   private storage = inject(LocalStorageService);
   
-  private get apiUrl(): string { return this.envService.get('serverBaseUrl') };
+  private get apiUrl(): string { return this.env.get('serverBaseUrl') };
 
 
-  /* ------------------------------
-    STATE
-  ------------------------------ */
+  // ========== STATE ==========
   book = signal<string>('');
   selectedFilter: ScanType | null = 'all';
   selectedPageNumberFilter = signal<PageNumberType | null>(null);
@@ -35,6 +33,7 @@ export class EditorService {
   displayedImages = signal<ImageItem[]>([]);
   displayedImagesPages = signal<ImageItem[]>([]);
   predictedImages = signal<ImageItem[]>([]);
+  predictedOrientedImages = signal<ImageItem[]>([]);
   sthWasEdited: boolean = false;
 
   mainImageItem = signal<ImageItem>({ _id: '', url: '', thumbnailUrl: '', edited: false, flags: [], pages: [] });
@@ -79,6 +78,8 @@ export class EditorService {
   rotationStartPage: Page | null = null;
   rotationStartMouseAngle: number = 0;
   gridMode = signal<GridMode>('when-rotating');
+  orientation = signal<ImageOrientation>(0);
+  rotationScope = signal<RotationScope>('current');
 
   // Resize
   isResizing: boolean = false;
@@ -100,9 +101,10 @@ export class EditorService {
   // Zoom
   viewport: Viewport = { x: 0, y: 0, scale: 1 };
   zoomFactor: number = 0.005;
-  btnZoomFactor = this.zoomFactor * 40;
-  minZoom: number = 1;
+  btnZoomStep: number = 0.2;
+  minZoom: number = 0.95;
   maxZoom: number = 5;
+  defaultFitMode = signal<DefaultFitMode>('page');
   snapped: boolean = false;
   isPanning: boolean = false;
   panPrevX: number = 0;
@@ -110,7 +112,9 @@ export class EditorService {
 
   // Draw page parameters
   dimColor = signal<DimColor>('Černá');
-  gridSpacing: number = 12; // 40
+  gridDensityLabel = signal<GridDensityLabel>('Hustá');
+  gridColorLabel = signal<GridColorLabel>('Modrá');
+  gridLineWidthLabel = signal<GridLineWidthLabel>('Tenká');
   outlineWidthLabel = signal<OutlineWidthLabel>('Silný');
   outlineDashed: boolean = false;
   dashLength: number = 6;
@@ -128,79 +132,74 @@ export class EditorService {
   lastSelectedImageId: string = '';
 
 
-  /* ------------------------------
-    DERIVED STATE
-  ------------------------------ */
+  // ========== DERIVED STATE ==========
   flaggedImages = computed<ImageItem[]>(() => this.images().filter(img => !img.edited && img.flags.length));
   notFlaggedImages = computed<ImageItem[]>(() => this.images().filter(img => !img.edited && !img.flags.length));
   editedImages = computed<ImageItem[]>(() => this.images().filter(img => img.edited));
   displayedImagesFinal = computed<ImageItem[]>(() => this.selectedPageNumberFilter() ? this.displayedImagesPages() : this.displayedImages());
 
 
-  /* ------------------------------
-    API
-  ------------------------------ */
+  // ========== API ==========
   fetchScans(id: string): Observable<TitleDetail> {
-    return this.http.get<TitleDetail>(`${this.apiUrl}/${id}/scans`, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.get<TitleDetail>(`${this.apiUrl}/${id}/scans`, { headers: this.auth.authHeaders('json', true) });
   }
 
   fetchPredictedScans(id: string): Observable<TitleDetail> {
-    return this.http.get<TitleDetail>(`${this.apiUrl}/${id}/predicted-scans`, { headers: this.authSvc.authHeaders('json', true) });
+    return this.http.get<TitleDetail>(`${this.apiUrl}/${id}/predicted-scans`, { headers: this.auth.authHeaders('json', true) });
   }
 
   fetchThumbnail(id: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${this.book()}/thumbnails?scan_id=${id}`, { 
       responseType: 'blob',
-      headers: this.authSvc.authHeaders('*/*')
+      headers: this.auth.authHeaders('*/*')
     });
   }
 
   fetchImage(id: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${this.book()}/files?scan_id=${id}`, { 
       responseType: 'blob',
-      headers: this.authSvc.authHeaders('*/*')
+      headers: this.auth.authHeaders('*/*')
     });
   }
 
-  updatePages(id: string, payload: any[]): any {
-    return this.http.patch(`${this.apiUrl}/${id}/update-pages`, payload, { headers: this.authSvc.authHeaders('json', true) });
+  updatePages(id: string, payload: UpdateImagePayload[]): Observable<{ id: string }> {
+    return this.http.patch<{ id: string }>(`${this.apiUrl}/${id}/update-pages`, payload, { headers: this.auth.authHeaders('json', true) });
   }
 
   reset(id: string): Observable<TitleDetail> {
-    return this.http.patch<TitleDetail>(`${this.apiUrl}/${id}/reset`, {}, { headers: this.authSvc.authHeaders() });
+    return this.http.patch<TitleDetail>(`${this.apiUrl}/${id}/reset`, {}, { headers: this.auth.authHeaders() });
   }
 
 
-  /* ------------------------------
-    API ACTIONS
-  ------------------------------ */
+  // ========== API ACTIONS ==========
   saveChanges(): void {
-    if (!this.authSvc.canWriteTitle()) return;
+    if (!this.auth.canWriteTitle()) return;
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
     if (this.imgWasEdited()) this.updateImagesByEdited(this.mainImageItem()._id);
     this.selectedPage = null;
-    this.resetZoom();
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.applyDefaultZoom();
     this.updateMainImageItemAndImages();
     
-    const editedImages = this.images()
+    const editedImages: UpdateImagePayload[] = this.images()
       .filter(i => i.edited)
       .map(({ pages, ...i }) => ({
         ...i,
-        pages: pages.map(({ xc, yc, width, height, angle }) => ({ xc, yc, width, height, angle }))
+        orientation: this.normalizeOrientation(i.orientation),
+        pages: pages.map(page => {
+          const { xc, yc, width, height } = this.pageToOriginalOrientation(page, i.orientation);
+          return { xc, yc, width, height, angle: page.angle };
+        })
       }));
     this.updatePages(this.book(), editedImages).pipe(
       catchError(err => {
-        this.uiSvc.showToast('Při ukládání změn se něco pokazilo. Zkuste změny uložit znovu.', { type: 'error' });
+        this.ui.showToast('Při ukládání změn se něco pokazilo. Zkuste změny uložit znovu.', { type: 'error' });
         console.error(err);
         return throwError(() => err);
       })
     ).subscribe(() => {
       this.sthWasEdited = false;
       this.setDisplayedImages();
-      this.uiSvc.showToast('Změny byly úspěšně uloženy!', { type: 'success' });
+      this.ui.showToast('Změny byly úspěšně uloženy!', { type: 'success' });
     });
   }
 
@@ -223,18 +222,18 @@ export class EditorService {
 
     this.imgWasEdited.set(false);
 
-    this.uiSvc.showToast('Změny skenu byly úspěšně resetovány!', { type: 'success' });
+    this.ui.showToast('Změny skenu byly úspěšně resetovány!', { type: 'success' });
   }
 
   resetDoc(): void {
     this.reset(this.book()).pipe(
       catchError(err => {
-        this.uiSvc.showToast('Při resetu změn dokumentu se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+        this.ui.showToast('Při resetu změn dokumentu se něco pokazilo. Zkuste to znovu.', { type: 'error' });
         console.error('Fetch error:', err);
         return throwError(() => err);
       })
     ).subscribe((res: TitleDetail) => {
-      const images: ImageItem[] = res.scans;
+      const images: ImageItem[] = res.scans.map(img => this.normalizeImageForDisplay(img));
       
       this.images.set(images);
       this.originalImages.set(images);
@@ -243,14 +242,12 @@ export class EditorService {
       this.setDisplayedImages();
       this.setMainImage(this.displayedImagesFinal()[0]);
 
-      this.uiSvc.showToast('Změny dokumentu byly úspěšně resetovány!', { type: 'success' });
+      this.ui.showToast('Změny dokumentu byly úspěšně resetovány!', { type: 'success' });
     });
   }
 
 
-  /* ------------------------------
-    LEFT PANEL
-  ------------------------------ */
+  // ========== LEFT PANEL ==========
   setDisplayedImages(): void {
     switch (this.selectedFilter) {
       case 'all':
@@ -291,7 +288,6 @@ export class EditorService {
     const mainImageItemId = this.mainImageItem()._id;
     if (this.imgWasEdited()) {
       this.updateImagesByEdited(mainImageItemId ?? '');
-      // this.uiSvc.showToast('Sken byl přesunut do Upravených.');
     }
 
     this.setDisplayedImages();
@@ -326,10 +322,12 @@ export class EditorService {
   }
 
 
-  /* ------------------------------
-    MAIN IMAGE LOGIC & DRAWING
-  ------------------------------ */
+  // ========== MAIN IMAGE LOGIC & DRAWING ==========
   setMainImage(img: ImageItem): void {
+    if (img._id !== this.mainImageItem()._id) {
+      this.rotationScope.set('current');
+    }
+
     this.loadingMain.set(true);
     this.loadingFirstCurrentPage.set(true);
 
@@ -344,10 +342,11 @@ export class EditorService {
       this.selectedPage = null;
       this.resetZoom();
       this.renderCanvas(updated);
+
       this.loadingMain.set(false);
 
       if (this.imgWasEdited()) {
-        await this.uiSvc.waitForFalse(this.imgWasEdited);
+        await this.ui.waitForFalse(this.imgWasEdited);
         this.setDisplayedImages();
         if (this.clickedPageNumberFilter) this.clickedPageNumberFilter = false; // Don't move image to edited when click on page number filter
       }
@@ -364,7 +363,7 @@ export class EditorService {
     }
 
     this.fetchImage(img._id).subscribe(blob => {
-      if (blob.type.includes('tiff')) this.uiSvc.showToast('Nepodařilo se zobrazit sken, protože je ve formátu TIFF.', { type: 'error' });
+      if (blob.type.includes('tiff')) this.ui.showToast('Nepodařilo se zobrazit sken, protože je ve formátu TIFF.', { type: 'error' });
 
       const url = URL.createObjectURL(blob);
 
@@ -378,7 +377,7 @@ export class EditorService {
     });
   }
 
-  private renderCanvas(imgItem: ImageItem): void {
+  private async renderCanvas(imgItem: ImageItem): Promise<void> {
     if (imgItem.url) {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -387,6 +386,8 @@ export class EditorService {
 
       img.onload = () => this.fitAndDrawImage(img, imgItem);
       img.onerror = () => console.error('Failed to load image.');
+
+      await wait(100);
 
       this.c.style.visibility = 'visible';
       return;
@@ -398,109 +399,25 @@ export class EditorService {
   private fitAndDrawImage(img: HTMLImageElement, imgItem: ImageItem): void {
     const { c, ctx } = this;
 
-    const appMain = document.querySelector('app-main-editor') as HTMLElement;
-    const appStyle = getComputedStyle(appMain);
-    const appRect = appMain.getBoundingClientRect();
-
-    const widthAvail =
-      appRect.width -
-      (parseFloat(appStyle.paddingLeft) +
-        parseFloat(appStyle.paddingRight) +
-        parseFloat(appStyle.borderLeftWidth) +
-        parseFloat(appStyle.borderRightWidth));
-
-    const heightAvail =
-      appRect.height -
-      (parseFloat(appStyle.paddingTop) +
-        parseFloat(appStyle.paddingBottom) +
-        parseFloat(appStyle.borderTopWidth) +
-        parseFloat(appStyle.borderBottomWidth));
-
-    c.width = widthAvail;
-    c.height = heightAvail;
-
-    const imgRatio = img.width / img.height;
-    const canvasRatio = c.width / c.height;
-
-    let drawWidth: number = c.width;
-    let drawHeight: number = c.height;
-
-    imgRatio > canvasRatio
-      ? drawHeight = c.width / imgRatio
-      : drawWidth = c.height * imgRatio;
-
-    const offsetX = (c.width - drawWidth) / 2;
-    const offsetY = (c.height - drawHeight) / 2;
-
-    // Store rect for pages / hit-testing:
-    this.imageRect = {
-      x: offsetX,
-      y: offsetY,
-      width: drawWidth,
-      height: drawHeight,
-    };
+    this.resizeCanvasToEditor();
+    this.updateImageRect(img, imgItem.orientation);
 
     this.viewport = { x: 0, y: 0, scale: 1 };
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, c.width, c.height);
     
     this.applyViewportTransform(ctx);
-    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+    this.drawOrientedImage(imgItem.orientation);
 
     // Predicted pages
     if (this.showPredictions) {
       this.currentPredictedPages = [];
-      this.predictedImages()
+
+      this.predictedOrientedImages()
         .find(img => img._id === imgItem._id)
         ?.pages
-        ?.forEach(p => {
-          const { left, right, top, bottom } = this.computeBounds(p.xc, p.yc, p.width, p.height, p.angle);
-          
-          // Correction of edges going outside canvas (should be done on BE)
-          let correctXc = p.xc;
-          let correctYc = p.yc;
-          let correctWidth = p.width;
-          let correctHeight = p.height;
-          let correctLeft = left;
-          let correctRight = right;
-          let correctTop = top;
-          let correctBottom = bottom;
-          
-          if (left < 0) {
-            correctLeft = 0;
-            correctXc += Math.abs(left / 2);
-            correctWidth -= Math.abs(left);
-          }
-
-          if (right > 1) {
-            correctRight = 1;
-            correctXc -= Math.abs((right - 1) / 2);
-            correctWidth -= right - 1;
-          }
-
-          if (top < 0) {
-            correctTop = 0;
-            correctYc += Math.abs(top / 2);
-            correctHeight -= Math.abs(top);
-          }
-
-          if (bottom > 1) {
-            correctBottom = 1;
-            correctYc -= Math.abs((bottom - 1) / 2);
-            correctHeight -= bottom - 1;
-          }
-          
-          const updatedPage = {
-            ...p,
-            xc: roundToDecimals(correctXc, 4),
-            yc: roundToDecimals(correctYc, 4),
-            width: roundToDecimals(correctWidth, 4),
-            height: roundToDecimals(correctHeight, 4),
-            left: roundToDecimals(correctLeft, 4),
-            right: roundToDecimals(correctRight, 4),
-            top: roundToDecimals(correctTop, 4),
-            bottom: roundToDecimals(correctBottom, 4)
-          }
+        ?.forEach(page => {
+          const updatedPage = this.correctPageBounds(page);
 
           this.currentPredictedPages.push(updatedPage);
           this.drawPagePredicted(updatedPage);
@@ -509,62 +426,19 @@ export class EditorService {
 
     // Pages
     this.currentPages = [];
+
     this.images()
       .find(img => img._id === imgItem._id)
       ?.pages
-      ?.forEach(p => {
-        const { left, right, top, bottom } = this.computeBounds(p.xc, p.yc, p.width, p.height, p.angle);
-        
-        // Correction of edges going outside canvas (should be done on BE)
-        let correctXc = p.xc;
-        let correctYc = p.yc;
-        let correctWidth = p.width;
-        let correctHeight = p.height;
-        let correctLeft = left;
-        let correctRight = right;
-        let correctTop = top;
-        let correctBottom = bottom;
-        
-        if (left < 0) {
-          correctLeft = 0;
-          correctXc += Math.abs(left / 2);
-          correctWidth -= Math.abs(left);
-        }
+      ?.forEach(page => {
+        const updatedPage = this.correctPageBounds(page);
 
-        if (right > 1) {
-          correctRight = 1;
-          correctXc -= Math.abs((right - 1) / 2);
-          correctWidth -= right - 1;
-        }
-
-        if (top < 0) {
-          correctTop = 0;
-          correctYc += Math.abs(top / 2);
-          correctHeight -= Math.abs(top);
-        }
-
-        if (bottom > 1) {
-          correctBottom = 1;
-          correctYc -= Math.abs((bottom - 1) / 2);
-          correctHeight -= bottom - 1;
-        }
-        
-        const updatedPage = {
-          ...p,
-          xc: roundToDecimals(correctXc, 4),
-          yc: roundToDecimals(correctYc, 4),
-          width: roundToDecimals(correctWidth, 4),
-          height: roundToDecimals(correctHeight, 4),
-          left: roundToDecimals(correctLeft, 4),
-          right: roundToDecimals(correctRight, 4),
-          top: roundToDecimals(correctTop, 4),
-          bottom: roundToDecimals(correctBottom, 4)
-        }
-        
         this.currentPages.push(updatedPage);
         this.drawPageInitial(updatedPage);
         this.loadingFirstCurrentPage.set(false);
       });
+
+    this.applyDefaultZoom();
     
     const lastMainImageItemName = this.mainImageItem()._id;
 
@@ -576,6 +450,73 @@ export class EditorService {
     ) {
       this.updateImagesByEdited(lastMainImageItemName);
     }
+  }
+
+  private correctPageBounds<T extends {
+    xc: number;
+    yc: number;
+    width: number;
+    height: number;
+    angle: number;
+  }>(page: T): T & {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+  } {
+    const { left, right, top, bottom } = this.computeBounds(
+      page.xc,
+      page.yc,
+      page.width,
+      page.height,
+      page.angle
+    );
+
+    let xc = page.xc;
+    let yc = page.yc;
+    let width = page.width;
+    let height = page.height;
+
+    let correctedLeft = left;
+    let correctedRight = right;
+    let correctedTop = top;
+    let correctedBottom = bottom;
+
+    if (left < 0) {
+      correctedLeft = 0;
+      xc += Math.abs(left / 2);
+      width -= Math.abs(left);
+    }
+
+    if (right > 1) {
+      correctedRight = 1;
+      xc -= Math.abs((right - 1) / 2);
+      width -= right - 1;
+    }
+
+    if (top < 0) {
+      correctedTop = 0;
+      yc += Math.abs(top / 2);
+      height -= Math.abs(top);
+    }
+
+    if (bottom > 1) {
+      correctedBottom = 1;
+      yc -= Math.abs((bottom - 1) / 2);
+      height -= bottom - 1;
+    }
+
+    return {
+      ...page,
+      xc: roundToDecimals(xc, 4),
+      yc: roundToDecimals(yc, 4),
+      width: roundToDecimals(width, 4),
+      height: roundToDecimals(height, 4),
+      left: roundToDecimals(correctedLeft, 4),
+      right: roundToDecimals(correctedRight, 4),
+      top: roundToDecimals(correctedTop, 4),
+      bottom: roundToDecimals(correctedBottom, 4),
+    };
   }
 
   drawPagePredicted(p: Page): void {
@@ -639,10 +580,214 @@ export class EditorService {
     return { centerX: cx, centerY: cy, width: w, height: h };
   }
 
+  refitMainImageToCanvas(): void {
+    if (!this.mainImage) return;
 
-  /* ------------------------------
-    ZOOMING
-  ------------------------------ */
+    this.resizeCanvasToEditor();
+    this.updateImageRect(this.mainImage, this.mainImageItem().orientation);
+    this.redrawAllPages();
+  }
+
+  normalizeImageForDisplay(img: ImageItem): ImageItem {
+    const orientation = this.normalizeOrientation(img.orientation);
+    if (orientation === 0) return { ...img, orientation };
+
+    return {
+      ...img,
+      orientation,
+      pages: img.pages.map(page => this.pageFromOriginalOrientation(page, orientation))
+    };
+  }
+
+  private resizeCanvasToEditor(): void {
+    const appMain = document.querySelector('app-main-editor') as HTMLElement;
+    const appStyle = getComputedStyle(appMain);
+    const appRect = appMain.getBoundingClientRect();
+
+    this.c.width =
+      appRect.width -
+      (parseFloat(appStyle.paddingLeft) +
+        parseFloat(appStyle.paddingRight) +
+        parseFloat(appStyle.borderLeftWidth) +
+        parseFloat(appStyle.borderRightWidth));
+
+    this.c.height =
+      appRect.height -
+      (parseFloat(appStyle.paddingTop) +
+        parseFloat(appStyle.paddingBottom) +
+        parseFloat(appStyle.borderTopWidth) +
+        parseFloat(appStyle.borderBottomWidth));
+  }
+
+  private updateImageRect(img: HTMLImageElement, orientation?: ImageOrientation): void {
+    if (orientation || orientation === 0) this.orientation.set(orientation);
+    const { width: orientedWidth, height: orientedHeight } = this.getOrientedImageSize(img, orientation);
+    const imgRatio = orientedWidth / orientedHeight;
+    const canvasRatio = this.c.width / this.c.height;
+
+    let drawWidth: number = this.c.width;
+    let drawHeight: number = this.c.height;
+
+    imgRatio > canvasRatio
+      ? drawHeight = this.c.width / imgRatio
+      : drawWidth = this.c.height * imgRatio;
+
+    this.imageRect = {
+      x: (this.c.width - drawWidth) / 2,
+      y: (this.c.height - drawHeight) / 2,
+      width: drawWidth,
+      height: drawHeight,
+    };
+  }
+
+  private getOrientedImageSize(img: HTMLImageElement, orientation?: ImageOrientation): { width: number; height: number } {
+    const normalized = this.normalizeOrientation(orientation);
+    return normalized === 90 || normalized === 270
+      ? { width: img.height, height: img.width }
+      : { width: img.width, height: img.height };
+  }
+
+  private drawOrientedImage(orientationValue?: ImageOrientation): void {
+    if (!this.mainImage) return;
+
+    const { ctx } = this;
+    const { x, y, width, height } = this.imageRect;
+    const orientation = this.normalizeOrientation(orientationValue ?? this.mainImageItem().orientation);
+
+    ctx.save();
+    ctx.translate(x + width / 2, y + height / 2);
+    ctx.rotate(degreeToRadian(orientation));
+
+    orientation === 90 || orientation === 270
+      ? ctx.drawImage(this.mainImage, -height / 2, -width / 2, height, width)
+      : ctx.drawImage(this.mainImage, -width / 2, -height / 2, width, height);
+
+    ctx.restore();
+  }
+
+  private normalizeOrientation(orientation?: ImageOrientation): ImageOrientation {
+    const normalized = (((orientation ?? 0) % 360 + 360) % 360) as ImageOrientation;
+    return [0, 90, 180, 270].includes(normalized) ? normalized : 0;
+  }
+
+  private getInverseOrientation(orientation: ImageOrientation): ImageOrientation {
+    switch (orientation) {
+      case 90:
+        return 270;
+      case 180:
+        return 180;
+      case 270:
+        return 90;
+      case 0:
+      default:
+        return 0;
+    }
+  }
+
+  private rotatePageGeometry(page: Page, degrees: 0 | 90 | 180 | 270): Page {
+    let rotated: Page;
+
+    switch (degrees) {
+      case 90:
+        rotated = {
+          ...page,
+          xc: 1 - page.yc,
+          yc: page.xc,
+          width: page.height,
+          height: page.width,
+        };
+        break;
+
+      case 180:
+        rotated = {
+          ...page,
+          xc: 1 - page.xc,
+          yc: 1 - page.yc,
+        };
+        break;
+
+      case 270:
+        rotated = {
+          ...page,
+          xc: page.yc,
+          yc: 1 - page.xc,
+          width: page.height,
+          height: page.width,
+        };
+        break;
+
+      case 0:
+      default:
+        rotated = { ...page };
+        break;
+    }
+
+    const bounds = this.computeBounds(rotated.xc, rotated.yc, rotated.width, rotated.height, rotated.angle);
+
+    return {
+      ...rotated,
+      left: bounds.left,
+      right: bounds.right,
+      top: bounds.top,
+      bottom: bounds.bottom,
+    };
+  }
+
+  private pageFromOriginalOrientation(page: Page, orientation?: ImageOrientation): Page {
+    let transformed = { ...page };
+    const turns = this.normalizeOrientation(orientation) / 90;
+
+    for (let i = 0; i < turns; i++) {
+      transformed = this.rotatePageCoordinates(transformed, 'right');
+    }
+
+    return transformed;
+  }
+
+  private pageToOriginalOrientation(page: Page, orientation?: ImageOrientation): Pick<Page, 'xc' | 'yc' | 'width' | 'height'> {
+    let transformed = { ...page };
+    const turns = this.normalizeOrientation(orientation) / 90;
+
+    for (let i = 0; i < turns; i++) {
+      transformed = this.rotatePageCoordinates(transformed, 'left');
+    }
+
+    return {
+      xc: roundToDecimals(transformed.xc, 4),
+      yc: roundToDecimals(transformed.yc, 4),
+      width: roundToDecimals(transformed.width, 4),
+      height: roundToDecimals(transformed.height, 4),
+    };
+  }
+
+  private rotatePageCoordinates(page: Page, direction: 'left' | 'right'): Page {
+    return direction === 'right'
+      ? {
+          ...page,
+          xc: 1 - page.yc,
+          yc: page.xc,
+          left: 1 - page.bottom,
+          right: 1 - page.top,
+          top: page.left,
+          bottom: page.right,
+          width: page.height,
+          height: page.width,
+        }
+      : {
+          ...page,
+          xc: page.yc,
+          yc: 1 - page.xc,
+          left: page.top,
+          right: page.bottom,
+          top: 1 - page.right,
+          bottom: 1 - page.left,
+          width: page.height,
+          height: page.width,
+        };
+  }
+
+
+  // ========== ZOOMING ==========
   private applyViewportTransform(ctx: CanvasRenderingContext2D): void {
     const { x, y, scale } = this.viewport;
     ctx.setTransform(scale, 0, 0, scale, x, y);
@@ -652,9 +797,7 @@ export class EditorService {
     this.viewport = { x: 0, y: 0, scale: 1 };
     this.snapped = false;
 
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
   }
 
   // Default zooming
@@ -665,7 +808,7 @@ export class EditorService {
     const scale = clamp(newScale, this.minZoom, this.maxZoom);
     
     if (scale === oldScale) return;
-    if (scale <= 1) {
+    if (scale === 1) {
       this.resetZoom();
       return;
     }
@@ -678,9 +821,7 @@ export class EditorService {
     this.viewport.scale = scale;
 
     this.clampViewportToMinZoomEnvelope();
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
   }
 
   panBy(dxScreen: number, dyScreen: number): void {
@@ -690,9 +831,7 @@ export class EditorService {
     this.viewport.y += dyScreen;
 
     this.clampViewportToMinZoomEnvelope();
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
   }
 
   private clampViewportToMinZoomEnvelope(): void {
@@ -728,9 +867,63 @@ export class EditorService {
   zoom(type: 'in' | 'out'): void {
     const x = this.c.width / 2;
     const y = this.c.height / 2;
-    const scale = this.viewport.scale * (1 + (type === 'in' ? 1 : -1) * this.btnZoomFactor);
+    const currentScale = roundToDecimals(this.viewport.scale, 2);
+    const scale = type === 'in'
+      ? currentScale < 1
+        ? 1
+        : currentScale + this.btnZoomStep
+      : currentScale <= 1
+        ? this.minZoom
+        : Math.max(1, currentScale - this.btnZoomStep);
 
-    this.setZoomAt(x, y, scale);
+    this.setZoomAt(x, y, roundToDecimals(scale, 2));
+  }
+
+  fitZoomToPages(safePadding: number = 32): void {
+    if (!this.c || !this.currentPages.length) return;
+
+    const { width: canvasWidth, height: canvasHeight } = this.c;
+    const { x, y, width, height } = this.imageRect;
+
+    const left = Math.min(...this.currentPages.map(page => x + width * page.left));
+    const right = Math.max(...this.currentPages.map(page => x + width * page.right));
+    const top = Math.min(...this.currentPages.map(page => y + height * page.top));
+    const bottom = Math.max(...this.currentPages.map(page => y + height * page.bottom));
+
+    const boundsWidth = right - left;
+    const boundsHeight = bottom - top;
+    if (boundsWidth <= 0 || boundsHeight <= 0) return;
+
+    const padding = Math.min(safePadding, canvasWidth / 4, canvasHeight / 4);
+    const availableWidth = canvasWidth - 2 * padding;
+    const availableHeight = canvasHeight - 2 * padding;
+    const scale = clamp(
+      Math.min(availableWidth / boundsWidth, availableHeight / boundsHeight),
+      this.minZoom,
+      this.maxZoom
+    );
+
+    const centerX = (left + right) / 2;
+    const centerY = (top + bottom) / 2;
+
+    this.viewport = {
+      scale,
+      x: canvasWidth / 2 - centerX * scale,
+      y: canvasHeight / 2 - centerY * scale,
+    };
+
+    this.snapped = false;
+    this.clampViewportToMinZoomEnvelope();
+    this.redrawAllPages();
+  }
+
+  applyDefaultZoom(): void {
+    if (this.defaultFitMode() === 'selection' && this.currentPages.length) {
+      this.fitZoomToPages();
+      return;
+    }
+
+    this.resetZoom();
   }
 
   // Zoom-snap to selected page
@@ -901,21 +1094,17 @@ export class EditorService {
 
     this.snapped = true;
 
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
   }
 
 
-  /* ------------------------------
-    PREV / NEXT IMAGE
-  ------------------------------ */
+  // ========== PREV / NEXT IMAGE ==========
   async showPrevImage(): Promise<void> {
     if (this.currentIndex() === 0 || !this.displayedImagesFinal().length) return;
     this.updateImagesByCurrentPages();
     this.showImage(-1);
     if (this.imgWasEdited()) {
-      await this.uiSvc.waitForFalse(this.imgWasEdited);
+      await this.ui.waitForFalse(this.imgWasEdited);
       this.setDisplayedImages();
     }
   }
@@ -926,18 +1115,44 @@ export class EditorService {
     this.updateImagesByCurrentPages();
     this.showImage(1);
     if (this.imgWasEdited()) {
-      await this.uiSvc.waitForFalse(this.imgWasEdited);
+      await this.ui.waitForFalse(this.imgWasEdited);
+      this.setDisplayedImages();
+    }
+  }
+
+  async showFirstImage(): Promise<void> {
+    if (this.currentIndex() === 0 || !this.displayedImagesFinal().length) return;
+    this.updateImagesByCurrentPages();
+    this.showImage(0);
+    if (this.imgWasEdited()) {
+      await this.ui.waitForFalse(this.imgWasEdited);
+      this.setDisplayedImages();
+    }
+  }
+
+  async showLastImage(): Promise<void> {
+    const displayedImages = this.displayedImagesFinal();
+    if (this.currentIndex() === displayedImages.length - 1 || !displayedImages.length) return;
+    this.updateImagesByCurrentPages();
+    this.showImage(1000);
+    if (this.imgWasEdited()) {
+      await this.ui.waitForFalse(this.imgWasEdited);
       this.setDisplayedImages();
     }
   }
 
   private showImage(offset: number): void {
     const displayedImages = this.displayedImagesFinal();
-    const newIndex = ((this.currentIndex() + offset + displayedImages.length) % displayedImages.length);
-    const newImage = displayedImages.length !== 1 ? displayedImages[newIndex] : this.emptyImageItem;
+    const length = displayedImages.length;
+    const newImage = [0, 1000].includes(offset)
+      ? displayedImages[offset === 0 ? 0 : length - 1]
+      : length === 1
+        ? this.emptyImageItem
+        : displayedImages[(this.currentIndex() + offset + length) % length];
+    
     this.setMainImage(newImage);
 
-    if (displayedImages.length === 1) {
+    if (length === 1) {
       this.setDisplayedImages();
       this.mainImageItem.set(this.emptyImageItem);
     }
@@ -945,9 +1160,170 @@ export class EditorService {
   }
 
 
-  /* ------------------------------
-    PAGE LOGIC
-  ------------------------------ */
+  // ========== ROTATING ==========
+  rotate(orientation: ImageOrientation): void {
+    if (this.rotationScope() === 'all') {
+      this.rotateAll(orientation);
+      return;
+    }
+
+    if (!this.auth.canEditTitle() || !this.displayedImagesFinal().length || !this.mainImage) return;
+    if (orientation === this.orientation()) return;
+    if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
+
+    const currentImage = this.mainImageItem();
+    const currentOrientation = this.orientation();
+
+    const originalPredictedPages = this.predictedImages().find(img => img._id === currentImage._id)?.pages;
+
+    const basePages = currentOrientation === 0
+      ? this.currentPages
+      : this.currentPages.map(p => this.rotatePageGeometry(p, this.getInverseOrientation(currentOrientation)));
+
+    this.updateImageRect(this.mainImage, orientation);
+
+    this.selectedPage = null;
+    this.lastSelectedPage = null;
+    this.lastPageCursorIsInside = null;
+
+    this.currentPages = basePages.map(p => this.rotatePageGeometry(p, orientation));
+    if (originalPredictedPages) this.currentPredictedPages = originalPredictedPages.map(p => this.rotatePageGeometry(p, orientation));
+
+    this.mainImageItem.set({
+      ...currentImage,
+      orientation,
+      edited: true,
+      pages: this.currentPages,
+    });
+
+    const updateCurrentImage = (images: ImageItem[]): ImageItem[] =>
+      images.map(img =>
+        img._id === currentImage._id
+          ? {
+              ...img,
+              orientation,
+              edited: true,
+              pages: this.currentPages,
+            }
+          : img
+      );
+
+    this.images.update(updateCurrentImage);
+    this.displayedImages.update(updateCurrentImage);
+    this.displayedImagesPages.update(updateCurrentImage);
+
+    this.predictedOrientedImages.update(prev =>
+      prev.map(img =>
+        img._id === currentImage._id
+          ? {
+              ...img,
+              orientation,
+              edited: false,
+              pages: this.currentPredictedPages,
+            }
+          : img
+      )
+    );
+
+    this.applyDefaultZoom();
+    this.updateMainImageItem();
+
+    this.imgWasEdited.set(true);
+    this.sthWasEdited = true;
+  }
+
+  isOrientationActive(orientation: ImageOrientation): boolean {
+    if (this.rotationScope() === 'current') {
+      return this.orientation() === orientation;
+    }
+
+    const images = this.images();
+    return images.length > 0
+      && images.every(image => this.normalizeOrientation(image.orientation) === orientation);
+  }
+
+  private rotateAll(orientation: ImageOrientation): void {
+    if (!this.auth.canEditTitle() || !this.images().length || !this.mainImage) return;
+
+    if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
+    this.updateImagesByCurrentPages();
+
+    const currentImageId = this.mainImageItem()._id;
+    if (this.imgWasEdited()) this.updateImagesByEdited(currentImageId);
+
+    const changedImageIds = new Set(
+      this.images()
+        .filter(image => this.normalizeOrientation(image.orientation) !== orientation)
+        .map(image => image._id)
+    );
+
+    if (!changedImageIds.size) return;
+
+    const updateOrientation = (image: ImageItem, edited: boolean): ImageItem => {
+      const currentOrientation = this.normalizeOrientation(image.orientation);
+      if (currentOrientation === orientation) return image;
+
+      const pagesInOriginalOrientation = currentOrientation === 0
+        ? image.pages
+        : image.pages.map(page =>
+            this.rotatePageGeometry(page, this.getInverseOrientation(currentOrientation))
+          );
+
+      return {
+        ...image,
+        orientation,
+        edited,
+        pages: pagesInOriginalOrientation.map(page =>
+          this.rotatePageGeometry(page, orientation)
+        ),
+      };
+    };
+
+    const updatedImages = this.images().map(image =>
+      updateOrientation(image, true)
+    );
+    const imagesById = new Map(updatedImages.map(image => [image._id, image]));
+
+    this.images.set(updatedImages);
+    this.displayedImages.update(images =>
+      images.map(image => imagesById.get(image._id) ?? image)
+    );
+    this.displayedImagesPages.update(images =>
+      images.map(image => imagesById.get(image._id) ?? image)
+    );
+
+    const updatedPredictedImages = this.predictedOrientedImages().map(image =>
+      updateOrientation(image, false)
+    );
+    this.predictedOrientedImages.set(updatedPredictedImages);
+
+    const updatedCurrentImage = imagesById.get(currentImageId);
+    if (!updatedCurrentImage) return;
+
+    this.updateImageRect(this.mainImage, orientation);
+
+    this.selectedPage = null;
+    this.lastSelectedPage = null;
+    this.lastPageCursorIsInside = null;
+    this.currentPages = updatedCurrentImage.pages;
+    this.currentPredictedPages =
+      updatedPredictedImages.find(image => image._id === currentImageId)?.pages ?? [];
+
+    this.mainImageItem.set({
+      ...updatedCurrentImage,
+      url: this.mainImageItem().url,
+    });
+
+    this.applyDefaultZoom();
+    this.updateMainImageItem();
+
+    this.imgWasEdited.set(changedImageIds.has(currentImageId));
+    this.sthWasEdited = true;
+  }
+
+
+
+  // ========== PAGE LOGIC ==========
   pageIdCursorInside(): string {
     const pos = this.mousePos;
     if (!pos) return '';
@@ -974,13 +1350,11 @@ export class EditorService {
   }
 
   hoveringPage(hoveredPageId: string): void {
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p, hoveredPageId));
+    this.redrawAllPages(hoveredPageId);
   }
 
   updateHoverPage(): void {
-    if (!this.authSvc.canWriteTitle()) return;
+    if (!this.auth.canEditTitle()) return;
     
     const insidePage = Boolean(this.pageId);
     if (!this.isDragging && !this.isRotating && insidePage) {
@@ -1068,6 +1442,7 @@ export class EditorService {
       (this.gridMode() === 'when-rotating' && this.isRotating)
       || this.gridMode() === 'always'
     )) {
+      const gridSpacing = gridDensityDict[this.gridDensityLabel()];
       const hw = width / 2;
       const hh = height / 2;
       const left = -hw;
@@ -1078,25 +1453,25 @@ export class EditorService {
       ctx.save();
       ctx.beginPath();
 
-      // 1px lines that stay 1px even if scaled elsewhere (optional, harmless if not scaled)
+      // Keep the configured visual line width stable while the canvas is scaled.
       const sx = Math.hypot(ctx.getTransform().a, ctx.getTransform().b) || 1;
-      ctx.lineWidth = 1 / sx;
+      ctx.lineWidth = gridLineWidthDict[this.gridLineWidthLabel()] / sx;
 
-      ctx.strokeStyle = gridColor;
+      ctx.strokeStyle = gridColorDict[this.gridColorLabel()];
 
-      // To make 1px lines crisp on canvas, align to half-pixel in local space.
+      // Align to half-pixel in local space so thin canvas lines stay crisp.
       // Also ensure the first line starts exactly at the top-left corner.
-      const xStart = left + this.gridSpacing + 0.5;
-      const yStart = top + this.gridSpacing + 0.5;
+      const xStart = left + gridSpacing + 0.5;
+      const yStart = top + gridSpacing + 0.5;
 
       // Vertical lines
-      for (let x = xStart; x <= right; x += this.gridSpacing) {
+      for (let x = xStart; x <= right; x += gridSpacing) {
         ctx.moveTo(x, top);
         ctx.lineTo(x, bottom);
       }
 
       // Horizontal lines
-      for (let y = yStart; y <= bottom; y += this.gridSpacing) {
+      for (let y = yStart; y <= bottom; y += gridSpacing) {
         ctx.moveTo(left, y);
         ctx.lineTo(right, y);
       }
@@ -1145,7 +1520,7 @@ export class EditorService {
   }
   
   addPage(): void {
-    if (!this.authSvc.canWriteTitle() || this.currentPages.length >= this.maxPages || !this.displayedImagesFinal().length) return;
+    if (!this.auth.canEditTitle() || this.currentPages.length >= this.maxPages || !this.displayedImagesFinal().length) return;
 
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
 
@@ -1167,20 +1542,16 @@ export class EditorService {
     this.currentPages.push(addedPage);
     this.selectedPage = this.currentPages[this.currentPages.length - 1];
     this.imgWasEdited.set(true);
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
 
-    this.resetZoom();
+    this.applyDefaultZoom();
   }
 
   removePage(): void {
     this.currentPages = this.currentPages.filter(p => p !== this.selectedPage);
     if (this.currentPages.length) this.currentPages = this.currentPages.map(p => ({ ...p, type: 'single' }));
     this.selectedPage = null;
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
+    this.redrawAllPages();
     this.updateMainImageItem();
     this.pageWasEdited = true;
     this.imgWasEdited.set(true);
@@ -1225,12 +1596,17 @@ export class EditorService {
     if (!this.mainImage) return;
 
     this.applyViewportTransform(ctx);
-    const { x, y, width, height } = this.imageRect;
-    ctx.drawImage(this.mainImage, x, y, width, height);
+    this.drawOrientedImage();
 
     if (this.selectedPage) {
       this.dimOutside(this.selectedPage);
     }
+  }
+
+  redrawAllPages(hoveredPageId?: string): void {
+    this.redrawImageOnCanvas();
+    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
+    this.currentPages.forEach(p => this.drawPage(p, hoveredPageId));
   }
 
   updateCurrentPagesWithEdited(): void {
@@ -1276,24 +1652,27 @@ export class EditorService {
   }
 
 
-  /* ------------------------------
-    DIALOG ACTIONS
-  ------------------------------ */
+  // ========== DIALOG ACTIONS ==========
   gridRadio = signal<GridMode>('when-rotating');
+  gridDensityRadio = signal<GridDensityLabel>('Hustá');
+  gridColorRadio = signal<GridColorLabel>('Modrá');
+  gridLineWidthRadio = signal<GridLineWidthLabel>('Tenká');
   outlineRadio = signal<OutlineWidthLabel>('Silný');
   dimRadio = signal<DimColor>('Černá');
   scanTypeRadio = signal<ScanType>('all');
   pageNumberRadio = signal<PageNumberType>('all');
+  defaultFitModeRadio = signal<DefaultFitMode>('page');
 
   openSettingsDialog(): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
+    this.resetSettingsDraft();
     
-    uiSvc.dialogWidth.set(680);
-    uiSvc.dialogTitle.set('Nastavení');
-    uiSvc.dialogContent.set(true);
-    uiSvc.dialogContentType.set('settings');
-    uiSvc.dialogDescription.set(null);
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(680);
+    ui.dialogTitle.set('Nastavení');
+    ui.dialogContent.set(true);
+    ui.dialogContentType.set('settings');
+    ui.dialogDescription.set(null);
+    ui.dialogButtons.set([
       { 
         label: 'Reset',
         action: () => {
@@ -1302,6 +1681,15 @@ export class EditorService {
           this.gridRadio.set('when-rotating');
           this.gridMode.set('when-rotating');
           this.storage.set('gridMode', 'when-rotating');
+          this.gridDensityRadio.set('Hustá');
+          this.gridDensityLabel.set('Hustá');
+          this.storage.set('gridDensityLabel', 'Hustá');
+          this.gridColorRadio.set('Modrá');
+          this.gridColorLabel.set('Modrá');
+          this.storage.set('gridColorLabel', 'Modrá');
+          this.gridLineWidthRadio.set('Tenká');
+          this.gridLineWidthLabel.set('Tenká');
+          this.storage.set('gridLineWidthLabel', 'Tenká');
           this.outlineRadio.set('Silný');
           this.outlineWidthLabel.set('Silný');
           this.storage.set('outlineWidthLabel', 'Silný');
@@ -1317,24 +1705,37 @@ export class EditorService {
           this.storage.set('filterScanTypeStart', 'all');
           this.pageNumberRadio.set('all');
           this.storage.set('filterPageNumberStart', 'all');
-          this.redrawImageOnCanvas();
-          if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-          this.currentPages.forEach(p => this.drawPage(p));
-          uiSvc.closeDialog();
-          uiSvc.showToast('Nastavení bylo resetováno.', { type: 'success' });
+          this.defaultFitMode.set('page');
+          this.defaultFitModeRadio.set('page');
+          this.storage.set('defaultFitMode', 'page');
+          this.applyDefaultZoom();
+          ui.closeDialog();
+          ui.showToast('Nastavení bylo resetováno.', { type: 'success' });
         }
       },
       {
         label: 'Uložit',
         primary: true,
         action: () => {
-          uiSvc.closeDialog();
+          ui.closeDialog();
           this.saveSettings();
         }
       }
     ]);
 
-    uiSvc.openDialog();
+    ui.openDialog();
+  }
+
+  resetSettingsDraft(): void {
+    this.gridRadio.set(this.gridMode());
+    this.gridDensityRadio.set(this.gridDensityLabel());
+    this.gridColorRadio.set(this.gridColorLabel());
+    this.gridLineWidthRadio.set(this.gridLineWidthLabel());
+    this.outlineRadio.set(this.outlineWidthLabel());
+    this.dimRadio.set(this.dimColor());
+    this.scanTypeRadio.set(this.selectedFilter ?? 'all');
+    this.pageNumberRadio.set(this.selectedPageNumberFilter() ?? 'all');
+    this.defaultFitModeRadio.set(this.defaultFitMode());
   }
 
   togglePredictions(): void {
@@ -1354,6 +1755,15 @@ export class EditorService {
     const gridRadio = this.gridRadio();
     this.gridMode.set(gridRadio);
     this.storage.set('gridMode', gridRadio);
+    const gridDensityRadio = this.gridDensityRadio();
+    this.gridDensityLabel.set(gridDensityRadio);
+    this.storage.set('gridDensityLabel', gridDensityRadio);
+    const gridColorRadio = this.gridColorRadio();
+    this.gridColorLabel.set(gridColorRadio);
+    this.storage.set('gridColorLabel', gridColorRadio);
+    const gridLineWidthRadio = this.gridLineWidthRadio();
+    this.gridLineWidthLabel.set(gridLineWidthRadio);
+    this.storage.set('gridLineWidthLabel', gridLineWidthRadio);
     const outlineRadio = this.outlineRadio();
     this.outlineWidthLabel.set(outlineRadio);
     this.storage.set('outlineWidthLabel', outlineRadio);
@@ -1372,79 +1782,78 @@ export class EditorService {
 
     this.storage.set('filterScanTypeStart', this.scanTypeRadio());
     this.storage.set('filterPageNumberStart', this.pageNumberRadio());
-    this.redrawImageOnCanvas();
-    if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-    this.currentPages.forEach(p => this.drawPage(p));
-    this.uiSvc.showToast('Nastavení bylo uloženo.', { type: 'success' });
+    const defaultFitModeRadio = this.defaultFitModeRadio();
+    this.defaultFitMode.set(defaultFitModeRadio);
+    this.storage.set('defaultFitMode', defaultFitModeRadio);
+    this.applyDefaultZoom();
+    this.ui.showToast('Nastavení bylo uloženo.', { type: 'success' });
   }
 
   openShortcutsDialog(): void {
-    const uiSvc = this.uiSvc;
+    const ui = this.ui;
 
-    uiSvc.dialogWidth.set(680);
-    uiSvc.dialogTitle.set('Klávesové zkratky');
-    uiSvc.dialogContent.set(true);
-    uiSvc.dialogContentType.set('shortcuts');
-    uiSvc.dialogDescription.set(null);
-    uiSvc.dialogButtons.set([]);
+    ui.dialogWidth.set(680);
+    ui.dialogTitle.set('Klávesové zkratky');
+    ui.dialogContent.set(true);
+    ui.dialogContentType.set('shortcuts');
+    ui.dialogDescription.set(null);
+    ui.dialogButtons.set([]);
 
-    uiSvc.openDialog();
+    ui.openDialog();
   }
 
   openResetDocDialog(): void {
-    if (!this.authSvc.canWriteTitle()) return;
-    const uiSvc = this.uiSvc;
+    if (!this.auth.canWriteTitle()) return;
+    const ui = this.ui;
     
-    uiSvc.dialogWidth.set(680);
-    uiSvc.dialogTitle.set('Opravdu chcete resetovat změny dokumentu?');
-    uiSvc.dialogContent.set(false);
-    uiSvc.dialogContentType.set(null);
-    uiSvc.dialogDescription.set('Reset změn se týká celého dokumentu.');
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(680);
+    ui.dialogTitle.set('Opravdu chcete resetovat změny dokumentu?');
+    ui.dialogContent.set(false);
+    ui.dialogContentType.set(null);
+    ui.dialogDescription.set('Reset změn se týká celého dokumentu.');
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Resetovat celý dokument',
         primary: true,
         destructive: true,
         action: () => {
-          uiSvc.closeDialog();
+          ui.closeDialog();
           this.resetDoc();
         }
       }
     ]);
 
-    uiSvc.openDialog();
+    ui.openDialog();
   }
 
   openResetScanDialog(): void {
-    if (!this.authSvc.canWriteTitle()) return;
-    const uiSvc = this.uiSvc;
+    if (!this.auth.canWriteTitle()) return;
+    const ui = this.ui;
 
-    uiSvc.dialogWidth.set(680);
-    uiSvc.dialogTitle.set('Opravdu chcete resetovat změny skenu?');
-    uiSvc.dialogContent.set(false);
-    uiSvc.dialogContentType.set(null);
-    uiSvc.dialogDescription.set('Reset změn se týká aktuálního skenu.');
-    uiSvc.dialogButtons.set([
+    ui.dialogWidth.set(680);
+    ui.dialogTitle.set('Opravdu chcete resetovat změny skenu?');
+    ui.dialogContent.set(false);
+    ui.dialogContentType.set(null);
+    ui.dialogDescription.set('Reset změn se týká aktuálního skenu.');
+    ui.dialogButtons.set([
       { label: 'Zrušit' },
       {
         label: 'Resetovat změny skenu',
         primary: true,
         destructive: true,
         action: () => {
-          uiSvc.closeDialog();
+          ui.closeDialog();
           this.resetScan();
         }
       }
     ]);
 
-    uiSvc.openDialog();
+    ui.openDialog();
   }
 
 
-  /* ------------------------------
-    KEYBOARD SHORTCUTS
-  ------------------------------ */
+  // ========== KEYBOARD SHORTCUTS ==========
   private isHandledKey(key: string): boolean {
     return [
       '+', 'ě', 'Ě', '1', '2',                              // Select left / right page OR + Alt / Cmd = filters number of pages
@@ -1453,6 +1862,7 @@ export class EditorService {
       'p', 'P',                                             // Add page
       'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',    // Drag selected page x, y by 1; not selected prev/next scan
       'PageDown', 'PageUp',                                 // (+ PageUp / PageDown)
+      'Home', 'End',                                        // First / last scan
       'm', 'M',                                             // Mřížka / grid
       'o', 'O',                                             // Obrys / outline
       'c', 'C',                                             // Clona (barva)
@@ -1460,11 +1870,12 @@ export class EditorService {
       'F1', 'F2', 'F3', 'F4',                               // Filters
       'Shift',                                              // + arrows = change width / height by 1
       'Control', 'Meta',                                    // + R = reset změn skenu; + shift + R = reset změn dokumentu
-      'a', 'A', 's', 'S',                                   // Rotate by 1
+      'a', 'A', 's', 'S',                                   // Rotate page by 1
+      'd', 'D', 'f', 'F', 'g', 'G', 'h', 'H',               // Rotate scan
       'k', 'K',                                             // Shortcuts
       'q', 'Q', 'w', 'W', 'e', 'E', 'r', 'R',               // Zooming
       'Tab',                                                // Cycle through current pages
-      'h', 'H'                                              // Show predictions
+      'j', 'J'                                              // Show predictions
     ].includes(key);
   }
 
@@ -1473,8 +1884,10 @@ export class EditorService {
     if (!this.isHandledKey(key) || (event.target as HTMLElement).tagName === 'INPUT') return;
     event.preventDefault();
     event.stopPropagation();
-    const dialogOpen = this.uiSvc.dialogOpen();
-    const canWriteTitle = this.authSvc.canWriteTitle();
+    const dialogOpen = this.ui.dialogOpen();
+    const canWriteTitle = this.auth.canWriteTitle();
+    // Editing shortcuts are available in read mode too; only saving is restricted.
+    const canEditTitle = this.auth.canEditTitle();
 
     // Update hover page
     if (key === 'Shift') {
@@ -1490,7 +1903,7 @@ export class EditorService {
         return;
       }
       
-      if (!canWriteTitle) return;
+      if (!canEditTitle) return;
       if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
       this.lastSelectedPage = this.selectedPage;
       const isLeftKey = key === '+' || key === '1';
@@ -1503,18 +1916,16 @@ export class EditorService {
         : null;
       this.clickedDiffPage = this.lastSelectedPage && this.selectedPage && this.lastSelectedPage !== this.selectedPage;
       this.lastPageCursorIsInside = this.selectedPage;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
       this.updateMainImageItem();
     }
 
     // Unselect page
-    if (canWriteTitle && key === 'Escape') {
+    if (canEditTitle && key === 'Escape') {
       if (dialogOpen) {
-        this.uiSvc.dialogOpen.set(false);
-        this.uiSvc.dialogOpened = false;
-        if (this.uiSvc.dialogTitle() === 'Nastavení') this.gridRadio.set(this.gridMode());
+        this.ui.dialogOpen.set(false);
+        this.ui.dialogOpened = false;
+        if (this.ui.dialogTitle() === 'Nastavení') this.resetSettingsDraft();
         return;
       }
       
@@ -1522,58 +1933,50 @@ export class EditorService {
       this.lastSelectedPage = this.selectedPage;
       this.selectedPage = null;
       this.lastPageCursorIsInside = null;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
       this.updateMainImageItem();
     }
 
     // Remove selected page
-    if (canWriteTitle && ['Backspace', 'Delete'].includes(key) && !dialogOpen && this.selectedPage) this.removePage();
-    
+    if (canEditTitle && ['Backspace', 'Delete'].includes(key) && !dialogOpen && this.selectedPage) this.removePage();
+
     // Add page
-    if (canWriteTitle && ['p', 'P'].includes(key) && !dialogOpen && this.currentPages.length < this.maxPages) this.addPage();
+    if (canEditTitle && ['p', 'P'].includes(key) && !dialogOpen && this.currentPages.length < this.maxPages) this.addPage();
 
     // Show predictions
-    if (this.authSvc.isAdmin() && ['h', 'H'].includes(key) && !dialogOpen) {
+    if (this.auth.isAdmin() && ['j', 'J'].includes(key) && !dialogOpen) {
       this.showPredictions = !this.showPredictions;
       this.storage.set('showPredictions', this.showPredictions);
       window.location.reload();
     }
 
     // Change grid mode
-    if (canWriteTitle && ['m', 'M'].includes(key) && this.selectedPage &&!dialogOpen) {
+    if (canEditTitle && ['m', 'M'].includes(key) && this.selectedPage &&!dialogOpen) {
       this.gridMode.set(!this.isRotating
         ? this.gridMode() === 'always' ? 'when-rotating' : 'always'
         : this.gridMode() === 'never' ? 'when-rotating' : 'never');
       const gridMode = this.gridMode();
       this.gridRadio.set(gridMode);
       this.storage.set('gridMode', gridMode);
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     };
 
     // Outline width
-    if (canWriteTitle && ['o', 'O'].includes(key) && this.selectedPage && !dialogOpen) {
+    if (canEditTitle && ['o', 'O'].includes(key) && this.selectedPage && !dialogOpen) {
       const outlineWidthLabel = this.outlineWidthLabel();
       this.outlineWidthLabel.set(outlineWidthLabel === 'Silný' ? 'Střední' : (outlineWidthLabel === 'Střední' ? 'Tenký' : (outlineWidthLabel === 'Tenký' ? 'Žádný' : 'Silný')));
       const outlineWidthLabel2 = this.outlineWidthLabel();
       this.outlineRadio.set(outlineWidthLabel2);
       this.storage.set('outlineWidthLabel', outlineWidthLabel2);
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     }
 
     // Dimming color
-    if (canWriteTitle && ['c', 'C'].includes(key) && this.selectedPage && !event.ctrlKey && !event.metaKey && !dialogOpen) {
+    if (canEditTitle && ['c', 'C'].includes(key) && this.selectedPage && !event.ctrlKey && !event.metaKey && !dialogOpen) {
       this.dimColor.update(prev => prev === 'Černá' ? 'Červená' : (prev === 'Červená' ? 'Bílá' : (prev === 'Bílá' ? 'Žádná' : 'Černá')));
       this.dimRadio.set(this.dimColor());
       this.storage.set('dimColor', this.dimColor());
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     }
 
     // Prev/next scan
@@ -1587,8 +1990,14 @@ export class EditorService {
       if (isPageKey || isAllowedArrow) prevKeys.has(key) ? this.showPrevImage() : this.showNextImage();
     }
 
+    // First/last scan
+    if ((['Home', 'End'].includes(key)) && !dialogOpen) {
+      const isHomeKey = key === 'Home';
+      isHomeKey ? this.showFirstImage() : this.showLastImage();
+    }
+
     // Drag/move page
-    if (canWriteTitle && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key) && this.selectedPage && !event.altKey && !event.ctrlKey && !event.shiftKey && !event.metaKey && !dialogOpen) {
+    if (canEditTitle && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key) && this.selectedPage && !event.altKey && !event.ctrlKey && !event.shiftKey && !event.metaKey && !dialogOpen) {
       const start = this.selectedPage;
       const isHorizontal = ['ArrowLeft', 'ArrowRight'].includes(key);
       const sign = ['ArrowRight','ArrowDown'].includes(key) ? 1 : -1;
@@ -1630,13 +2039,11 @@ export class EditorService {
       this.lastSelectedPage = updatedPage;
       this.currentPages = this.currentPages.map(p =>p._id === updatedPage._id ? updatedPage : p);
 
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     }
 
     // Change page width / height
-    if (canWriteTitle && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key) && event.shiftKey && this.selectedPage && !dialogOpen) {
+    if (canEditTitle && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key) && event.shiftKey && this.selectedPage && !dialogOpen) {
       if (['ArrowLeft', 'ArrowRight'].includes(key)) {
         const cw = this.c.width;
         const ch = this.c.height;
@@ -1879,13 +2286,11 @@ export class EditorService {
       this.pageWasEdited = true;
       this.imgWasEdited.set(true);
       this.sthWasEdited = true;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     }
 
-    // Rotate
-    if (canWriteTitle && ['a', 'A', 's', 'S'].includes(key) && this.selectedPage && !dialogOpen) {
+    // Rotate page by 1
+    if (canEditTitle && ['a', 'A', 's', 'S'].includes(key) && this.selectedPage && !dialogOpen) {
       const page = this.selectedPage;
       const sign = ['s', 'S'].includes(key) ? 1 : -1;
       const delta = this.incrementAngle * sign/*  * (event.shiftKey ? 10 : 1) */;
@@ -1924,9 +2329,15 @@ export class EditorService {
       this.pageWasEdited = true;
       this.imgWasEdited.set(true);
       this.sthWasEdited = true;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
+    }
+
+    // Rotate scan
+    if (canEditTitle && ['d', 'D', 'f', 'F', 'g', 'G', 'h', 'H'].includes(key) && !dialogOpen) {
+      if (['d', 'D'].includes(key)) this.rotate(270);
+      if (['f', 'F'].includes(key)) this.rotate(0);
+      if (['g', 'G'].includes(key)) this.rotate(90);
+      if (['h', 'H'].includes(key)) this.rotate(180);
     }
 
     // Zooming
@@ -1970,9 +2381,7 @@ export class EditorService {
         const newIndex = potentialNewIndex === this.currentPages.length ? 0 : potentialNewIndex;
         this.selectedPage = this.currentPages[newIndex];
         this.lastPageCursorIsInside = this.selectedPage;
-        this.redrawImageOnCanvas();
-        if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-        this.currentPages.forEach(p => this.drawPage(p));
+        this.redrawAllPages();
         return;
       }
       
@@ -1981,12 +2390,10 @@ export class EditorService {
         || (this.currentPages.length === this.maxPages && this.selectedPage === mostRightPage)
       ) {
         this.showNextImage();
-        await this.uiSvc.waitForFalse(this.loadingFirstCurrentPage);
+        await this.ui.waitForFalse(this.loadingFirstCurrentPage);
         this.selectedPage = this.currentPages.reduce((min, page) => page.xc < min.xc ? page : min);
         this.lastPageCursorIsInside = this.selectedPage;
-        this.redrawImageOnCanvas();
-        if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-        this.currentPages.forEach(p => this.drawPage(p));
+        this.redrawAllPages();
         this.updateMainImageItem();
       }
     }
@@ -1998,7 +2405,7 @@ export class EditorService {
         return;
       }
       
-      switch (this.uiSvc.dialogTitle()) {
+      switch (this.ui.dialogTitle()) {
         case 'Nastavení':
           this.saveSettings();
           break;
@@ -2010,7 +2417,7 @@ export class EditorService {
           break;
       }
 
-      this.uiSvc.closeDialog();
+      this.ui.closeDialog();
     };
 
     // Reset změn dokumentu a skenu
@@ -2020,7 +2427,6 @@ export class EditorService {
         ((key === 'R' && event.ctrlKey && event.shiftKey && !event.metaKey && !event.altKey)
         || (key === 'R' && event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey))
       ) {
-        // this.openResetDoc();
       } else if (
         !dialogOpen &&
         ((key === 'r' && event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey)
@@ -2048,9 +2454,9 @@ export class EditorService {
 
     // Toggle shortcuts
     if (['k', 'K'].includes(key)) {
-      if (dialogOpen && this.uiSvc.dialogTitle() === 'Klávesové zkratky') {
-        this.uiSvc.dialogOpen.set(false);
-        this.uiSvc.dialogOpened = false;
+      if (dialogOpen && this.ui.dialogTitle() === 'Klávesové zkratky') {
+        this.ui.dialogOpen.set(false);
+        this.ui.dialogOpened = false;
         return;
       }
 
@@ -2067,9 +2473,7 @@ export class EditorService {
       const newIndex = potentialNewIndex === this.currentPages.length ? 0 : potentialNewIndex;
       this.selectedPage = this.currentPages[newIndex];
       this.lastPageCursorIsInside = this.selectedPage;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     };
 
     // Copy text
@@ -2092,12 +2496,10 @@ export class EditorService {
     // Is rotating OFF
     if (
       (((event.ctrlKey || event.metaKey) && key === 'Alt') || (['Control', 'Meta'].includes(key) && event.altKey))
-      && this.selectedPage && !this.uiSvc.dialogOpen()
+      && this.selectedPage && !this.ui.dialogOpen()
     ) {
       this.isRotating = false;
-      this.redrawImageOnCanvas();
-      if (this.showPredictions) this.currentPredictedPages.forEach(p => this.drawPagePredicted(p));
-      this.currentPages.forEach(p => this.drawPage(p));
+      this.redrawAllPages();
     }
   }
 }

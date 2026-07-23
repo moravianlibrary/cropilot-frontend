@@ -1,7 +1,7 @@
 @use '../../../styles' as styles;
 
 :host {
-  min-width: 250px;
+  min-width: 251px;
   flex-basis: 250px;
   flex: 1;
   display: flex;
@@ -31,17 +31,15 @@
     .menu {
       padding: var(--spacing-x2);
 
-      svg {
-        fill: var(--icon-dark);
+      .icon {
+        color: var(--icon-dark);
       }
     }
   }
 
   .scan-name {
-    .label {
-      @include styles.font(500, var(--font-size-x2), var(--spacing-x6), var(--text-base));
-    }
-
+    margin-block: -8px -4px;
+    
     .name {
       @include styles.font(400, var(--font-size-x2), var(--spacing-x5-5), var(--text-base));
     }
@@ -56,8 +54,8 @@
     align-items: center;
     gap: var(--spacing-x2);
 
-    svg {
-      fill: var(--icon-black);
+    .icon {
+      color: var(--icon-black);
     }
   }
 
@@ -76,11 +74,87 @@
     background-color: var(--bg-color-edited);
   }
 
+  .label {
+    @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-light));
+    margin-top: var(--spacing-x1);
+    margin-bottom: -6px;
+  }
+
+  .rotation-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-x2);
+    margin-top: var(--spacing-x1);
+    margin-bottom: -6px;
+
+    .label {
+      margin: 0;
+    }
+
+    .scope-switch {
+      display: inline-grid;
+      grid-template-columns: repeat(2, auto);
+      align-items: center;
+      margin-left: auto;
+      padding: var(--spacing-x0-5);
+      border-radius: var(--spacing-x1-5);
+      background-color: var(--bg-light);
+
+      .switch-button {
+        border: none;
+        border-radius: var(--spacing-x1);
+        background: transparent;
+        padding: var(--spacing-x0-5) var(--spacing-x2);
+        white-space: nowrap;
+        cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+        transition: background 0.2s, color 0.2s;
+        @include styles.font(450, var(--font-size-x1), var(--spacing-x4), var(--text-light));
+      }
+
+      .switch-button.active {
+        background-color: var(--bg-base);
+        color: var(--text-base);
+      }
+    }
+  }
+
   .actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-x2);
     max-width: 100%;
+
+    .switch-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      border-radius: var(--spacing-x2);
+      background-color: var(--bg-light);
+      padding: var(--spacing-x0-5);
+
+      .switch-button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: var(--spacing-x0-5);
+        border: none;
+        background: transparent;
+        padding: var(--spacing-x2) var(--spacing-x3);
+        @include styles.font(450, var(--font-size-x1-5), var(--spacing-x4), var(--text-light));
+        border-radius: var(--spacing-x1-5);
+
+        cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+        transition: background 0.2s, color 0.2s;
+      }
+
+      .switch-button.active {
+        background-color: var(--bg-base);
+        color: var(--text-base);
+      }
+    }
   }
 }
 
@@ -125,8 +199,8 @@
     cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
   }
 
-  svg {
-    fill: var(--icon-dark);
+  .icon {
+    color: var(--icon-dark);
   }
 }
 
@@ -138,8 +212,8 @@
     cursor: default;
   }
 
-  svg {
-    fill: var(--icon-disabled);
+  .icon {
+    color: var(--icon-disabled);
   }
 }
 
@@ -198,21 +272,21 @@
     position: absolute;
     display: inline-flex;
 
-    svg {
-      fill: var(--icon-dark);
+    .icon {
+      color: var(--icon-dark);
 
       &:hover {
         cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
-        fill: var(--primary);
+        color: var(--primary);
       }
     }
 
     .disabled {
-      fill: var(--border-tertiary-color);
+      color: var(--border-tertiary-color);
 
       &:hover {
         cursor: default;
-        fill: var(--border-tertiary-color);
+        color: var(--border-tertiary-color);
       }
     }
   }
@@ -247,11 +321,17 @@ input[type=number] {
 }
 
 
-/* ------------------------------
-    ULOŽIT VŠE
-  ------------------------------ */
+// ========== ULOŽIT VŠE ==========
 .footer {
   width: 100%;
   padding: var(--spacing-x2) var(--spacing-x4);
   border-top: 1px solid var(--border-color);
+
+  .read-mode-note {
+    // Match the save button's vertical footprint (padding x2 + line-height x6)
+    // so the footer keeps the same height and the bottom bar stays on one line.
+    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x6), var(--text-secondary));
+    padding: var(--spacing-x2) 0;
+    text-align: center;
+  }
 }

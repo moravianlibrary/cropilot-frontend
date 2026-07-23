@@ -3,15 +3,11 @@
     <div class="title">
       
       <!-- Back button -->
-      @let canReadGroup = authSvc.canReadGroup();
+      @let canReadGroup = auth.canReadGroup();
       @if (canReadGroup.length) {
-        <svg 
-          width="16" height="16" viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg"
-          (click)="backToMyGroupsTitles(canReadGroup)"
-        >
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.73347 3.59957C6.92873 3.79483 6.92873 4.11142 6.73347 4.30668L3.04036 7.99979L6.73347 11.6929C6.92873 11.8882 6.92873 12.2048 6.73347 12.4C6.53821 12.5953 6.22163 12.5953 6.02637 12.4L1.9797 8.35335C1.88593 8.25958 1.83325 8.1324 1.83325 7.99979C1.83325 7.86718 1.88593 7.74001 1.9797 7.64624L6.02637 3.59957C6.22163 3.40431 6.53821 3.40431 6.73347 3.59957Z" />
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M1.94653 8C1.94653 7.72386 2.17039 7.5 2.44653 7.5H13.6665C13.9427 7.5 14.1665 7.72386 14.1665 8C14.1665 8.27614 13.9427 8.5 13.6665 8.5H2.44653C2.17039 8.5 1.94653 8.27614 1.94653 8Z" />
-        </svg>
+        <span class="icon">
+          <app-icon name="back" [size]="16" (click)="backToMyGroupsTitles(canReadGroup)" />
+        </span>
       }
       
       <!-- Title -->
@@ -19,7 +15,7 @@
         id="logo"
         class="clickable"
         (click)="backToHomepage()"
-        [href]="authSvc.baseUri"
+        [href]="auth.baseUri"
       >
         <svg width="25" height="25" viewBox="0 0 25 25"  xmlns="http://www.w3.org/2000/svg">
           <path fill-rule="evenodd" clip-rule="evenodd" d="M11.3281 2.26565V1.00671H12.8385V2.26565H14.0972C16.6891 2.26565 18.6998 2.77939 20.0436 4.12313C21.3873 5.46686 21.901 7.47762 21.901 10.0695V14.0972C21.901 16.6891 21.3873 18.6999 20.0436 20.0436C18.6998 21.3873 16.6891 21.9011 14.0972 21.9011H12.8385V23.1597H12.0833H11.3281V21.9011H10.0694C7.4776 21.9011 5.46684 21.3873 4.12311 20.0436C2.77937 18.6999 2.26562 16.6891 2.26562 14.0972V10.0695C2.26562 7.47762 2.77937 5.46686 4.12311 4.12313C5.46684 2.77939 7.4776 2.26565 10.0694 2.26565H11.3281ZM11.3281 3.77607H10.0694C7.62657 3.77607 6.11302 4.26926 5.19113 5.19115C4.26924 6.11304 3.77604 7.62659 3.77604 10.0695V14.0972C3.77604 16.5401 4.26924 18.0537 5.19113 18.9756C6.11302 19.8974 7.62657 20.3906 10.0694 20.3906H11.3281V18.1248H12.8385V20.3906H14.0972C16.5401 20.3906 18.0536 19.8974 18.9755 18.9756C19.8974 18.0537 20.3906 16.5401 20.3906 14.0972V10.0695C20.3906 7.62659 19.8974 6.11304 18.9755 5.19115C18.0536 4.26926 16.5401 3.77607 14.0972 3.77607H12.8385V6.04144H11.3281V3.77607ZM12.8385 7.04838V11.0762H11.3281V7.04838H12.8385ZM11.3281 17.1178V13.09H12.8385V17.1178H11.3281Z" />
@@ -35,24 +31,24 @@
     <div class="filters">
       <span
         class="filter"
-        [class.selected-filter]="edtSvc.selectedFilter === 'all'"
-        (click)="edtSvc.switchFilter('all')"
-      >Vše <span class="filter-number">({{ edtSvc.images().length }})</span></span>
+        [class.selected-filter]="editor.selectedFilter === 'all'"
+        (click)="editor.switchFilter('all')"
+      >Vše <span class="filter-number">({{ editor.images().length }})</span></span>
       <span
         class="filter"
-        [class.selected-filter]="edtSvc.selectedFilter === 'flagged'"
-        (click)="edtSvc.switchFilter('flagged')"
-      >Podezřelé <span class="filter-number">({{ edtSvc.flaggedImages().length }})</span></span>
+        [class.selected-filter]="editor.selectedFilter === 'flagged'"
+        (click)="editor.switchFilter('flagged')"
+      >Podezřelé <span class="filter-number">({{ editor.flaggedImages().length }})</span></span>
       <span
         class="filter"
-        [class.selected-filter]="edtSvc.selectedFilter === 'edited'"
-        (click)="edtSvc.switchFilter('edited')"
-      >Upravené <span class="filter-number">({{ edtSvc.editedImages().length }})</span></span>
+        [class.selected-filter]="editor.selectedFilter === 'edited'"
+        (click)="editor.switchFilter('edited')"
+      >Upravené <span class="filter-number">({{ editor.editedImages().length }})</span></span>
       <span
         class="filter"
-        [class.selected-filter]="edtSvc.selectedFilter === 'ok'"
-        (click)="edtSvc.switchFilter('ok')"
-      >OK <span class="filter-number">({{ edtSvc.notFlaggedImages().length }})</span></span>
+        [class.selected-filter]="editor.selectedFilter === 'ok'"
+        (click)="editor.switchFilter('ok')"
+      >OK <span class="filter-number">({{ editor.notFlaggedImages().length }})</span></span>
     </div>
 
     <!-- Number of pages filters -->
@@ -61,15 +57,15 @@
       <div class="filters">
         <span
           class="filter"
-          [class.selected-filter]="edtSvc.selectedPageNumberFilter() === 'single'"
-          [class.disabled-filter]="edtSvc.pageImagesNumber(1) === 0"
-          (click)="edtSvc.togglePageNumberFilter('single')"
+          [class.selected-filter]="editor.selectedPageNumberFilter() === 'single'"
+          [class.disabled-filter]="editor.pageImagesNumber(1) === 0"
+          (click)="editor.togglePageNumberFilter('single')"
         >Jednostrany</span>
         <span
           class="filter"
-          [class.selected-filter]="edtSvc.selectedPageNumberFilter() === 'double'"
-          [class.disabled-filter]="edtSvc.pageImagesNumber(2) === 0"
-          (click)="edtSvc.togglePageNumberFilter('double')"
+          [class.selected-filter]="editor.selectedPageNumberFilter() === 'double'"
+          [class.disabled-filter]="editor.pageImagesNumber(2) === 0"
+          (click)="editor.togglePageNumberFilter('double')"
         >Dvoustrany</span>
       </div>
     </div>
@@ -77,18 +73,23 @@
 </div>
 
 <!-- Thumbnails -->
-@if (edtSvc.displayedImagesFinal().length) {
+@if (editor.displayedImagesFinal().length) {
   <div class="thumbnails-scroll os-pending" #thumbnailsScroll>
     <div class="thumbnails-wrapper">
-      @for (image of edtSvc.displayedImagesFinal(); track image._id) {
-        @let mainImageItem = edtSvc.mainImageItem();
+      @for (image of editor.displayedImagesFinal(); track image._id) {
+        @let mainImageItem = editor.mainImageItem();
         <div
           [id]="`thumbnail-wrapper-${image._id}`"
           class="thumbnail-wrapper"
           [class.selected]="mainImageItem._id === image._id"
           (click)="clickThumbnail(image)"
         >
-          <img #lazyImg [attr.data-id]="image._id" />
+          <img
+            #lazyImg
+            [attr.data-id]="image._id"
+            [class.rotated-quarter]="isThumbnailQuarterTurn(image)"
+            [style.transform]="thumbnailTransform(image)"
+          />
           <span
             class="status-icon"
             [ngClass]="getStatus(image)"
@@ -105,5 +106,5 @@
     </div>
   </div>
 } @else {
-  @if (edtSvc.loadingLeft) { <app-loader /> }
+  @if (editor.loadingLeft) { <app-loader /> }
 }

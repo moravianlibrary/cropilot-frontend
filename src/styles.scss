@@ -54,6 +54,7 @@
   --bg-color-warning: #FF950010;
   --bg-color-edited: #FFCC0010;
   --bg-color-error: #FF3A3010;
+  --font-size-x0-5: 10px;
   --font-size-x1: 12px;
   --font-size-x1-5: 14px;
   --font-size-x2: 16px;
@@ -123,9 +124,7 @@ html, body {
 }
 
 
-/* ------------------------------
-  BUTTONS
------------------------------- */
+// ========== BUTTONS ==========
 .button-group {
   display: flex;
   gap: var(--spacing-x2);
@@ -162,8 +161,8 @@ html, body {
   @include font(400, var(--font-size-x2), var(--spacing-x6), var(--text-white));
   transition: background-color .2s ease;
 
-  svg {
-    fill: var(--icon-white);
+  .icon {
+    color: var(--icon-white);
   }
 
   &:hover, &:focus-visible {
@@ -177,8 +176,8 @@ html, body {
   border: 1px solid var(--border-tertiary-color);
   color: var(--text-secondary);
 
-  svg {
-    fill: var(--text-secondary);
+  .icon {
+    color: var(--text-secondary);
   }
 }
 
@@ -188,8 +187,8 @@ html, body {
   font-size: var(--font-size-x2);
   color: var(--text-tertiary);
 
-  svg {
-    fill: var(--text-tertiary);
+  .icon {
+    color: var(--text-tertiary);
   }
 
   &:focus-visible {
@@ -208,8 +207,8 @@ html, body {
   background-color: var(--bg-base);
   @include font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-tertiary));
 
-  svg {
-    fill: var(--icon-tertiary);
+  .icon {
+    color: var(--icon-tertiary);
   }
 }
 
@@ -233,8 +232,8 @@ html, body {
   @include font(450, var(--font-size-x2), var(--spacing-x6), var(--primary));
   background-color: var(--bg-selected);
 
-  svg {
-    fill: var(--primary);
+  .icon {
+    color: var(--primary);
   }
 
   &:hover, &:focus-visible {
@@ -255,8 +254,8 @@ html, body {
     outline: 3px solid var(--primary);
   }
 
-  svg {
-    fill: var(--icon-white) !important;
+  .icon {
+    color: var(--icon-white) !important;
   }
 }
 
@@ -268,8 +267,8 @@ html, body {
     cursor: default;
   }
 
-  svg {
-    fill: var(--icon-disabled) !important;
+  .icon {
+    color: var(--icon-disabled) !important;
   }
 }
 
@@ -278,8 +277,8 @@ html, body {
   background-color: var(--bg-base);
   transition: color .2s ease;
 
-  svg {
-    fill: var(--primary);
+  .icon {
+    color: var(--primary);
   }
 
   &:hover, &:focus {
@@ -296,8 +295,8 @@ html, body {
     cursor: default;
   }
 
-  svg {
-    fill: var(--primary-disabled) !important;
+  .icon {
+    color: var(--primary-disabled) !important;
   }
 }
 
@@ -305,8 +304,8 @@ html, body {
   color: var(--bg-destructive);
   background-color: var(--bg-base);
 
-  svg {
-    fill: var(--bg-destructive);
+  .icon {
+    color: var(--bg-destructive);
   }
 }
 
@@ -318,15 +317,13 @@ html, body {
     cursor: default !important;
   }
 
-  svg {
-    fill: var(--text-destructive-disabled) !important;
+  .icon {
+    color: var(--text-destructive-disabled) !important;
   }
 }
 
 
-/* ------------------------------
-  RADIO BUTTONS
------------------------------- */
+// ========== RADIO BUTTONS ==========
 .radios-wrapper {
   display: flex;
   flex-direction: column;
@@ -386,9 +383,7 @@ html, body {
 }
 
 
-/* ------------------------------
-  SCROLLBAR
------------------------------- */
+// ========== SCROLLBAR ==========
 .os-theme-orezy {
   --os-size: var(--spacing-x3);
   --os-padding-perpendicular: var(--spacing-x1);
@@ -460,9 +455,7 @@ html, body {
 }
 
 
-/* ------------------------------
-  TH TOOLTIP DIRECTIVE
------------------------------- */
+// ========== TH TOOLTIP DIRECTIVE ==========
 .th-tooltip {
   position: absolute;
   z-index: 512;

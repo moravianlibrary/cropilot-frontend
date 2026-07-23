@@ -62,7 +62,7 @@ h1 {
   border: 1px solid var(--status-icon-error);
   background-color: var(--bg-color-error);
 
-  svg {
-    fill: var(--icon-black);
+  .icon {
+    color: var(--icon-black);
   }
 }

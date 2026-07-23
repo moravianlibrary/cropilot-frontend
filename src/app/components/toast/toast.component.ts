@@ -10,5 +10,5 @@ import { UiService } from '../../services/ui.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToastComponent {
-  uiSvc = inject(UiService);
+  ui = inject(UiService);
 }

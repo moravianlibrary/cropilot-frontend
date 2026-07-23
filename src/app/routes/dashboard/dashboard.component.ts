@@ -15,8 +15,8 @@ import { UiService } from '../../services/ui.service';
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent {
-  dashSvc = inject(DashboardService);
-  authSvc = inject(AuthService);
-  uiSvc = inject(UiService);
-  edtSvc = inject(EditorService);
+  dashboard = inject(DashboardService);
+  auth = inject(AuthService);
+  ui = inject(UiService);
+  editor = inject(EditorService);
 }

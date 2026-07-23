@@ -29,8 +29,8 @@
       align-items: center;
       gap: var(--spacing-x3);
 
-      svg {
-        fill: var(--icon-dark);
+      .icon {
+        color: var(--icon-dark);
 
         &:hover {
           cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
@@ -109,15 +109,19 @@
 }
 
 .thumbnail-wrapper {
+  --thumbnail-height: 100px;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100px;
+  height: var(--thumbnail-height);
   width: 100%;
   background-color: var(--bg-main-bright);
   border: 1px solid var(--border-color);
   border-radius: var(--spacing-x2);
   position: relative;
+  overflow: hidden;
+  container-type: inline-size;
 
   &:hover {
     cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
@@ -127,6 +131,12 @@
   img {
     max-height: 100%;
     max-width: 100%;
+    transform-origin: center;
+
+    &.rotated-quarter {
+      max-width: var(--thumbnail-height);
+      max-height: 100cqw;
+    }
   }
 
   .status-icon {
@@ -239,7 +249,8 @@
 
 .selected {
   background-color: var(--bg-contrast);
-  border: 2px solid var(--primary);
+  border: 1px solid var(--primary);
+  outline: 5px solid var(--primary);
 }
 
 app-loader { margin-top: var(--spacing-x5); }

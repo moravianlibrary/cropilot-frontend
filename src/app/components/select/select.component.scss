@@ -27,8 +27,8 @@
     border-color: var(--primary);
   }
 
-  svg {
-    fill: var(--icon-dark);
+  .icon {
+    color: var(--icon-dark);
     margin-right: var(--spacing-x4);
     outline: none;
   }
@@ -106,8 +106,8 @@
     @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-secondary));
   }
 
-  svg {
-    fill: var(--primary);
+  .icon {
+    color: var(--primary);
   }
 }
 

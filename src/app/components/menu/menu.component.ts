@@ -3,22 +3,21 @@ import { Component, ElementRef, inject, input, viewChild } from '@angular/core';
 import { NgClass } from '../../../../node_modules/@angular/common';
 import { EditorService } from '../../services/editor.service';
 import { AuthService } from '../../services/auth.service';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-menu',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgClass],
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgClass, IconComponent],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent {
-  edtSvc = inject(EditorService);
-  authSvc = inject(AuthService);
+  editor = inject(EditorService);
+  auth = inject(AuthService);
   type = input('menu-primary');
 
 
-  /* ------------------------------
-    TOGGLE BEHAVIOR
-  ------------------------------ */
+  // ========== TOGGLE BEHAVIOR ==========
   menu = viewChild<ElementRef<HTMLElement>>('menu');
   show = false;
 
@@ -27,22 +26,22 @@ export class MenuComponent {
   }
 
   onSettingsClick(): void {
-    this.edtSvc.openSettingsDialog();
+    this.editor.openSettingsDialog();
     this.show = false;
   }
 
   onShortcutsClick(): void {
-    this.edtSvc.openShortcutsDialog();
+    this.editor.openShortcutsDialog();
     this.show = false;
   }
 
   onResetDocClick(): void {
-    this.edtSvc.openResetDocDialog();
-    this.show = !this.authSvc.canWriteTitle();
+    this.editor.openResetDocDialog();
+    this.show = !this.auth.canWriteTitle();
   }
 
   onResetScanClick(): void {
-    this.edtSvc.openResetScanDialog();
-    this.show = !this.authSvc.canWriteTitle();
+    this.editor.openResetScanDialog();
+    this.show = !this.auth.canWriteTitle();
   }
 }
