@@ -211,6 +211,7 @@ export interface ImageRect {
 
 export type ImageOrientation = 0 | 90 | 180 | 270;
 export type RotationScope = 'current' | 'all';
+export type DefaultFitMode = 'page' | 'selection';
 export type ScanType = 'all' | 'flagged' | 'edited' | 'ok';
 export type PageNumberType = 'all' | 'single' | 'double';
 export type InputType = 'left' | 'top' | 'width' | 'height' | 'angle';

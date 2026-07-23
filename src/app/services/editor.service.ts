@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation, RotationScope } from '../app.types';
+import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation, RotationScope } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
 import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage, wait } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
@@ -104,6 +104,7 @@ export class EditorService {
   btnZoomStep: number = 0.2;
   minZoom: number = 0.95;
   maxZoom: number = 5;
+  defaultFitMode = signal<DefaultFitMode>('page');
   snapped: boolean = false;
   isPanning: boolean = false;
   panPrevX: number = 0;
@@ -176,8 +177,7 @@ export class EditorService {
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
     if (this.imgWasEdited()) this.updateImagesByEdited(this.mainImageItem()._id);
     this.selectedPage = null;
-    this.resetZoom();
-    this.redrawAllPages();
+    this.applyDefaultZoom();
     this.updateMainImageItemAndImages();
     
     const editedImages: UpdateImagePayload[] = this.images()
@@ -437,6 +437,8 @@ export class EditorService {
         this.drawPageInitial(updatedPage);
         this.loadingFirstCurrentPage.set(false);
       });
+
+    this.applyDefaultZoom();
     
     const lastMainImageItemName = this.mainImageItem()._id;
 
@@ -915,6 +917,15 @@ export class EditorService {
     this.redrawAllPages();
   }
 
+  applyDefaultZoom(): void {
+    if (this.defaultFitMode() === 'selection' && this.currentPages.length) {
+      this.fitZoomToPages();
+      return;
+    }
+
+    this.resetZoom();
+  }
+
   // Zoom-snap to selected page
   zoomSnap(type: 'in' | 'out'): void {
     if (type === 'in') {
@@ -1185,8 +1196,8 @@ export class EditorService {
       pages: this.currentPages,
     });
 
-    this.images.update(prev =>
-      prev.map(img =>
+    const updateCurrentImage = (images: ImageItem[]): ImageItem[] =>
+      images.map(img =>
         img._id === currentImage._id
           ? {
               ...img,
@@ -1195,8 +1206,11 @@ export class EditorService {
               pages: this.currentPages,
             }
           : img
-      )
-    );
+      );
+
+    this.images.update(updateCurrentImage);
+    this.displayedImages.update(updateCurrentImage);
+    this.displayedImagesPages.update(updateCurrentImage);
 
     this.predictedOrientedImages.update(prev =>
       prev.map(img =>
@@ -1211,8 +1225,7 @@ export class EditorService {
       )
     );
 
-    this.resetZoom();
-    this.redrawAllPages();
+    this.applyDefaultZoom();
     this.updateMainImageItem();
 
     this.imgWasEdited.set(true);
@@ -1301,8 +1314,7 @@ export class EditorService {
       url: this.mainImageItem().url,
     });
 
-    this.resetZoom();
-    this.redrawAllPages();
+    this.applyDefaultZoom();
     this.updateMainImageItem();
 
     this.imgWasEdited.set(changedImageIds.has(currentImageId));
@@ -1532,7 +1544,7 @@ export class EditorService {
     this.imgWasEdited.set(true);
     this.redrawAllPages();
 
-    this.resetZoom();
+    this.applyDefaultZoom();
   }
 
   removePage(): void {
@@ -1649,6 +1661,7 @@ export class EditorService {
   dimRadio = signal<DimColor>('Černá');
   scanTypeRadio = signal<ScanType>('all');
   pageNumberRadio = signal<PageNumberType>('all');
+  defaultFitModeRadio = signal<DefaultFitMode>('page');
 
   openSettingsDialog(): void {
     const ui = this.ui;
@@ -1692,7 +1705,10 @@ export class EditorService {
           this.storage.set('filterScanTypeStart', 'all');
           this.pageNumberRadio.set('all');
           this.storage.set('filterPageNumberStart', 'all');
-          this.redrawAllPages();
+          this.defaultFitMode.set('page');
+          this.defaultFitModeRadio.set('page');
+          this.storage.set('defaultFitMode', 'page');
+          this.applyDefaultZoom();
           ui.closeDialog();
           ui.showToast('Nastavení bylo resetováno.', { type: 'success' });
         }
@@ -1719,6 +1735,7 @@ export class EditorService {
     this.dimRadio.set(this.dimColor());
     this.scanTypeRadio.set(this.selectedFilter ?? 'all');
     this.pageNumberRadio.set(this.selectedPageNumberFilter() ?? 'all');
+    this.defaultFitModeRadio.set(this.defaultFitMode());
   }
 
   togglePredictions(): void {
@@ -1765,7 +1782,10 @@ export class EditorService {
 
     this.storage.set('filterScanTypeStart', this.scanTypeRadio());
     this.storage.set('filterPageNumberStart', this.pageNumberRadio());
-    this.redrawAllPages();
+    const defaultFitModeRadio = this.defaultFitModeRadio();
+    this.defaultFitMode.set(defaultFitModeRadio);
+    this.storage.set('defaultFitMode', defaultFitModeRadio);
+    this.applyDefaultZoom();
     this.ui.showToast('Nastavení bylo uloženo.', { type: 'success' });
   }
 

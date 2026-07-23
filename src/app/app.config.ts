@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { EnvironmentService } from './services/environment.service';
-import { DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, PermissionType, Role, ScanType, TitleState } from './app.types';
+import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, PermissionType, Role, ScanType, TitleState } from './app.types';
 
 export const defaultColor = '#00DDFF';
 export const warningColor = '#FF9500';
@@ -73,6 +73,11 @@ export const filterPageNumberStartDict: Record<PageNumberType, string> = {
   'all': 'Vše',
   'single': 'Jednostrany',
   'double': 'Dvoustrany'
+};
+
+export const defaultFitModeDict: Record<DefaultFitMode, string> = {
+  'page': 'Celý sken',
+  'selection': 'Výřezy'
 };
 
 export const userRolesDict: Record<Role, string> = {

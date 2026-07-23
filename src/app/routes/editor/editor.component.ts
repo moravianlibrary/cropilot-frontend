@@ -6,7 +6,7 @@ import { LeftPanelComponent } from '../../layout-editor/left-panel/left-panel.co
 import { RightPanelComponent } from '../../layout-editor/right-panel/right-panel.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, forkJoin, map, Observable, of, Subscription, switchMap, tap, throwError } from 'rxjs';
-import { DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, ImageItem, OutlineWidthLabel, PageNumberType, ScanType, TitleDetail } from '../../app.types';
+import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, ImageItem, OutlineWidthLabel, PageNumberType, ScanType, TitleDetail } from '../../app.types';
 import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
 import { UiService } from '../../services/ui.service';
@@ -109,6 +109,12 @@ export class EditorComponent {
         editor.outlineWidthLabel.set(this.storage.get('outlineWidthLabel', 'Silný', true) as OutlineWidthLabel);
         editor.outlineRadio.set(editor.outlineWidthLabel());
         editor.outlineDashed = !!this.storage.get('outlineDashed', false, true);
+        const storedDefaultFitMode = this.storage.get<DefaultFitMode>('defaultFitMode', 'page', true) ?? 'page';
+        const defaultFitMode = ['page', 'selection'].includes(storedDefaultFitMode)
+          ? storedDefaultFitMode
+          : 'page';
+        editor.defaultFitMode.set(defaultFitMode);
+        editor.defaultFitModeRadio.set(defaultFitMode);
         editor.rememberLastSelectedImageOfLastOpenTitle = !!this.storage.get('rememberLastSelectedImageOfLastOpenTitle', null, true);
         editor.lastSelectedImageId = this.storage.get('lastSelectedImageId', '', true) ?? '';
         editor.selectedFilter = this.storage.get('filterScanTypeStart', 'all', true) as ScanType;

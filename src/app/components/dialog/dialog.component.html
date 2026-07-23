@@ -37,22 +37,6 @@
       <!-- Settings -->
       @if (dialogContentType === 'settings') {
         <div class="settings-content-wrapper">
-          @if (isAdmin) {
-            <div class="settings-block">
-              <label class="settings-block-label toggle-switch">
-                <input
-                  type="checkbox"
-                  [checked]="editor.showPredictions"
-                  (click)="editor.togglePredictions()"
-                />
-                <span class="slider"></span>
-                Zobrazení původních predikcí
-                <span class="icon">
-                  <app-icon name="admin" [size]="16" />
-                </span>
-              </label>
-            </div>
-          }
           @if (canWriteTitle) {
             <div class="settings-block">
               <div class="settings-block-label">Mřížka</div>
@@ -161,17 +145,6 @@
             </div>
           }
           <div class="settings-block">
-            <label class="settings-block-label toggle-switch">
-              <input
-                type="checkbox"
-                [checked]="editor.rememberLastSelectedImageOfLastOpenTitle"
-                (click)="editor.toggleLastSelectedScan()"
-              />
-              <span class="slider"></span>
-              Zapamatovat si naposledy zobrazený sken u naposledy otevřeného titulu
-            </label>
-          </div>
-          <div class="settings-block last">
             <div class="settings-block-label">Aktivní filtry při startu aplikace</div>
             <div class="sublabel">Typ skenů</div>
             <span class="radios-wrapper">
@@ -202,6 +175,52 @@
               }
             </span>
           </div>
+          <div class="settings-block">
+            <div class="settings-block-label">Výchozí zobrazení skenu</div>
+            <span class="radios-wrapper">
+              @for (fitMode of defaultFitModeDictKeys; track fitMode) {
+                <label class="radio">
+                  <input
+                    type="radio"
+                    name="default-fit-mode"
+                    [checked]="fitMode === editor.defaultFitModeRadio()"
+                    (change)="editor.defaultFitModeRadio.set(fitMode)"
+                  />
+                  <span class="radio-value">{{ defaultFitModeDict[fitMode] }}</span>
+                </label>
+              }
+            </span>
+          </div>
+          <div
+            class="settings-block"
+            [class.last]="!isAdmin"
+          >
+            <label class="settings-block-label toggle-switch">
+              <input
+                type="checkbox"
+                [checked]="editor.rememberLastSelectedImageOfLastOpenTitle"
+                (click)="editor.toggleLastSelectedScan()"
+              />
+              <span class="slider"></span>
+              Zapamatovat si naposledy zobrazený sken u naposledy otevřeného titulu
+            </label>
+          </div>
+          @if (isAdmin) {
+            <div class="settings-block last">
+              <label class="settings-block-label toggle-switch">
+                <input
+                  type="checkbox"
+                  [checked]="editor.showPredictions"
+                  (click)="editor.togglePredictions()"
+                />
+                <span class="slider"></span>
+                Zobrazení původních predikcí
+                <span class="icon">
+                  <app-icon name="admin" [size]="16" />
+                </span>
+              </label>
+            </div>
+          }
         </div>
       }
 

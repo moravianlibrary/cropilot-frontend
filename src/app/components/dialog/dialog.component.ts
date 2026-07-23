@@ -1,7 +1,7 @@
 import { Component, effect, inject, input, output } from '@angular/core';
-import { DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
+import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
 import { EditorService } from '../../services/editor.service';
-import { dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridColorDict, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict } from '../../app.config';
+import { defaultFitModeDict, dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridColorDict, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict } from '../../app.config';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../services/dashboard.service';
 import { AuthService } from '../../services/auth.service';
@@ -65,6 +65,9 @@ export class DialogComponent {
 
   filterPageNumberStartDict: Record<PageNumberType, string> = filterPageNumberStartDict;
   filterPageNumberStartDictKeys = Object.keys(filterPageNumberStartDict) as PageNumberType[];
+
+  defaultFitModeDict: Record<DefaultFitMode, string> = defaultFitModeDict;
+  defaultFitModeDictKeys = Object.keys(defaultFitModeDict) as DefaultFitMode[];
 
   copied: boolean = false;
   private copiedTimer!: number;
