@@ -33,9 +33,9 @@
       </span>
     }
   }
-  <div class="label">Otočení</div>
-  <div class="actions">
-    <span class="switch-container scope-switch" aria-label="Rozsah otočení">
+  <div class="rotation-heading">
+    <div class="label">Otočení</div>
+    <span class="scope-switch" aria-label="Rozsah otočení">
       <button
         type="button"
         class="switch-button"
@@ -52,7 +52,7 @@
         [attr.aria-pressed]="editor.rotationScope() === 'all'"
         (click)="editor.rotationScope.set('all')"
       >
-        Všechny skeny
+        Všechny
       </button>
     </span>
   </div>

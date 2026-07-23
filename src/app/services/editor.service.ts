@@ -101,7 +101,7 @@ export class EditorService {
   // Zoom
   viewport: Viewport = { x: 0, y: 0, scale: 1 };
   zoomFactor: number = 0.005;
-  btnZoomFactor = this.zoomFactor * 40;
+  btnZoomStep: number = 0.2;
   minZoom: number = 0.95;
   maxZoom: number = 5;
   snapped: boolean = false;
@@ -865,9 +865,16 @@ export class EditorService {
   zoom(type: 'in' | 'out'): void {
     const x = this.c.width / 2;
     const y = this.c.height / 2;
-    const scale = this.viewport.scale * (1 + (type === 'in' ? 1 : -1) * this.btnZoomFactor);
+    const currentScale = roundToDecimals(this.viewport.scale, 2);
+    const scale = type === 'in'
+      ? currentScale < 1
+        ? 1
+        : currentScale + this.btnZoomStep
+      : currentScale <= 1
+        ? this.minZoom
+        : Math.max(1, currentScale - this.btnZoomStep);
 
-    this.setZoomAt(x, y, scale);
+    this.setZoomAt(x, y, roundToDecimals(scale, 2));
   }
 
   fitZoomToPages(safePadding: number = 32): void {

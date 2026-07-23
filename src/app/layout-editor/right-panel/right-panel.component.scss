@@ -80,6 +80,45 @@
     margin-bottom: -6px;
   }
 
+  .rotation-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-x2);
+    margin-top: var(--spacing-x1);
+    margin-bottom: -6px;
+
+    .label {
+      margin: 0;
+    }
+
+    .scope-switch {
+      display: inline-grid;
+      grid-template-columns: repeat(2, auto);
+      align-items: center;
+      margin-left: auto;
+      padding: var(--spacing-x0-5);
+      border-radius: var(--spacing-x1-5);
+      background-color: var(--bg-light);
+
+      .switch-button {
+        border: none;
+        border-radius: var(--spacing-x1);
+        background: transparent;
+        padding: var(--spacing-x0-5) var(--spacing-x2);
+        white-space: nowrap;
+        cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+        transition: background 0.2s, color 0.2s;
+        @include styles.font(450, var(--font-size-x1), var(--spacing-x4), var(--text-light));
+      }
+
+      .switch-button.active {
+        background-color: var(--bg-base);
+        color: var(--text-base);
+      }
+    }
+  }
+
   .actions {
     display: flex;
     flex-wrap: wrap;
@@ -114,14 +153,6 @@
       .switch-button.active {
         background-color: var(--bg-base);
         color: var(--text-base);
-      }
-    }
-
-    .scope-switch {
-      grid-template-columns: repeat(2, 1fr);
-
-      .switch-button {
-        padding-inline: var(--spacing-x2);
       }
     }
   }
