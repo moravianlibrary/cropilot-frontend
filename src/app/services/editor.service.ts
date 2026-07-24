@@ -613,6 +613,7 @@ export class EditorService {
     ctx.rotate(degreeToRadian(p.angle));
 
     // Outline
+    if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
     ctx.strokeStyle = getColor(p) + 'B2';
     const outlineWidth = outlineWidthDict['Silný'];
     ctx.lineWidth = outlineWidth;
@@ -622,6 +623,7 @@ export class EditorService {
       width + outlineWidth,
       height + outlineWidth
     );
+    ctx.setLineDash([]);
 
     ctx.restore();
   }
@@ -1472,7 +1474,7 @@ export class EditorService {
 
     // Outline
     {
-      if (this.outlineDashed && this.selectedPage?._id === p._id) ctx.setLineDash([this.dashLength, this.dashGapLength]);
+      if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
 
       ctx.strokeStyle = p._id === this.selectedPage?._id && outlineWidthLabel === 'Žádný'
         ? transparentColor
