@@ -88,9 +88,6 @@
   gap: 0;
   overflow: hidden;
   border-radius: var(--spacing-x4);
-  box-shadow:
-    0 28px 64px -14px rgba(16, 32, 48, .38),
-    0 10px 28px -10px rgba(16, 32, 48, .22);
 
   .dialog-header {
     flex: 0 0 auto;
@@ -256,7 +253,7 @@
         height: var(--spacing-x3-5);
         border-radius: 50%;
         background: var(--bg-base);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+        border: 1px solid var(--border-tertiary-color);
         transition: transform .2s ease;
       }
     }
@@ -267,6 +264,7 @@
 
     input:checked + .slider::before {
       transform: translateX(var(--spacing-x3));
+      border-color: transparent;
     }
 
     input:focus-visible + .slider {

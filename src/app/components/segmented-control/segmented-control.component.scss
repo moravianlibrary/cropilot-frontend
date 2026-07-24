@@ -61,9 +61,8 @@
   &.active {
     z-index: 1;
     color: var(--text-base);
-    border-color: transparent;
+    border-color: var(--border-tertiary-color);
     background: var(--bg-base);
-    box-shadow: 0 1px 2px rgba(10, 13, 16, .12);
     font-weight: 500;
   }
 
@@ -122,14 +121,14 @@
 }
 
 .segmented-control.small {
-  gap: 0;
-  padding: 1px;
-  border-radius: 5px;
+  gap: var(--spacing-x0-5);
+  padding: var(--spacing-x0-5);
+  border-radius: var(--spacing-x1-5);
 
   .segment {
-    min-height: var(--spacing-x4);
-    padding: 0 var(--spacing-x1-5);
+    min-height: var(--spacing-x5);
+    padding: 1px var(--spacing-x1-5);
     border-radius: var(--spacing-x1);
-    @include styles.font(400, var(--font-size-x0-5), var(--spacing-x3), var(--text-light));
+    @include styles.font(400, var(--font-size-x1), var(--spacing-x3), var(--text-light));
   }
 }
