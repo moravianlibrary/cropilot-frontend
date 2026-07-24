@@ -251,6 +251,7 @@
         left: var(--spacing-x0-5);
         width: var(--spacing-x3-5);
         height: var(--spacing-x3-5);
+        box-sizing: border-box;
         border-radius: 50%;
         background: var(--bg-base);
         border: 1px solid var(--border-tertiary-color);
