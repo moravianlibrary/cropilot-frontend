@@ -61,9 +61,9 @@
   &.active {
     z-index: 1;
     color: var(--text-base);
-    border-color: var(--primary);
-    background: var(--bg-selected);
-    box-shadow: none;
+    border-color: transparent;
+    background: var(--bg-base);
+    box-shadow: 0 1px 2px rgba(10, 13, 16, .12);
     font-weight: 500;
   }
 
