@@ -613,17 +613,19 @@ export class EditorService {
     ctx.rotate(degreeToRadian(p.angle));
 
     // Outline
-    if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
-    ctx.strokeStyle = getColor(p) + 'B2';
-    const outlineWidth = outlineWidthDict['Silný'];
-    ctx.lineWidth = outlineWidth;
-    ctx.strokeRect(
-      -width / 2 - outlineWidth / 2,
-      -height / 2 - outlineWidth / 2,
-      width + outlineWidth,
-      height + outlineWidth
-    );
-    ctx.setLineDash([]);
+    const outlineWidth = outlineWidthDict[this.outlineWidthLabel()];
+    if (outlineWidth > 0) {
+      if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
+      ctx.strokeStyle = getColor(p) + 'B2';
+      ctx.lineWidth = outlineWidth;
+      ctx.strokeRect(
+        -width / 2 - outlineWidth / 2,
+        -height / 2 - outlineWidth / 2,
+        width + outlineWidth,
+        height + outlineWidth
+      );
+      ctx.setLineDash([]);
+    }
 
     ctx.restore();
   }
@@ -1465,7 +1467,7 @@ export class EditorService {
     const color = getColor(p);
     const isPageNotSelectedWhileOtherIs = this.currentPages.length > 1 && this.selectedPage && p !== this.selectedPage;
     const outlineWidthLabel = this.outlineWidthLabel();
-    const pageOutlineWidth = isPageNotSelectedWhileOtherIs ? this.pageOutlineWidthSecondary : (this.selectedPage ? outlineWidthDict[outlineWidthLabel] : outlineWidthDict['Silný']);
+    const pageOutlineWidth = isPageNotSelectedWhileOtherIs ? this.pageOutlineWidthSecondary : outlineWidthDict[outlineWidthLabel];
     
     ctx.save();
 
@@ -1476,7 +1478,7 @@ export class EditorService {
     {
       if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
 
-      ctx.strokeStyle = p._id === this.selectedPage?._id && outlineWidthLabel === 'Žádný'
+      ctx.strokeStyle = outlineWidthLabel === 'Žádný' && !isPageNotSelectedWhileOtherIs
         ? transparentColor
         : color + (isPageNotSelectedWhileOtherIs ? '77' : 'B2');
       ctx.lineWidth = pageOutlineWidth;
