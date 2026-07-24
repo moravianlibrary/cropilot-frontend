@@ -612,20 +612,21 @@ export class EditorService {
     ctx.translate(centerX, centerY);
     ctx.rotate(degreeToRadian(p.angle));
 
-    // Outline
-    const outlineWidth = outlineWidthDict[this.outlineWidthLabel()];
-    if (outlineWidth > 0) {
-      if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
-      ctx.strokeStyle = getColor(p) + 'B2';
-      ctx.lineWidth = outlineWidth;
-      ctx.strokeRect(
-        -width / 2 - outlineWidth / 2,
-        -height / 2 - outlineWidth / 2,
-        width + outlineWidth,
-        height + outlineWidth
-      );
-      ctx.setLineDash([]);
-    }
+    // Outline — nothing is selected here (initial paint), so 'Žádný' still
+    // shows a thin outline to keep crops visible.
+    const outlineWidth = this.outlineWidthLabel() === 'Žádný'
+      ? this.pageOutlineWidthSecondary
+      : outlineWidthDict[this.outlineWidthLabel()];
+    if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
+    ctx.strokeStyle = getColor(p) + 'B2';
+    ctx.lineWidth = outlineWidth;
+    ctx.strokeRect(
+      -width / 2 - outlineWidth / 2,
+      -height / 2 - outlineWidth / 2,
+      width + outlineWidth,
+      height + outlineWidth
+    );
+    ctx.setLineDash([]);
 
     ctx.restore();
   }
@@ -1467,7 +1468,13 @@ export class EditorService {
     const color = getColor(p);
     const isPageNotSelectedWhileOtherIs = this.currentPages.length > 1 && this.selectedPage && p !== this.selectedPage;
     const outlineWidthLabel = this.outlineWidthLabel();
-    const pageOutlineWidth = isPageNotSelectedWhileOtherIs ? this.pageOutlineWidthSecondary : outlineWidthDict[outlineWidthLabel];
+    const isSelectedPage = this.selectedPage?._id === p._id;
+    // 'Žádný' hides the outline only on the focused (selected) crop; when nothing
+    // is selected, fall back to a thin outline so crops stay visible in the overview.
+    const hideOutline = outlineWidthLabel === 'Žádný' && isSelectedPage;
+    const pageOutlineWidth = isPageNotSelectedWhileOtherIs || outlineWidthLabel === 'Žádný'
+      ? this.pageOutlineWidthSecondary
+      : outlineWidthDict[outlineWidthLabel];
     
     ctx.save();
 
@@ -1478,7 +1485,7 @@ export class EditorService {
     {
       if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
 
-      ctx.strokeStyle = outlineWidthLabel === 'Žádný' && !isPageNotSelectedWhileOtherIs
+      ctx.strokeStyle = hideOutline
         ? transparentColor
         : color + (isPageNotSelectedWhileOtherIs ? '77' : 'B2');
       ctx.lineWidth = pageOutlineWidth;
