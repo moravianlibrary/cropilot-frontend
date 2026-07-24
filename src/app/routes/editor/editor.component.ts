@@ -57,6 +57,7 @@ export class EditorComponent {
             return;
           };
 
+          editor.cancelMainImageLoad();
           editor.book.set(book_id);
           editor.loadingLeft = true;
           editor.loadingMain.set(true);
@@ -148,6 +149,7 @@ export class EditorComponent {
   }
 
   ngOnDestroy(): void {
+    this.editor.cancelMainImageLoad();
     this.paramsOnBookId.unsubscribe();
   }
 }

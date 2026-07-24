@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation, RotationScope } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
-import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage, wait } from '../utils/utils';
+import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
 import { dimColorDict, gridColorDict, gridDensityDict, gridLineWidthDict, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
 import { AuthService } from './auth.service';
@@ -49,6 +49,7 @@ export class EditorService {
   loadingLeft: boolean = false;
   loadingMain = signal<boolean>(false);
   loadingFirstCurrentPage = signal<boolean>(false);
+  private mainImageLoadId: number = 0;
 
   // Interactions
   pageWasEdited: boolean = false;
@@ -324,6 +325,9 @@ export class EditorService {
 
   // ========== MAIN IMAGE LOGIC & DRAWING ==========
   setMainImage(img: ImageItem): void {
+    const loadId = ++this.mainImageLoadId;
+    const bookId = this.book();
+
     if (img._id !== this.mainImageItem()._id) {
       this.rotationScope.set('current');
     }
@@ -332,8 +336,11 @@ export class EditorService {
     this.loadingFirstCurrentPage.set(true);
 
     this.c.style.visibility = 'hidden';
+    this.mainImage = null;
 
     const applyFinalImage = async (updated: ImageItem) => {
+      if (loadId !== this.mainImageLoadId) return;
+
       const page = this.clickedDiffPage ? this.lastSelectedPage : this.selectedPage;
       if (this.pageWasEdited && page) {
         page.edited = true;
@@ -341,9 +348,12 @@ export class EditorService {
       }
       this.selectedPage = null;
       this.resetZoom();
-      this.renderCanvas(updated);
+
+      const rendered = await this.renderCanvas(updated, loadId);
+      if (loadId !== this.mainImageLoadId) return;
 
       this.loadingMain.set(false);
+      if (!rendered) return;
 
       if (this.imgWasEdited()) {
         await this.ui.waitForFalse(this.imgWasEdited);
@@ -353,7 +363,7 @@ export class EditorService {
     };
 
     if (img.url) {
-      applyFinalImage(img);
+      void applyFinalImage(img);
       return;
     }
 
@@ -362,38 +372,78 @@ export class EditorService {
       return;
     }
 
-    this.fetchImage(img._id).subscribe(blob => {
-      if (blob.type.includes('tiff')) this.ui.showToast('Nepodařilo se zobrazit sken, protože je ve formátu TIFF.', { type: 'error' });
+    this.fetchImage(img._id).subscribe({
+      next: blob => {
+        if (blob.type.includes('tiff')) this.ui.showToast('Nepodařilo se zobrazit sken, protože je ve formátu TIFF.', { type: 'error' });
 
-      const url = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
+        if (bookId !== this.book()) {
+          URL.revokeObjectURL(url);
+          return;
+        }
 
-      this.images.update(prev =>
-        prev.map(image =>
-          image._id === img._id ? { ...image, url } : image
-        )
-      );
+        this.cacheImageUrl(img._id, url);
 
-      applyFinalImage({ ...img, url });
+        void applyFinalImage({ ...img, url });
+      },
+      error: err => {
+        if (loadId !== this.mainImageLoadId) return;
+        this.loadingMain.set(false);
+        console.error('Failed to fetch image.', err);
+      }
     });
   }
 
-  private async renderCanvas(imgItem: ImageItem): Promise<void> {
-    if (imgItem.url) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = imgItem.url;
-      this.mainImage = img;
+  cancelMainImageLoad(): void {
+    this.mainImageLoadId++;
+    this.mainImage = null;
+    this.loadingMain.set(false);
+    if (this.c) this.c.style.visibility = 'hidden';
+  }
 
-      img.onload = () => this.fitAndDrawImage(img, imgItem);
-      img.onerror = () => console.error('Failed to load image.');
+  private cacheImageUrl(id: string, url: string): void {
+    const updateUrl = (images: ImageItem[]): ImageItem[] =>
+      images.map(image => image._id === id ? { ...image, url } : image);
 
-      await wait(100);
+    this.images.update(updateUrl);
+    this.originalImages.update(updateUrl);
+    this.displayedImages.update(updateUrl);
+    this.displayedImagesPages.update(updateUrl);
+  }
 
-      this.c.style.visibility = 'visible';
-      return;
+  private renderCanvas(imgItem: ImageItem, loadId: number): Promise<boolean> {
+    const imageUrl = imgItem.url;
+    if (!imageUrl) {
+      this.c.style.visibility = 'hidden';
+      return Promise.resolve(false);
     }
 
-    this.c.style.visibility = 'hidden';
+    return new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        if (loadId !== this.mainImageLoadId || !this.c.isConnected) {
+          resolve(false);
+          return;
+        }
+
+        this.mainImage = img;
+        this.fitAndDrawImage(img, imgItem);
+        this.c.style.visibility = 'visible';
+        resolve(true);
+      };
+
+      img.onerror = () => {
+        if (loadId === this.mainImageLoadId) {
+          this.c.style.visibility = 'hidden';
+          console.error('Failed to load image.');
+        }
+        resolve(false);
+      };
+
+      img.src = imageUrl;
+    });
   }
 
   private fitAndDrawImage(img: HTMLImageElement, imgItem: ImageItem): void {
