@@ -84,7 +84,6 @@
   margin: 0;
   box-sizing: border-box;
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: var(--font-size-x2);
 }
 
 html, body {
@@ -92,6 +91,7 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  font-size: var(--font-size-x2);
 }
 
 #logo {
