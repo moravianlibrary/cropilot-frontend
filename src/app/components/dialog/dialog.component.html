@@ -185,18 +185,8 @@
                 />
               </section>
 
-              <section class="settings-block settings-toggles">
-                <label class="toggle-switch">
-                  <input
-                    type="checkbox"
-                    [checked]="editor.rememberLastSelectedImageOfLastOpenTitle"
-                    (change)="editor.toggleLastSelectedScan()"
-                  />
-                  <span class="slider"></span>
-                  <span>Zapamatovat si naposledy zobrazený sken u naposledy otevřeného titulu</span>
-                </label>
-
-                @if (isAdmin) {
+              @if (isAdmin) {
+                <section class="settings-block settings-toggles">
                   <label class="toggle-switch">
                     <input
                       type="checkbox"
@@ -209,8 +199,8 @@
                       <app-icon name="admin" [size]="16" />
                     </span>
                   </label>
-                }
-              </section>
+                </section>
+              }
             </div>
           }
         </div>

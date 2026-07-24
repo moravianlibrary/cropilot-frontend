@@ -129,7 +129,6 @@ export class EditorService {
   maxPages: number = 2;
 
   // Last selected scan
-  rememberLastSelectedImageOfLastOpenTitle: boolean = false;
   lastSelectedImageId: string = '';
 
 
@@ -1767,8 +1766,6 @@ export class EditorService {
           this.dimColor.set('Černá');
           this.dimRadio.set('Černá');
           this.storage.set('dimColor', 'Černá');
-          this.rememberLastSelectedImageOfLastOpenTitle = false;
-          this.storage.remove('rememberLastSelectedImageOfLastOpenTitle');
           this.scanTypeRadio.set('all');
           this.storage.set('filterScanTypeStart', 'all');
           this.pageNumberRadio.set('all');
@@ -1814,10 +1811,6 @@ export class EditorService {
     this.outlineDashed = !this.outlineDashed;
   }
 
-  toggleLastSelectedScan(): void {
-    this.rememberLastSelectedImageOfLastOpenTitle = !this.rememberLastSelectedImageOfLastOpenTitle;
-  }
-
   saveSettings(): void {
     this.storage.set('showPredictions', this.showPredictions);
     const gridRadio = this.gridRadio();
@@ -1840,13 +1833,8 @@ export class EditorService {
     this.dimColor.set(dimRadio);
     this.storage.set('dimColor', dimRadio);
     
-    this.storage.set('rememberLastSelectedImageOfLastOpenTitle', this.rememberLastSelectedImageOfLastOpenTitle);
-    if (this.rememberLastSelectedImageOfLastOpenTitle) {
-      this.lastSelectedImageId = this.mainImageItem()._id;
-      this.storage.set('lastSelectedImageId', `${this.lastSelectedImageId}`);
-    } else {
-      this.storage.remove('lastSelectedImageId');
-    }
+    this.lastSelectedImageId = this.mainImageItem()._id;
+    this.storage.set('lastSelectedImageId', `${this.lastSelectedImageId}`);
 
     this.storage.set('filterScanTypeStart', this.scanTypeRadio());
     this.storage.set('filterPageNumberStart', this.pageNumberRadio());

@@ -123,13 +123,8 @@ export class LeftPanelComponent {
     editor.updateImagesByCurrentPages();
     editor.setMainImage(image);
 
-    if (editor.rememberLastSelectedImageOfLastOpenTitle) {
-      editor.lastSelectedImageId = image._id;
-      this.storage.set('lastSelectedImageId', `${image._id}`);
-      return;
-    }
-    
-    this.storage.remove('lastSelectedImageId');
+    editor.lastSelectedImageId = image._id;
+    this.storage.set('lastSelectedImageId', `${image._id}`);
   }
 
   getStatus(image: ImageItem): 'edited' | 'error' | 'warning' | 'success' {
