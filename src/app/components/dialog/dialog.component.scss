@@ -94,10 +94,10 @@
 
   .dialog-header {
     flex: 0 0 auto;
-    padding: 17px 22px 15px;
+    padding: var(--spacing-x4) 22px var(--spacing-x3);
 
     h2 {
-      @include styles.font(500, var(--font-size-x3), var(--spacing-x7), var(--text-base));
+      @include styles.font(500, var(--font-size-x2-5), var(--spacing-x6), var(--text-base));
     }
   }
 
@@ -124,14 +124,14 @@
     border-bottom: 1px solid var(--border-color);
 
     button {
-      padding: 11px var(--spacing-x1);
+      padding: 9px var(--spacing-x1);
       margin-bottom: -1px;
       border: 0;
       border-bottom: 2px solid transparent;
       background: transparent;
       cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
       transition: color .15s ease, border-color .15s ease;
-      @include styles.font(500, var(--font-size-x1-5), 18px, var(--text-light));
+      @include styles.font(500, 13px, var(--spacing-x4), var(--text-light));
 
       & + button {
         margin-left: 18px;
@@ -167,17 +167,17 @@
   .dialog-footer {
     flex: 0 0 auto;
     gap: var(--spacing-x3);
-    padding: 14px 22px;
+    padding: var(--spacing-x3) 22px;
     border-top: 1px solid var(--border-color);
 
     .button {
-      min-height: var(--spacing-x8-5);
-      padding: 9px 18px;
-      border-radius: 9px;
-      @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-tertiary));
+      min-height: var(--spacing-x7-5);
+      padding: 7px var(--spacing-x4);
+      border-radius: var(--spacing-x2);
+      @include styles.font(500, 13px, var(--spacing-x4), var(--text-tertiary));
 
       &.primary {
-        padding-inline: 22px;
+        padding-inline: var(--spacing-x5);
         color: var(--text-white);
       }
     }
@@ -185,34 +185,34 @@
 }
 
 .settings-content-wrapper {
-  padding: 18px 22px 20px;
+  padding: var(--spacing-x5) 22px var(--spacing-x6);
 }
 
 .settings-panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--spacing-x4);
   animation: settings-fade .18s ease;
 
   .settings-block {
     display: flex;
     flex-direction: column;
-    gap: 11px;
+    gap: var(--spacing-x3-5);
 
     & + .settings-block {
-      padding-top: 14px;
+      padding-top: var(--spacing-x4);
       border-top: 1px solid var(--border-color);
     }
 
     h3 {
-      @include styles.font(500, 14.5px, var(--spacing-x5), var(--text-base));
+      @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
     }
   }
 
   .settings-row {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-x1-5);
+    gap: var(--spacing-x2);
   }
 
   .sublabel {
@@ -220,7 +220,7 @@
   }
 
   .settings-toggles {
-    gap: 14px;
+    gap: var(--spacing-x4);
   }
 
   .toggle-switch {
@@ -228,7 +228,7 @@
     align-items: center;
     gap: var(--spacing-x2-5);
     cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
-    @include styles.font(500, 13px, 18px, var(--text-secondary));
+    @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-secondary));
 
     input {
       position: absolute;
@@ -240,8 +240,8 @@
 
     .slider {
       position: relative;
-      width: var(--spacing-x8-5);
-      height: var(--spacing-x5);
+      width: var(--spacing-x7-5);
+      height: 18px;
       flex: 0 0 auto;
       border-radius: 999px;
       background: var(--border-color);
@@ -252,8 +252,8 @@
         position: absolute;
         top: var(--spacing-x0-5);
         left: var(--spacing-x0-5);
-        width: var(--spacing-x4);
-        height: var(--spacing-x4);
+        width: var(--spacing-x3-5);
+        height: var(--spacing-x3-5);
         border-radius: 50%;
         background: var(--bg-base);
         box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
@@ -266,7 +266,7 @@
     }
 
     input:checked + .slider::before {
-      transform: translateX(var(--spacing-x3-5));
+      transform: translateX(var(--spacing-x3));
     }
 
     input:focus-visible + .slider {
