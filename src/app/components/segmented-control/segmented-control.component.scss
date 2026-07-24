@@ -127,8 +127,8 @@
 
   .segment {
     min-height: var(--spacing-x5);
-    padding: 1px var(--spacing-x1-5);
+    padding: 1px var(--spacing-x1);
     border-radius: var(--spacing-x1);
-    @include styles.font(400, var(--font-size-x1), var(--spacing-x3), var(--text-light));
+    @include styles.font(400, var(--font-size-x0-5), var(--spacing-x3), var(--text-light));
   }
 }

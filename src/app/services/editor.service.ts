@@ -488,9 +488,16 @@ export class EditorService {
         this.loadingFirstCurrentPage.set(false);
       });
 
-    this.applyDefaultZoom();
-    
     const lastMainImageItemName = this.mainImageItem()._id;
+
+    // Set the current image (with its orientation) BEFORE applyDefaultZoom so
+    // the redraw it triggers (redrawImageOnCanvas -> drawOrientedImage() with no
+    // argument) reads the new orientation instead of the previous scan's. Not
+    // doing this repaints the freshly loaded scan with the old orientation,
+    // leaving it visibly wrong until an unrelated redraw (e.g. a resize) fixes it.
+    this.mainImageItem.set({ ...imgItem });
+
+    this.applyDefaultZoom();
 
     this.mainImageItem.set({ ...imgItem, url: c.toDataURL('image/jpeg') });
 

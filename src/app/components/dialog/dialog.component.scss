@@ -82,7 +82,7 @@
 
 // ========== SETTINGS DIALOG ==========
 .dialog-container.settings-dialog {
-  width: min(94vw, 600px) !important;
+  width: min(92vw, 520px) !important;
   max-height: 92vh;
   padding-top: 0;
   gap: 0;
@@ -91,10 +91,10 @@
 
   .dialog-header {
     flex: 0 0 auto;
-    padding: var(--spacing-x4) 22px var(--spacing-x3);
+    padding: var(--spacing-x4) var(--spacing-x5) var(--spacing-x3);
 
     h2 {
-      @include styles.font(500, var(--font-size-x2-5), var(--spacing-x6), var(--text-base));
+      @include styles.font(500, var(--font-size-x2), var(--spacing-x5), var(--text-base));
     }
   }
 
@@ -117,7 +117,7 @@
     display: flex;
     flex: 0 0 auto;
     gap: var(--spacing-x0-5);
-    padding: 0 22px;
+    padding: 0 var(--spacing-x5);
     border-bottom: 1px solid var(--border-color);
 
     button {
@@ -128,7 +128,7 @@
       background: transparent;
       cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
       transition: color .15s ease, border-color .15s ease;
-      @include styles.font(500, 13px, var(--spacing-x4), var(--text-light));
+      @include styles.font(400, var(--font-size-x1-5), var(--spacing-x4), var(--text-light));
 
       & + button {
         margin-left: 18px;
@@ -147,7 +147,7 @@
       &.active {
         color: var(--primary);
         border-bottom-color: var(--primary);
-        font-weight: 600;
+        font-weight: 500;
       }
     }
   }
@@ -164,14 +164,14 @@
   .dialog-footer {
     flex: 0 0 auto;
     gap: var(--spacing-x3);
-    padding: var(--spacing-x3) 22px;
+    padding: var(--spacing-x3) var(--spacing-x5);
     border-top: 1px solid var(--border-color);
 
     .button {
       min-height: var(--spacing-x7-5);
       padding: 7px var(--spacing-x4);
       border-radius: var(--spacing-x2);
-      @include styles.font(500, 13px, var(--spacing-x4), var(--text-tertiary));
+      @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-tertiary));
 
       &.primary {
         padding-inline: var(--spacing-x5);
@@ -182,22 +182,22 @@
 }
 
 .settings-content-wrapper {
-  padding: var(--spacing-x5) 22px var(--spacing-x6);
+  padding: var(--spacing-x4) var(--spacing-x5) var(--spacing-x5);
 }
 
 .settings-panel {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-x4);
+  gap: var(--spacing-x3-5);
   animation: settings-fade .18s ease;
 
   .settings-block {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-x3-5);
+    gap: var(--spacing-x3);
 
     & + .settings-block {
-      padding-top: var(--spacing-x4);
+      padding-top: var(--spacing-x3-5);
       border-top: 1px solid var(--border-color);
     }
 
