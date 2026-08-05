@@ -131,9 +131,17 @@ export class EditorService {
   // Last selected scan
   lastSelectedImageId: string = '';
 
+  // Flagged ("Podezřelé") scans the user has already viewed in this session.
+  // Kept in memory ONLY and intentionally never persisted, so a page refresh
+  // brings every flagged scan back.
+  reviewedFlaggedIds = signal<Set<string>>(new Set<string>());
+
 
   // ========== DERIVED STATE ==========
-  flaggedImages = computed<ImageItem[]>(() => this.images().filter(img => !img.edited && img.flags.length));
+  flaggedImages = computed<ImageItem[]>(() => {
+    const reviewed = this.reviewedFlaggedIds();
+    return this.images().filter(img => !img.edited && img.flags.length && !reviewed.has(img._id));
+  });
   notFlaggedImages = computed<ImageItem[]>(() => this.images().filter(img => !img.edited && !img.flags.length));
   editedImages = computed<ImageItem[]>(() => this.images().filter(img => img.edited));
   displayedImagesFinal = computed<ImageItem[]>(() => this.selectedPageNumberFilter() ? this.displayedImagesPages() : this.displayedImages());
@@ -237,6 +245,7 @@ export class EditorService {
       
       this.images.set(images);
       this.originalImages.set(images);
+      this.reviewedFlaggedIds.set(new Set<string>());
       
       if (this.selectedFilter === 'edited') this.selectedFilter = 'all';
       this.setDisplayedImages();
@@ -323,12 +332,38 @@ export class EditorService {
 
 
   // ========== MAIN IMAGE LOGIC & DRAWING ==========
+  /**
+   * Mark the scan currently shown in the editor as reviewed when it is a
+   * flagged ("Podezřelé") scan. Reviewing a flagged scan is nothing more than
+   * looking at it: as soon as the user moves to another scan, the one they just
+   * saw drops out of the "Podezřelé" filter (both the thumbnail list and its
+   * counter) for the rest of the session. This is deliberately in-memory only,
+   * so refreshing the page restores every flagged scan.
+   */
+  private markCurrentFlaggedAsReviewed(): void {
+    const current = this.mainImageItem();
+    if (!current._id || current.edited || !current.flags.length) return;
+    if (this.reviewedFlaggedIds().has(current._id)) return;
+
+    this.reviewedFlaggedIds.update(prev => {
+      const next = new Set(prev);
+      next.add(current._id);
+      return next;
+    });
+
+    // While browsing inside the "Podezřelé" filter, refresh the thumbnail list
+    // so the just-reviewed scan is removed immediately.
+    if (this.selectedFilter === 'flagged') this.setDisplayedImages();
+  }
+
   setMainImage(img: ImageItem): void {
     const loadId = ++this.mainImageLoadId;
     const bookId = this.book();
 
     if (img._id !== this.mainImageItem()._id) {
       this.rotationScope.set('current');
+      // Moving to a different scan means the current one has been reviewed.
+      this.markCurrentFlaggedAsReviewed();
     }
 
     this.loadingMain.set(true);

@@ -93,6 +93,7 @@ export class EditorComponent {
         editor.loadingLeft = false;
         editor.images.set(imgItems);
         editor.originalImages.set(imgItems);
+        editor.reviewedFlaggedIds.set(new Set<string>());
         editor.predictedImages.set(imgItemsPredicted ?? []);
         editor.predictedOrientedImages.set(imgItemsPredicted ?? []);
 
