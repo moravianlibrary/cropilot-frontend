@@ -30,22 +30,20 @@
 
   @if (dialogContentType === 'settings') {
     <nav class="settings-tabs" role="tablist" aria-label="Sekce nastavení">
-      @if (canWriteTitle) {
-        <button
-          type="button"
-          role="tab"
-          [class.active]="settingsTab() === 'editor'"
-          [attr.aria-selected]="settingsTab() === 'editor'"
-          (click)="selectSettingsTab('editor')"
-        >
-          Vzhled editoru
-        </button>
-      }
       <button
         type="button"
         role="tab"
-        [class.active]="!canWriteTitle || settingsTab() === 'behavior'"
-        [attr.aria-selected]="!canWriteTitle || settingsTab() === 'behavior'"
+        [class.active]="settingsTab() === 'editor'"
+        [attr.aria-selected]="settingsTab() === 'editor'"
+        (click)="selectSettingsTab('editor')"
+      >
+        Vzhled editoru
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.active]="settingsTab() === 'behavior'"
+        [attr.aria-selected]="settingsTab() === 'behavior'"
         (click)="selectSettingsTab('behavior')"
       >
         Chování aplikace
@@ -63,7 +61,7 @@
       <!-- Settings -->
       @if (dialogContentType === 'settings') {
         <div class="settings-content-wrapper">
-          @if (canWriteTitle && settingsTab() === 'editor') {
+          @if (settingsTab() === 'editor') {
             <div class="settings-panel" role="tabpanel">
               <section class="settings-block">
                 <h3>Mřížka</h3>
@@ -149,7 +147,7 @@
             </div>
           }
 
-          @if (!canWriteTitle || settingsTab() === 'behavior') {
+          @if (settingsTab() === 'behavior') {
             <div class="settings-panel" role="tabpanel">
               <section class="settings-block">
                 <h3>Aktivní filtry při startu aplikace</h3>
