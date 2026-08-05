@@ -141,9 +141,6 @@ export class EditorService {
   // and edited scans stay in it (greyed out), they are never removed.
   flaggedIdsAtLoad = signal<Set<string>>(new Set<string>());
 
-  // Fixed denominator of the "Podezřelé (remaining/total)" progress counter.
-  flaggedTotal = computed<number>(() => this.flaggedIdsAtLoad().size);
-
   // A scan only counts as reviewed after it has been on screen for at least
   // this long, so quickly arrowing past scans does not mark them.
   private readonly reviewDwellMs = 1000;
@@ -159,9 +156,8 @@ export class EditorService {
   });
 
   // Flagged scans still awaiting attention (not yet reviewed and not edited) —
-  // the remaining count of the "Podezřelé (remaining/total)" progress counter.
-  // Reviewed and edited scans stay in the list (greyed out); they just stop
-  // counting here.
+  // the (decreasing) number shown next to the "Podezřelé" filter. Reviewed and
+  // edited scans stay in the list (greyed out); they just stop counting here.
   flaggedRemaining = computed<number>(() => {
     const flagged = this.flaggedIdsAtLoad();
     const reviewed = this.reviewedFlaggedIds();

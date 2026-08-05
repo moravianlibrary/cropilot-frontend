@@ -38,7 +38,7 @@
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'flagged'"
         (click)="editor.switchFilter('flagged')"
-      >Podezřelé <span class="filter-number">@if (editor.flaggedTotal()) {({{ editor.flaggedRemaining() }}/{{ editor.flaggedTotal() }})} @else {({{ editor.flaggedRemaining() }})}</span></span>
+      >Podezřelé <span class="filter-number">({{ editor.flaggedRemaining() }})</span></span>
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'edited'"
