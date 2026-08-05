@@ -1,5 +1,5 @@
 import { effect, EffectRef, inject, Injectable, Injector, runInInjectionContext, Signal, signal } from '@angular/core';
-import { DialogButton, DialogContentType, DrawerButton, DrawerContentType, Toast, ToastType } from '../app.types';
+import { DialogButton, DialogContentType, DrawerButton, DrawerContentType, Toast, ToastAction, ToastType } from '../app.types';
 import { defer, focusElement, focusMainWrapper, waitForElement } from '../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
 
@@ -34,19 +34,26 @@ export class UiService {
   private toastDuration: number = 3000;
   private toastErrorDuration: number = 300000;
   
-  showToast(message: string, opts?: { type?: ToastType; duration?: number }): string {
+  showToast(message: string, opts?: { type?: ToastType; duration?: number; action?: ToastAction }): string {
     const id = crypto.randomUUID();
     const toast: Toast = {
       id,
       message,
       type: opts?.type ?? 'info',
       duration: opts?.duration ?? (opts?.type === 'error' ? this.toastErrorDuration : this.toastDuration),
+      action: opts?.action,
     };
 
     this.toasts.update((prev) => [...prev, toast]);
     window.setTimeout(() => this.dismissToast(id), toast.duration);
 
     return id;
+  }
+
+  runToastAction(id: string): void {
+    const toast = this.toasts().find((t) => t.id === id);
+    toast?.action?.handler();
+    this.dismissToast(id);
   }
 
   dismissToast(id: string) {

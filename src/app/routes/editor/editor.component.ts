@@ -125,6 +125,7 @@ export class EditorComponent {
         
         // Set displayed images and main image
         editor.setDisplayedImages();
+        editor.flaggedTotal.set(editor.flaggedImages().length);
         const imageList = editor.displayedImagesFinal();
         if (!imageList.length) editor.loadingMain.set(false);
         const shouldUseLastSelectedImage = res._id === this.storage.get('lastTitleId', '', true);

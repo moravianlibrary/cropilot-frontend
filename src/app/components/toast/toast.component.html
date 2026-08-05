@@ -6,12 +6,21 @@
       role="status"
     >
       <div class="toast__msg" [innerText]="t.message"></div>
-      <button
-        type="button"
-        class="toast__close"
-        aria-label="Close notification"
-        (click)="ui.dismissToast(t.id)"
-      >✕</button>
+      <div class="toast__actions">
+        @if (t.action) {
+          <button
+            type="button"
+            class="toast__action"
+            (click)="ui.runToastAction(t.id)"
+          >{{ t.action.label }}</button>
+        }
+        <button
+          type="button"
+          class="toast__close"
+          aria-label="Close notification"
+          (click)="ui.dismissToast(t.id)"
+        >✕</button>
+      </div>
     </div>
   }
 </div>

@@ -40,6 +40,24 @@
   border-radius: 10px;
 }
 
+.toast__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-x1);
+}
+
+.toast__action {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--status-icon-info);
+  font-weight: 600;
+  cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
 /* Types */
 .toast--info {
   border-left-color: var(--status-icon-info);

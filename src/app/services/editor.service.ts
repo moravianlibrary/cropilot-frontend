@@ -136,6 +136,16 @@ export class EditorService {
   // brings every flagged scan back.
   reviewedFlaggedIds = signal<Set<string>>(new Set<string>());
 
+  // Total number of flagged scans when the document was opened — the fixed
+  // denominator of the "Podezřelé (remaining/total)" progress counter.
+  flaggedTotal = signal<number>(0);
+
+  // A scan only counts as reviewed after it has been on screen for at least
+  // this long, so quickly arrowing past scans does not clear them.
+  private readonly reviewDwellMs = 1000;
+  private currentShownAt = 0;
+  private lastReviewToastId: string | null = null;
+
 
   // ========== DERIVED STATE ==========
   flaggedImages = computed<ImageItem[]>(() => {
@@ -249,6 +259,7 @@ export class EditorService {
       
       if (this.selectedFilter === 'edited') this.selectedFilter = 'all';
       this.setDisplayedImages();
+      this.flaggedTotal.set(this.flaggedImages().length);
       this.setMainImage(this.displayedImagesFinal()[0]);
 
       this.ui.showToast('Změny dokumentu byly úspěšně resetovány!', { type: 'success' });
@@ -335,24 +346,48 @@ export class EditorService {
   /**
    * Mark the scan currently shown in the editor as reviewed when it is a
    * flagged ("Podezřelé") scan. Reviewing a flagged scan is nothing more than
-   * looking at it: as soon as the user moves to another scan, the one they just
-   * saw drops out of the "Podezřelé" filter (both the thumbnail list and its
-   * counter) for the rest of the session. This is deliberately in-memory only,
-   * so refreshing the page restores every flagged scan.
+   * looking at it for a moment: once the user moves on, the scan they just saw
+   * drops out of the "Podezřelé" filter (thumbnail list + counter) for the rest
+   * of the session. A short dwell time guards against clearing scans that were
+   * only flicked past, and an undo toast lets the user bring one back. This is
+   * deliberately in-memory only, so refreshing the page restores every flagged
+   * scan.
    */
   private markCurrentFlaggedAsReviewed(): void {
     const current = this.mainImageItem();
     if (!current._id || current.edited || !current.flags.length) return;
     if (this.reviewedFlaggedIds().has(current._id)) return;
+    if (Date.now() - this.currentShownAt < this.reviewDwellMs) return;
 
+    const reviewedId = current._id;
     this.reviewedFlaggedIds.update(prev => {
       const next = new Set(prev);
-      next.add(current._id);
+      next.add(reviewedId);
       return next;
     });
 
     // While browsing inside the "Podezřelé" filter, refresh the thumbnail list
     // so the just-reviewed scan is removed immediately.
+    if (this.selectedFilter === 'flagged') this.setDisplayedImages();
+
+    // Keep only the latest undo toast so they don't stack up.
+    if (this.lastReviewToastId) this.ui.dismissToast(this.lastReviewToastId);
+    this.lastReviewToastId = this.ui.showToast('Sken označen jako projitý.', {
+      duration: 5000,
+      action: { label: 'Zpět', handler: () => this.restoreReviewedFlagged(reviewedId) },
+    });
+  }
+
+  /** Undo: return a previously reviewed flagged scan to the "Podezřelé" filter. */
+  restoreReviewedFlagged(id: string): void {
+    if (!this.reviewedFlaggedIds().has(id)) return;
+
+    this.reviewedFlaggedIds.update(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+
     if (this.selectedFilter === 'flagged') this.setDisplayedImages();
   }
 
@@ -362,8 +397,10 @@ export class EditorService {
 
     if (img._id !== this.mainImageItem()._id) {
       this.rotationScope.set('current');
-      // Moving to a different scan means the current one has been reviewed.
+      // Moving away marks the scan we were on as reviewed (if eligible), then
+      // we start timing how long the newly shown scan stays on screen.
       this.markCurrentFlaggedAsReviewed();
+      this.currentShownAt = Date.now();
     }
 
     this.loadingMain.set(true);
