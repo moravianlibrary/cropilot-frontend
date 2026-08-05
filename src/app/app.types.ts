@@ -271,16 +271,11 @@ export interface DialogButton {
 
 // Toast messages
 export type ToastType = 'info' | 'success' | 'error';
-export interface ToastAction {
-  label: string;
-  handler: () => void;
-}
 export interface Toast {
   id: string;
   message: string;
   type?: ToastType;
   duration?: number;
-  action?: ToastAction;
 }
 
 // Select

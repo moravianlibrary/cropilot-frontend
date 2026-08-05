@@ -38,7 +38,7 @@
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'flagged'"
         (click)="editor.switchFilter('flagged')"
-      >Podezřelé <span class="filter-number">@if (editor.flaggedTotal()) {({{ editor.flaggedImages().length }}/{{ editor.flaggedTotal() }})} @else {({{ editor.flaggedImages().length }})}</span></span>
+      >Podezřelé <span class="filter-number">@if (editor.flaggedTotal()) {({{ editor.flaggedRemaining() }}/{{ editor.flaggedTotal() }})} @else {({{ editor.flaggedRemaining() }})}</span></span>
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'edited'"
@@ -82,6 +82,7 @@
           [id]="`thumbnail-wrapper-${image._id}`"
           class="thumbnail-wrapper"
           [class.selected]="mainImageItem._id === image._id"
+          [class.reviewed]="isReviewed(image)"
           (click)="clickThumbnail(image)"
         >
           <img

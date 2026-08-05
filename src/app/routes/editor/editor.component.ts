@@ -94,6 +94,7 @@ export class EditorComponent {
         editor.images.set(imgItems);
         editor.originalImages.set(imgItems);
         editor.reviewedFlaggedIds.set(new Set<string>());
+        editor.flaggedIdsAtLoad.set(new Set(imgItems.filter(img => img.flags.length).map(img => img._id)));
         editor.predictedImages.set(imgItemsPredicted ?? []);
         editor.predictedOrientedImages.set(imgItemsPredicted ?? []);
 
@@ -125,7 +126,6 @@ export class EditorComponent {
         
         // Set displayed images and main image
         editor.setDisplayedImages();
-        editor.flaggedTotal.set(editor.flaggedImages().length);
         const imageList = editor.displayedImagesFinal();
         if (!imageList.length) editor.loadingMain.set(false);
         const shouldUseLastSelectedImage = res._id === this.storage.get('lastTitleId', '', true);
