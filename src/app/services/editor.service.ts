@@ -143,7 +143,7 @@ export class EditorService {
 
   // A scan only counts as reviewed after it has been on screen for at least
   // this long, so quickly arrowing past scans does not mark them.
-  private readonly reviewDwellMs = 1000;
+  private readonly reviewDwellMs = 500;
   private currentShownAt = 0;
 
 
