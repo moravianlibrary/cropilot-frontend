@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation, RotationScope } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
-import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage, wait } from '../utils/utils';
+import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
 import { dimColorDict, gridColorDict, gridDensityDict, gridLineWidthDict, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
 import { AuthService } from './auth.service';
@@ -49,6 +49,7 @@ export class EditorService {
   loadingLeft: boolean = false;
   loadingMain = signal<boolean>(false);
   loadingFirstCurrentPage = signal<boolean>(false);
+  private mainImageLoadId: number = 0;
 
   // Interactions
   pageWasEdited: boolean = false;
@@ -128,12 +129,40 @@ export class EditorService {
   maxPages: number = 2;
 
   // Last selected scan
-  rememberLastSelectedImageOfLastOpenTitle: boolean = false;
   lastSelectedImageId: string = '';
+
+  // Flagged ("Podezřelé") scans the user has already viewed in this session.
+  // Kept in memory ONLY and intentionally never persisted, so a page refresh
+  // brings every flagged scan back.
+  reviewedFlaggedIds = signal<Set<string>>(new Set<string>());
+
+  // Ids of every scan that was flagged when the document was opened. This is
+  // the membership of the "Podezřelé" filter for the whole session: reviewed
+  // and edited scans stay in it (greyed out), they are never removed.
+  flaggedIdsAtLoad = signal<Set<string>>(new Set<string>());
+
+  // A scan only counts as reviewed after it has been on screen for at least
+  // this long, so quickly arrowing past scans does not mark them.
+  private readonly reviewDwellMs = 500;
+  private currentShownAt = 0;
 
 
   // ========== DERIVED STATE ==========
-  flaggedImages = computed<ImageItem[]>(() => this.images().filter(img => !img.edited && img.flags.length));
+  // The "Podezřelé" list: every scan that was flagged when the document opened,
+  // including ones since reviewed or edited (those show greyed out but stay).
+  flaggedImages = computed<ImageItem[]>(() => {
+    const flagged = this.flaggedIdsAtLoad();
+    return this.images().filter(img => flagged.has(img._id));
+  });
+
+  // Flagged scans still awaiting attention (not yet reviewed and not edited) —
+  // the (decreasing) number shown next to the "Podezřelé" filter. Reviewed and
+  // edited scans stay in the list (greyed out); they just stop counting here.
+  flaggedRemaining = computed<number>(() => {
+    const flagged = this.flaggedIdsAtLoad();
+    const reviewed = this.reviewedFlaggedIds();
+    return this.images().filter(img => flagged.has(img._id) && !img.edited && !reviewed.has(img._id)).length;
+  });
   notFlaggedImages = computed<ImageItem[]>(() => this.images().filter(img => !img.edited && !img.flags.length));
   editedImages = computed<ImageItem[]>(() => this.images().filter(img => img.edited));
   displayedImagesFinal = computed<ImageItem[]>(() => this.selectedPageNumberFilter() ? this.displayedImagesPages() : this.displayedImages());
@@ -237,6 +266,8 @@ export class EditorService {
       
       this.images.set(images);
       this.originalImages.set(images);
+      this.reviewedFlaggedIds.set(new Set<string>());
+      this.flaggedIdsAtLoad.set(new Set(images.filter(img => img.flags.length).map(img => img._id)));
       
       if (this.selectedFilter === 'edited') this.selectedFilter = 'all';
       this.setDisplayedImages();
@@ -323,17 +354,50 @@ export class EditorService {
 
 
   // ========== MAIN IMAGE LOGIC & DRAWING ==========
+  /**
+   * Mark the scan currently shown in the editor as reviewed when it is a
+   * flagged ("Podezřelé") scan. Reviewing a flagged scan is nothing more than
+   * looking at it for a moment: once the user moves on, the scan they just saw
+   * is greyed out in the list and stops counting towards the "Podezřelé"
+   * progress counter — but it stays in the list. A short dwell time guards
+   * against marking scans that were only flicked past. This is deliberately
+   * in-memory only, so refreshing the page restores every flagged scan.
+   */
+  private markCurrentFlaggedAsReviewed(): void {
+    const current = this.mainImageItem();
+    if (!current._id || current.edited || !this.flaggedIdsAtLoad().has(current._id)) return;
+    if (this.reviewedFlaggedIds().has(current._id)) return;
+    if (Date.now() - this.currentShownAt < this.reviewDwellMs) return;
+
+    const reviewedId = current._id;
+    this.reviewedFlaggedIds.update(prev => {
+      const next = new Set(prev);
+      next.add(reviewedId);
+      return next;
+    });
+  }
+
   setMainImage(img: ImageItem): void {
+    const loadId = ++this.mainImageLoadId;
+    const bookId = this.book();
+
     if (img._id !== this.mainImageItem()._id) {
       this.rotationScope.set('current');
+      // Moving away marks the scan we were on as reviewed (if eligible), then
+      // we start timing how long the newly shown scan stays on screen.
+      this.markCurrentFlaggedAsReviewed();
+      this.currentShownAt = Date.now();
     }
 
     this.loadingMain.set(true);
     this.loadingFirstCurrentPage.set(true);
 
     this.c.style.visibility = 'hidden';
+    this.mainImage = null;
 
     const applyFinalImage = async (updated: ImageItem) => {
+      if (loadId !== this.mainImageLoadId) return;
+
       const page = this.clickedDiffPage ? this.lastSelectedPage : this.selectedPage;
       if (this.pageWasEdited && page) {
         page.edited = true;
@@ -341,9 +405,12 @@ export class EditorService {
       }
       this.selectedPage = null;
       this.resetZoom();
-      this.renderCanvas(updated);
+
+      const rendered = await this.renderCanvas(updated, loadId);
+      if (loadId !== this.mainImageLoadId) return;
 
       this.loadingMain.set(false);
+      if (!rendered) return;
 
       if (this.imgWasEdited()) {
         await this.ui.waitForFalse(this.imgWasEdited);
@@ -353,7 +420,7 @@ export class EditorService {
     };
 
     if (img.url) {
-      applyFinalImage(img);
+      void applyFinalImage(img);
       return;
     }
 
@@ -362,38 +429,78 @@ export class EditorService {
       return;
     }
 
-    this.fetchImage(img._id).subscribe(blob => {
-      if (blob.type.includes('tiff')) this.ui.showToast('Nepodařilo se zobrazit sken, protože je ve formátu TIFF.', { type: 'error' });
+    this.fetchImage(img._id).subscribe({
+      next: blob => {
+        if (blob.type.includes('tiff')) this.ui.showToast('Nepodařilo se zobrazit sken, protože je ve formátu TIFF.', { type: 'error' });
 
-      const url = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
+        if (bookId !== this.book()) {
+          URL.revokeObjectURL(url);
+          return;
+        }
 
-      this.images.update(prev =>
-        prev.map(image =>
-          image._id === img._id ? { ...image, url } : image
-        )
-      );
+        this.cacheImageUrl(img._id, url);
 
-      applyFinalImage({ ...img, url });
+        void applyFinalImage({ ...img, url });
+      },
+      error: err => {
+        if (loadId !== this.mainImageLoadId) return;
+        this.loadingMain.set(false);
+        console.error('Failed to fetch image.', err);
+      }
     });
   }
 
-  private async renderCanvas(imgItem: ImageItem): Promise<void> {
-    if (imgItem.url) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = imgItem.url;
-      this.mainImage = img;
+  cancelMainImageLoad(): void {
+    this.mainImageLoadId++;
+    this.mainImage = null;
+    this.loadingMain.set(false);
+    if (this.c) this.c.style.visibility = 'hidden';
+  }
 
-      img.onload = () => this.fitAndDrawImage(img, imgItem);
-      img.onerror = () => console.error('Failed to load image.');
+  private cacheImageUrl(id: string, url: string): void {
+    const updateUrl = (images: ImageItem[]): ImageItem[] =>
+      images.map(image => image._id === id ? { ...image, url } : image);
 
-      await wait(100);
+    this.images.update(updateUrl);
+    this.originalImages.update(updateUrl);
+    this.displayedImages.update(updateUrl);
+    this.displayedImagesPages.update(updateUrl);
+  }
 
-      this.c.style.visibility = 'visible';
-      return;
+  private renderCanvas(imgItem: ImageItem, loadId: number): Promise<boolean> {
+    const imageUrl = imgItem.url;
+    if (!imageUrl) {
+      this.c.style.visibility = 'hidden';
+      return Promise.resolve(false);
     }
 
-    this.c.style.visibility = 'hidden';
+    return new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        if (loadId !== this.mainImageLoadId || !this.c.isConnected) {
+          resolve(false);
+          return;
+        }
+
+        this.mainImage = img;
+        this.fitAndDrawImage(img, imgItem);
+        this.c.style.visibility = 'visible';
+        resolve(true);
+      };
+
+      img.onerror = () => {
+        if (loadId === this.mainImageLoadId) {
+          this.c.style.visibility = 'hidden';
+          console.error('Failed to load image.');
+        }
+        resolve(false);
+      };
+
+      img.src = imageUrl;
+    });
   }
 
   private fitAndDrawImage(img: HTMLImageElement, imgItem: ImageItem): void {
@@ -438,9 +545,16 @@ export class EditorService {
         this.loadingFirstCurrentPage.set(false);
       });
 
-    this.applyDefaultZoom();
-    
     const lastMainImageItemName = this.mainImageItem()._id;
+
+    // Set the current image (with its orientation) BEFORE applyDefaultZoom so
+    // the redraw it triggers (redrawImageOnCanvas -> drawOrientedImage() with no
+    // argument) reads the new orientation instead of the previous scan's. Not
+    // doing this repaints the freshly loaded scan with the old orientation,
+    // leaving it visibly wrong until an unrelated redraw (e.g. a resize) fixes it.
+    this.mainImageItem.set({ ...imgItem });
+
+    this.applyDefaultZoom();
 
     this.mainImageItem.set({ ...imgItem, url: c.toDataURL('image/jpeg') });
 
@@ -555,9 +669,13 @@ export class EditorService {
     ctx.translate(centerX, centerY);
     ctx.rotate(degreeToRadian(p.angle));
 
-    // Outline
+    // Outline — nothing is selected here (initial paint), so 'Žádný' still
+    // shows a thin outline to keep crops visible.
+    const outlineWidth = this.outlineWidthLabel() === 'Žádný'
+      ? this.pageOutlineWidthSecondary
+      : outlineWidthDict[this.outlineWidthLabel()];
+    if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
     ctx.strokeStyle = getColor(p) + 'B2';
-    const outlineWidth = outlineWidthDict['Silný'];
     ctx.lineWidth = outlineWidth;
     ctx.strokeRect(
       -width / 2 - outlineWidth / 2,
@@ -565,6 +683,7 @@ export class EditorService {
       width + outlineWidth,
       height + outlineWidth
     );
+    ctx.setLineDash([]);
 
     ctx.restore();
   }
@@ -1406,7 +1525,13 @@ export class EditorService {
     const color = getColor(p);
     const isPageNotSelectedWhileOtherIs = this.currentPages.length > 1 && this.selectedPage && p !== this.selectedPage;
     const outlineWidthLabel = this.outlineWidthLabel();
-    const pageOutlineWidth = isPageNotSelectedWhileOtherIs ? this.pageOutlineWidthSecondary : (this.selectedPage ? outlineWidthDict[outlineWidthLabel] : outlineWidthDict['Silný']);
+    const isSelectedPage = this.selectedPage?._id === p._id;
+    // 'Žádný' hides the outline only on the focused (selected) crop; when nothing
+    // is selected, fall back to a thin outline so crops stay visible in the overview.
+    const hideOutline = outlineWidthLabel === 'Žádný' && isSelectedPage;
+    const pageOutlineWidth = isPageNotSelectedWhileOtherIs || outlineWidthLabel === 'Žádný'
+      ? this.pageOutlineWidthSecondary
+      : outlineWidthDict[outlineWidthLabel];
     
     ctx.save();
 
@@ -1415,9 +1540,9 @@ export class EditorService {
 
     // Outline
     {
-      if (this.outlineDashed && this.selectedPage?._id === p._id) ctx.setLineDash([this.dashLength, this.dashGapLength]);
+      if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
 
-      ctx.strokeStyle = p._id === this.selectedPage?._id && outlineWidthLabel === 'Žádný'
+      ctx.strokeStyle = hideOutline
         ? transparentColor
         : color + (isPageNotSelectedWhileOtherIs ? '77' : 'B2');
       ctx.lineWidth = pageOutlineWidth;
@@ -1667,7 +1792,7 @@ export class EditorService {
     const ui = this.ui;
     this.resetSettingsDraft();
     
-    ui.dialogWidth.set(680);
+    ui.dialogWidth.set(600);
     ui.dialogTitle.set('Nastavení');
     ui.dialogContent.set(true);
     ui.dialogContentType.set('settings');
@@ -1699,8 +1824,6 @@ export class EditorService {
           this.dimColor.set('Černá');
           this.dimRadio.set('Černá');
           this.storage.set('dimColor', 'Černá');
-          this.rememberLastSelectedImageOfLastOpenTitle = false;
-          this.storage.remove('rememberLastSelectedImageOfLastOpenTitle');
           this.scanTypeRadio.set('all');
           this.storage.set('filterScanTypeStart', 'all');
           this.pageNumberRadio.set('all');
@@ -1746,10 +1869,6 @@ export class EditorService {
     this.outlineDashed = !this.outlineDashed;
   }
 
-  toggleLastSelectedScan(): void {
-    this.rememberLastSelectedImageOfLastOpenTitle = !this.rememberLastSelectedImageOfLastOpenTitle;
-  }
-
   saveSettings(): void {
     this.storage.set('showPredictions', this.showPredictions);
     const gridRadio = this.gridRadio();
@@ -1772,13 +1891,8 @@ export class EditorService {
     this.dimColor.set(dimRadio);
     this.storage.set('dimColor', dimRadio);
     
-    this.storage.set('rememberLastSelectedImageOfLastOpenTitle', this.rememberLastSelectedImageOfLastOpenTitle);
-    if (this.rememberLastSelectedImageOfLastOpenTitle) {
-      this.lastSelectedImageId = this.mainImageItem()._id;
-      this.storage.set('lastSelectedImageId', `${this.lastSelectedImageId}`);
-    } else {
-      this.storage.remove('lastSelectedImageId');
-    }
+    this.lastSelectedImageId = this.mainImageItem()._id;
+    this.storage.set('lastSelectedImageId', `${this.lastSelectedImageId}`);
 
     this.storage.set('filterScanTypeStart', this.scanTypeRadio());
     this.storage.set('filterPageNumberStart', this.pageNumberRadio());

@@ -83,8 +83,7 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  font-family: "Roboto", sans-serif;
-  font-size: var(--font-size-x2);
+  font-family: 'IBM Plex Sans', sans-serif;
 }
 
 html, body {
@@ -92,6 +91,7 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  font-size: var(--font-size-x2);
 }
 
 #logo {

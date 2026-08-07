@@ -123,13 +123,17 @@ export class LeftPanelComponent {
     editor.updateImagesByCurrentPages();
     editor.setMainImage(image);
 
-    if (editor.rememberLastSelectedImageOfLastOpenTitle) {
-      editor.lastSelectedImageId = image._id;
-      this.storage.set('lastSelectedImageId', `${image._id}`);
-      return;
-    }
-    
-    this.storage.remove('lastSelectedImageId');
+    editor.lastSelectedImageId = image._id;
+    this.storage.set('lastSelectedImageId', `${image._id}`);
+  }
+
+  // A scan is shown greyed out in the "Podezřelé" filter once it has been
+  // handled — either just looked at (reviewed) or actually edited. It stays in
+  // the list either way.
+  isReviewed(image: ImageItem): boolean {
+    if (this.editor.selectedFilter !== 'flagged') return false;
+    if (!this.editor.flaggedIdsAtLoad().has(image._id)) return false;
+    return image.edited || this.editor.reviewedFlaggedIds().has(image._id);
   }
 
   getStatus(image: ImageItem): 'edited' | 'error' | 'warning' | 'success' {

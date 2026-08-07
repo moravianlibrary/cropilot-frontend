@@ -93,29 +93,7 @@
     }
 
     .scope-switch {
-      display: inline-grid;
-      grid-template-columns: repeat(2, auto);
-      align-items: center;
       margin-left: auto;
-      padding: var(--spacing-x0-5);
-      border-radius: var(--spacing-x1-5);
-      background-color: var(--bg-light);
-
-      .switch-button {
-        border: none;
-        border-radius: var(--spacing-x1);
-        background: transparent;
-        padding: var(--spacing-x0-5) var(--spacing-x2);
-        white-space: nowrap;
-        cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
-        transition: background 0.2s, color 0.2s;
-        @include styles.font(450, var(--font-size-x1), var(--spacing-x4), var(--text-light));
-      }
-
-      .switch-button.active {
-        background-color: var(--bg-base);
-        color: var(--text-base);
-      }
     }
   }
 
@@ -125,35 +103,8 @@
     gap: var(--spacing-x2);
     max-width: 100%;
 
-    .switch-container {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      justify-content: center;
-      align-items: center;
+    .view-switch {
       width: 100%;
-      border-radius: var(--spacing-x2);
-      background-color: var(--bg-light);
-      padding: var(--spacing-x0-5);
-
-      .switch-button {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: var(--spacing-x0-5);
-        border: none;
-        background: transparent;
-        padding: var(--spacing-x2) var(--spacing-x3);
-        @include styles.font(450, var(--font-size-x1-5), var(--spacing-x4), var(--text-light));
-        border-radius: var(--spacing-x1-5);
-
-        cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
-        transition: background 0.2s, color 0.2s;
-      }
-
-      .switch-button.active {
-        background-color: var(--bg-base);
-        color: var(--text-base);
-      }
     }
   }
 }

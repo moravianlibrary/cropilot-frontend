@@ -247,6 +247,20 @@
   }
 }
 
+.thumbnail-wrapper.reviewed {
+  img {
+    opacity: 0.3;
+    filter: grayscale(1);
+    transition: opacity 0.2s ease, filter 0.2s ease;
+  }
+
+  // The scan currently open stays fully visible even once reviewed.
+  &.selected img {
+    opacity: 1;
+    filter: none;
+  }
+}
+
 .selected {
   background-color: var(--bg-contrast);
   border: 1px solid var(--primary);

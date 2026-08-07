@@ -57,6 +57,7 @@ export class EditorComponent {
             return;
           };
 
+          editor.cancelMainImageLoad();
           editor.book.set(book_id);
           editor.loadingLeft = true;
           editor.loadingMain.set(true);
@@ -92,6 +93,8 @@ export class EditorComponent {
         editor.loadingLeft = false;
         editor.images.set(imgItems);
         editor.originalImages.set(imgItems);
+        editor.reviewedFlaggedIds.set(new Set<string>());
+        editor.flaggedIdsAtLoad.set(new Set(imgItems.filter(img => img.flags.length).map(img => img._id)));
         editor.predictedImages.set(imgItemsPredicted ?? []);
         editor.predictedOrientedImages.set(imgItemsPredicted ?? []);
 
@@ -115,7 +118,6 @@ export class EditorComponent {
           : 'page';
         editor.defaultFitMode.set(defaultFitMode);
         editor.defaultFitModeRadio.set(defaultFitMode);
-        editor.rememberLastSelectedImageOfLastOpenTitle = !!this.storage.get('rememberLastSelectedImageOfLastOpenTitle', null, true);
         editor.lastSelectedImageId = this.storage.get('lastSelectedImageId', '', true) ?? '';
         editor.selectedFilter = this.storage.get('filterScanTypeStart', 'all', true) as ScanType;
         editor.scanTypeRadio.set(editor.selectedFilter);
@@ -126,7 +128,7 @@ export class EditorComponent {
         editor.setDisplayedImages();
         const imageList = editor.displayedImagesFinal();
         if (!imageList.length) editor.loadingMain.set(false);
-        const shouldUseLastSelectedImage = res._id === this.storage.get('lastTitleId', '', true) && editor.rememberLastSelectedImageOfLastOpenTitle;
+        const shouldUseLastSelectedImage = res._id === this.storage.get('lastTitleId', '', true);
         const newImage = shouldUseLastSelectedImage
           ? (imageList.find(img => img._id === editor.lastSelectedImageId) ?? imageList[0])
           : (imageList.find(img => img._id === editor.mainImageItem()._id) || imageList[0] || { url: '' });
@@ -148,6 +150,7 @@ export class EditorComponent {
   }
 
   ngOnDestroy(): void {
+    this.editor.cancelMainImageLoad();
     this.paramsOnBookId.unsubscribe();
   }
 }

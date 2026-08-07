@@ -3,17 +3,22 @@ import { EditorService } from '../../services/editor.service';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectorRef } from '@angular/core';
-import { InputType, Page } from '../../app.types';
+import { ImageOrientation, InputType, Page, RotationScope } from '../../app.types';
 import { clamp, defer, degreeToRadian, focusMainWrapper } from '../../utils/utils';
 import { MenuComponent } from '../../components/menu/menu.component';
 import { flagMessages } from '../../app.config';
 import { AuthService } from '../../services/auth.service';
 import { IconComponent } from '../../components/icon/icon.component';
 import { getHeightResizeOrientation, getWidthResizeOrientation } from '../../utils/editor-geometry';
+import {
+  SegmentedControlComponent,
+  SegmentedControlOption,
+  SegmentedControlValue
+} from '../../components/segmented-control/segmented-control.component';
 
 @Component({
   selector: 'app-right-panel-editor',
-  imports: [MenuComponent, DecimalPipe, FormsModule, IconComponent],
+  imports: [MenuComponent, DecimalPipe, FormsModule, IconComponent, SegmentedControlComponent],
   templateUrl: './right-panel.component.html',
   styleUrl: './right-panel.component.scss'
 })
@@ -25,6 +30,18 @@ export class RightPanelComponent {
   private firstFocus = { left: true, top: true, width: true, height: true, angle: true };
   private holdInterval: any;
 
+  rotationScopeOptions: SegmentedControlOption[] = [
+    { value: 'current', label: 'Tento sken' },
+    { value: 'all', label: 'Všechny' }
+  ];
+
+  orientationOptions: SegmentedControlOption[] = [
+    { value: 270, label: '90', ariaLabel: 'Otočit vlevo o 90°', icon: 'reset', iconSize: 12 },
+    { value: 0, label: '0°' },
+    { value: 90, label: '90', ariaLabel: 'Otočit vpravo o 90°', icon: 'forward', iconSize: 12 },
+    { value: 180, label: '180°' }
+  ];
+
 
   // ========== HEADER ==========
   get currentIndexImage(): number {
@@ -35,6 +52,20 @@ export class RightPanelComponent {
 
   getFlagLabel(flag: string): string {
     return flagMessages[flag];
+  }
+
+  get activeOrientation(): ImageOrientation | null {
+    return this.orientationOptions
+      .map(option => option.value as ImageOrientation)
+      .find(orientation => this.editor.isOrientationActive(orientation)) ?? null;
+  }
+
+  setRotationScope(value: SegmentedControlValue): void {
+    this.editor.rotationScope.set(value as RotationScope);
+  }
+
+  setOrientation(value: SegmentedControlValue): void {
+    this.editor.rotate(value as ImageOrientation);
   }
 
 
