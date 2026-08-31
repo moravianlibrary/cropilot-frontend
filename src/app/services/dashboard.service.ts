@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { catchError, forkJoin, from, map, mergeMap, Observable, of, switchMap, tap, throwError, toArray } from 'rxjs';
 import { AuthService } from './auth.service';
-import { ChangedGroupMember, DashboardPage, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Paginated, PagedQuery, Permission, PermissionType, SelectOption, Title, TitlesQuery, User, UserInGroup } from '../app.types';
+import { ChangedGroupMember, DashboardPage, DrawerButton, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Paginated, PagedQuery, Permission, PermissionType, SelectOption, Title, TitlesQuery, User, UserInGroup } from '../app.types';
 import { Router } from '@angular/router';
 import { checkEmailValidity, defer, focusMainWrapper, scrollToAndFocusElement, scrollToElement } from '../utils/utils';
 import { inlineErrors } from '../app.config';
@@ -124,16 +124,20 @@ export class DashboardService {
   uploadFilesError = signal<string>('');
   cropModelChanged = computed<boolean>(() => this.selectedTitle()?.settings?.crop_model !== this.selectedCropModel());
   rotationModelChanged = computed<boolean>(() => this.selectedTitle()?.settings?.rotation_model !== this.selectedRotationModel());
-  titleChanged = computed<boolean>(() => {
-    const title = this.selectedTitle();
-    if (!title) return false;
-    
-    const titleNameChanged = title.external_id !== this.titleName();
-    const cropModelChanged = this.cropModelChanged();
-    const rotationModelChanged = this.rotationModelChanged();
-    
-    return titleNameChanged || cropModelChanged || rotationModelChanged;
+  // Baseline of the title edit form as it was opened (with defaulted models),
+  // so a title without settings doesn't open as already "changed".
+  titleBaseline = signal<{ name: string; crop: string; rotation: string } | null>(null);
+  titleDirtyCount = computed<number>(() => {
+    const base = this.titleBaseline();
+    if (!base || !this.selectedTitle()) return 0;
+
+    let count = 0;
+    if (base.name !== this.titleName()) count++;
+    if (base.crop !== this.selectedCropModel()) count++;
+    if (base.rotation !== this.selectedRotationModel()) count++;
+    return count;
   });
+  titleChanged = computed<boolean>(() => this.titleDirtyCount() > 0);
 
   // Users
   users = signal<User[]>([]);
@@ -443,7 +447,7 @@ export class DashboardService {
               : of(res)
             ),
             tap((res: NewGroup) => {
-              const now = Date();
+              const now = new Date().toISOString();
               const permissions = ['read_group', 'read_title', 'write', 'upload'] as PermissionType[];
               const newGroup: Group = {
                 _id: res.id,
@@ -666,7 +670,7 @@ export class DashboardService {
           
           return this.createTitle(this.selectedGroupPage()?._id ?? '').pipe(
             map(res => {
-              const now = Date();
+              const now = new Date().toISOString();
               const newTitle: Title = {
                 _id: res.id,
                 external_id: titleName,
@@ -774,7 +778,7 @@ export class DashboardService {
               return throwError(() => err);
             })
           ).subscribe((res: Title) => {
-            const now = Date();
+            const now = new Date().toISOString();
             const editedTitle: Title = {
               _id: res._id,
               external_id: titleName,
@@ -813,6 +817,11 @@ export class DashboardService {
       this.availableRotationModels.set(res.rotation_models.map(m => ({ value: m, label: m })));
       this.selectedRotationModel.set(title.settings?.rotation_model ?? res.rotation_models[0]);
       this.selectedRotationModelUsed.set(false);
+      this.titleBaseline.set({
+        name: this.titleName(),
+        crop: this.selectedCropModel(),
+        rotation: this.selectedRotationModel(),
+      });
       this.closeDrawer();
       ui.openDialog();
     });
@@ -855,15 +864,7 @@ export class DashboardService {
   openTitleDetail(title: Title): void {
     const ui = this.ui;
 
-    ui.drawerTitle.set(title.external_id ?? title._id);
-    ui.drawerContent.set(true);
-    ui.drawerContentType.set('titles');
-
-    this.selectedTitle.set(title);
-    this.titleName.set(title.external_id ?? '');
-    this.titleNameError.set('');
-
-    ui.drawerButtons.set([
+    const buttons: DrawerButton[] = [
       {
         label: 'Zavřít',
         action: () => this.closeDrawer()
@@ -895,7 +896,7 @@ export class DashboardService {
                 crop_model: this.selectedCropModel(),
                 rotation_model: this.selectedRotationModel()
               },
-              modified_at: Date(),
+              modified_at: new Date().toISOString(),
               state: res.state
             };
             this.titles.update(prev => prev.map(t => t._id === current._id ? editedTitle : t));
@@ -905,7 +906,7 @@ export class DashboardService {
           });
         }
       }
-    ]);
+    ];
 
     this.fetchModels().pipe(
       catchError(err => {
@@ -914,12 +915,27 @@ export class DashboardService {
         return throwError(() => err);
       })
     ).subscribe((res: Models) => {
+      // Seed the drawer state only once the models are loaded, so a failed
+      // fetch doesn't leave the dashboard pointing at a drawer that never opened.
+      ui.drawerTitle.set(title.external_id ?? title._id);
+      ui.drawerContent.set(true);
+      ui.drawerContentType.set('titles');
+      ui.drawerButtons.set(buttons);
+
+      this.selectedTitle.set(title);
+      this.titleName.set(title.external_id ?? '');
+      this.titleNameError.set('');
       this.availableCropModels.set(res.crop_models.map(m => ({ value: m, label: m })));
       this.selectedCropModel.set(title.settings?.crop_model ?? res.crop_models[0]);
       this.selectedCropModelUsed.set(false);
       this.availableRotationModels.set(res.rotation_models.map(m => ({ value: m, label: m })));
       this.selectedRotationModel.set(title.settings?.rotation_model ?? res.rotation_models[0]);
       this.selectedRotationModelUsed.set(false);
+      this.titleBaseline.set({
+        name: this.titleName(),
+        crop: this.selectedCropModel(),
+        rotation: this.selectedRotationModel(),
+      });
       ui.openDrawer();
     });
   }

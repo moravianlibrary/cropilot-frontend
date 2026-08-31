@@ -30,11 +30,6 @@ export class RightPanelComponent {
   private firstFocus = { left: true, top: true, width: true, height: true, angle: true };
   private holdInterval: any;
 
-  rotationScopeOptions: SegmentedControlOption[] = [
-    { value: 'current', label: 'Tento sken' },
-    { value: 'all', label: 'Všechny' }
-  ];
-
   orientationOptions: SegmentedControlOption[] = [
     { value: 270, label: '90', ariaLabel: 'Otočit vlevo o 90°', icon: 'reset', iconSize: 15 },
     { value: 0, label: '0°' },
@@ -70,6 +65,13 @@ export class RightPanelComponent {
 
 
   // ========== INPUTS ==========
+  // Angle slider — run the shared change handler, then reflect the actual
+  // angle back onto the slider (geometry may clamp below the dragged value).
+  onAngleSliderInput(slider: HTMLInputElement, value?: number): void {
+    this.changeInputValue('angle', value ?? slider.value);
+    slider.value = String(this.editor.selectedPage?.angle ?? 0);
+  }
+
   changeInputValue(type: InputType, event: any): void {
     const editor = this.editor;
     const page = editor.selectedPage;

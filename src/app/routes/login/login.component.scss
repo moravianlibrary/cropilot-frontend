@@ -8,7 +8,9 @@
   gap: var(--spacing-x6);
   width: 100%;
   height: 100%;
-  margin-top: -6dvh;
+  // Optical vertical centering — padding instead of a negative margin,
+  // which would collapse onto the host and shift the whole page up.
+  padding-bottom: 12dvh;
   background-color: var(--bg-bright);
 }
 
@@ -68,7 +70,7 @@
       &:focus {
         border-color: var(--primary);
         outline: none;
-        box-shadow: 0 0 0 3px #0080A81A;
+        box-shadow: 0 0 0 3px var(--primary-glow);
       }
     }
   }

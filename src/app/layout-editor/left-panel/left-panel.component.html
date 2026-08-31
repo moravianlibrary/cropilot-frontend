@@ -32,24 +32,39 @@
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'all'"
+        (keydown.enter)="editor.switchFilter('all')"
+        (keydown.space)="editor.switchFilter('all')"
+        tabindex="0"
         (click)="editor.switchFilter('all')"
       >Vše <span class="filter-number">({{ editor.images().length }})</span></span>
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'flagged'"
         [class.disabled-filter]="editor.flaggedRemaining() === 0"
+        (keydown.enter)="editor.switchFilter('flagged')"
+        (keydown.space)="editor.switchFilter('flagged')"
+        [attr.aria-disabled]="editor.flaggedRemaining() === 0"
+        [attr.tabindex]="editor.flaggedRemaining() === 0 ? -1 : 0"
         (click)="editor.switchFilter('flagged')"
       ><span class="dot warning"></span>Podezřelé <span class="filter-number">({{ editor.flaggedRemaining() }})</span></span>
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'edited'"
         [class.disabled-filter]="editor.editedImages().length === 0"
+        (keydown.enter)="editor.switchFilter('edited')"
+        (keydown.space)="editor.switchFilter('edited')"
+        [attr.aria-disabled]="editor.editedImages().length === 0"
+        [attr.tabindex]="editor.editedImages().length === 0 ? -1 : 0"
         (click)="editor.switchFilter('edited')"
       ><span class="dot edited"></span>Upravené <span class="filter-number">({{ editor.editedImages().length }})</span></span>
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'ok'"
         [class.disabled-filter]="editor.notFlaggedImages().length === 0"
+        (keydown.enter)="editor.switchFilter('ok')"
+        (keydown.space)="editor.switchFilter('ok')"
+        [attr.aria-disabled]="editor.notFlaggedImages().length === 0"
+        [attr.tabindex]="editor.notFlaggedImages().length === 0 ? -1 : 0"
         (click)="editor.switchFilter('ok')"
       ><span class="dot success"></span>OK <span class="filter-number">({{ editor.notFlaggedImages().length }})</span></span>
     </div>
@@ -62,13 +77,21 @@
           class="filter"
           [class.selected-filter]="editor.selectedPageNumberFilter() === 'single'"
           [class.disabled-filter]="editor.pageImagesNumber(1) === 0"
-          (click)="editor.togglePageNumberFilter('single')"
+          (keydown.enter)="editor.togglePageNumberFilter('single')"
+        (keydown.space)="editor.togglePageNumberFilter('single')"
+        [attr.aria-disabled]="editor.pageImagesNumber(1) === 0"
+        [attr.tabindex]="editor.pageImagesNumber(1) === 0 ? -1 : 0"
+        (click)="editor.togglePageNumberFilter('single')"
         >Jednostrany</span>
         <span
           class="filter"
           [class.selected-filter]="editor.selectedPageNumberFilter() === 'double'"
           [class.disabled-filter]="editor.pageImagesNumber(2) === 0"
-          (click)="editor.togglePageNumberFilter('double')"
+          (keydown.enter)="editor.togglePageNumberFilter('double')"
+        (keydown.space)="editor.togglePageNumberFilter('double')"
+        [attr.aria-disabled]="editor.pageImagesNumber(2) === 0"
+        [attr.tabindex]="editor.pageImagesNumber(2) === 0 ? -1 : 0"
+        (click)="editor.togglePageNumberFilter('double')"
         >Dvoustrany</span>
       </div>
     </div>

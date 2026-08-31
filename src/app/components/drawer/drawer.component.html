@@ -198,7 +198,7 @@
                   @let isUploadTitle = user.permission.includes('upload');
                   @let isWriteTitle = user.permission.includes('write');
                   @let isReadTitle = user.permission.includes('read_title');
-                  <label [for]="`${user._id}-upload`" class="permission">
+                  <label [for]="`${user._id}-upload`" class="permission success">
                     <input
                       type="checkbox"
                       [id]="`${user._id}-upload`"
@@ -216,7 +216,7 @@
                       <app-icon name="settings" [size]="16" />
                     </span>
                   </label>
-                  <label [for]="`${user._id}-write`" class="permission">
+                  <label [for]="`${user._id}-write`" class="permission info">
                     <input
                       type="checkbox"
                       [id]="`${user._id}-write`"
@@ -234,7 +234,7 @@
                       <app-icon name="edit" [size]="16" />
                     </span> 
                   </label>
-                  <label [for]="`${user._id}-read-title`" class="permission">
+                  <label [for]="`${user._id}-read-title`" class="permission pending">
                     <input
                       type="checkbox"
                       [id]="`${user._id}-read-title`"
@@ -252,7 +252,7 @@
                       <app-icon name="book" [size]="16" />
                     </span>
                   </label>
-                  <label [for]="`${user._id}-read-group`" class="permission">
+                  <label [for]="`${user._id}-read-group`" class="permission error">
                     <input
                       type="checkbox"
                       [id]="`${user._id}-read-group`"
@@ -476,7 +476,7 @@
                   @let isUploadTitle = group.permission.includes('upload');
                   @let isWriteTitle = group.permission.includes('write');
                   @let isReadTitle = group.permission.includes('read_title');
-                  <label [for]="`${group.group_id}-upload`" class="permission">
+                  <label [for]="`${group.group_id}-upload`" class="permission success">
                     <input
                       type="checkbox"
                       [id]="`${group.group_id}-upload`"
@@ -494,7 +494,7 @@
                       <app-icon name="settings" [size]="16" />
                     </span>
                   </label>
-                  <label [for]="`${group.group_id}-write`" class="permission">
+                  <label [for]="`${group.group_id}-write`" class="permission info">
                     <input
                       type="checkbox"
                       [id]="`${group.group_id}-write`"
@@ -512,7 +512,7 @@
                       <app-icon name="edit" [size]="16" />
                     </span>
                   </label>
-                  <label [for]="`${group.group_id}-read-title`" class="permission">
+                  <label [for]="`${group.group_id}-read-title`" class="permission pending">
                     <input
                       type="checkbox"
                       [id]="`${group.group_id}-read-title`"
@@ -530,7 +530,7 @@
                       <app-icon name="book" [size]="16" />
                     </span>
                   </label>
-                  <label [for]="`${group.group_id}-read-group`" class="permission">
+                  <label [for]="`${group.group_id}-read-group`" class="permission error">
                     <input
                       type="checkbox"
                       [id]="`${group.group_id}-read-group`"

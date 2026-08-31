@@ -1,5 +1,5 @@
 import { Component, effect, inject, input, output, signal } from '@angular/core';
-import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
+import { DefaultFitMode, DialogButton, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
 import { EditorService } from '../../services/editor.service';
 import { defaultFitModeDict, dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridColorDict, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict } from '../../app.config';
 import { FormsModule } from '@angular/forms';
@@ -46,6 +46,19 @@ export class DialogComponent {
       }, 100);
     }
   });
+
+  // Footer button disabled state — primary buttons stay disabled until the
+  // dialog's form is actually submittable.
+  isBtnDisabled(btn: DialogButton): boolean {
+    if (this.ui.confirmBtnDisabled()) return true;
+    if (!btn.primary || !this.ui.dialogContent()) return false;
+
+    switch (this.ui.dialogContentType()) {
+      case 'edit-title': return !this.dashboard.titleChanged();
+      case 'new-title': return !this.dashboard.titleName().trim() || !this.dashboard.files().length;
+      default: return false;
+    }
+  }
 
   gridModeDict: Record<GridMode, string> = gridModeDict;
   gridModeDictKeys = Object.keys(gridModeDict) as GridMode[];

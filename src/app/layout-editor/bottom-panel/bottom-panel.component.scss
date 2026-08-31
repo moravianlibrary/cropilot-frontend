@@ -33,5 +33,5 @@
 .scan-counter {
   margin-left: var(--spacing-x2);
   white-space: nowrap;
-  @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+  @include styles.font(400, 13px, var(--spacing-x5), var(--text-light));
 }

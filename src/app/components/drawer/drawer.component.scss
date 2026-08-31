@@ -435,10 +435,10 @@
               }
             }
 
-            &:nth-of-type(1):has(input:checked) { background-color: #34C7591A; color: #00310D; .icon, .check-mark { color: #3F764D; } }
-            &:nth-of-type(2):has(input:checked) { background-color: #007BFF1A; color: #08203C; .icon, .check-mark { color: #0C3D77; } }
-            &:nth-of-type(3):has(input:checked) { background-color: #FF95001A; color: #362000; .icon, .check-mark { color: #775A32; } }
-            &:nth-of-type(4):has(input:checked) { background-color: #D5372C1A; color: #390400; .icon, .check-mark { color: #853D38; } }
+            &.success:has(input:checked) { background-color: var(--tag-success-bg); color: var(--tag-success-text); .icon, .check-mark { color: var(--tag-success-icon); } }
+            &.info:has(input:checked)    { background-color: var(--tag-info-bg); color: var(--tag-info-text); .icon, .check-mark { color: var(--tag-info-icon); } }
+            &.pending:has(input:checked) { background-color: var(--tag-pending-bg); color: var(--tag-pending-text); .icon, .check-mark { color: var(--tag-pending-icon); } }
+            &.error:has(input:checked)   { background-color: var(--tag-error-bg); color: var(--tag-error-text); .icon, .check-mark { color: var(--tag-error-icon); } }
           }
         }
       }
@@ -513,10 +513,10 @@
   border-radius: var(--spacing-x1-5);
   @include styles.font(500, 13px, var(--spacing-x4), var(--text-base));
 
-  &.info    { color: #08203C; background-color: #007BFF1A; }
-  &.success { color: #00310D; background-color: #34C7591A; }
-  &.pending { color: #362000; background-color: #FF95001A; }
-  &.error   { color: #390400; background-color: #D5372C1A; }
+  &.info    { color: var(--tag-info-text); background-color: var(--tag-info-bg); }
+  &.success { color: var(--tag-success-text); background-color: var(--tag-success-bg); }
+  &.pending { color: var(--tag-pending-text); background-color: var(--tag-pending-bg); }
+  &.error   { color: var(--tag-error-text); background-color: var(--tag-error-bg); }
 }
 
 .drawer-footer {

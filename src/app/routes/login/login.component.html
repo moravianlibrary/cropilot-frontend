@@ -15,6 +15,7 @@
       type="email"
       placeholder="jmeno@knihovna.cz"
       [(ngModel)]="auth.username"
+      (keydown.enter)="auth.login()"
     />
   </label>
   <label for="password" class="field">

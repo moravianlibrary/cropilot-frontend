@@ -29,9 +29,11 @@ export class DrawerComponent {
   showApiKey = signal<boolean>(false);
 
   constructor() {
-    // Re-mask the API key whenever a different group detail is opened.
+    // Re-mask the API key whenever a different group detail is opened
+    // or the drawer closes (reopening the same group must not reveal it).
     effect(() => {
       this.dashboard.selectedGroupDetail();
+      this.ui.drawerOpen();
       this.showApiKey.set(false);
     });
   }
@@ -45,13 +47,7 @@ export class DrawerComponent {
     const page = this.ui.drawerContentType();
 
     if (page === 'titles') {
-      const t = this.dashboard.selectedTitle();
-      if (!t) return 0;
-      let c = 0;
-      if ((t.external_id ?? '') !== this.dashboard.titleName()) c++;
-      if ((t.settings?.crop_model ?? '') !== this.dashboard.selectedCropModel()) c++;
-      if ((t.settings?.rotation_model ?? '') !== this.dashboard.selectedRotationModel()) c++;
-      return c;
+      return this.dashboard.titleDirtyCount();
     }
 
     if (page === 'groups') {

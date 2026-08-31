@@ -14,8 +14,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-x3);
-  padding: var(--spacing-x2) var(--spacing-x4);
-  padding-bottom: 0;
+  // Same section rhythm as the left panel: 14px vertical / 16px horizontal.
+  padding: var(--spacing-x3-5) var(--spacing-x4) 0;
   color: var(--text-base);
   max-width: 100%;
 
@@ -54,7 +54,7 @@
   }
 
   .flag {
-    padding: var(--spacing-x3-5) var(--spacing-x3);
+    padding: var(--spacing-x3) var(--spacing-x3-5);
     border-radius: var(--spacing-x2);
     @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5));
     color: var(--text-secondary);
@@ -107,39 +107,14 @@
     }
   }
 
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-x2);
-    max-width: 100%;
-
-    .view-switch {
-      width: 100%;
-    }
-
-    .action.add-crop {
-      width: 100%;
-      border-style: dashed;
-      color: var(--primary);
-
-      .icon {
-        color: var(--primary);
-      }
-
-      &:hover {
-        background-color: var(--bg-selected);
-        border-color: var(--primary);
-      }
-    }
-  }
-
   .scope-row {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
     gap: var(--spacing-x3);
     margin-top: var(--spacing-x1);
-    @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-bright));
+    // 13px — the compact control size shared with chips + segmented controls.
+    @include styles.font(400, 13px, var(--spacing-x5), var(--text-bright));
 
     .scope-label {
       white-space: nowrap;
@@ -153,13 +128,14 @@
 
       .radio-value {
         white-space: nowrap;
+        @include styles.font(400, 13px, var(--spacing-x5), var(--text-secondary));
       }
     }
   }
 }
 
 .border-bottom {
-  padding-bottom: var(--spacing-x3);
+  padding-bottom: var(--spacing-x3-5);
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -167,10 +143,45 @@
   border-left: 1px solid var(--border-color);
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-x2);
+  max-width: 100%;
+
+  .action.add-crop {
+    width: 100%;
+    border-style: dashed;
+    color: var(--primary);
+
+    .icon {
+      color: var(--primary);
+    }
+
+    &:hover {
+      background-color: var(--bg-selected);
+      border-color: var(--primary);
+    }
+  }
+}
+
+// Extra breathing room between the rotation block and "Přidat výřez".
+.top .actions {
+  margin-top: var(--spacing-x2);
+}
+
 .middle {
   flex: 1;
-  padding-top: var(--spacing-x1);
 
+  .no-crop-hint {
+    display: block;
+    padding: var(--spacing-x6) var(--spacing-x4);
+    text-align: center;
+    @include styles.font(400, 13px, var(--spacing-x5), var(--text-bright));
+  }
+
+  // "Výřez" is a section peer of the top "Sken" header — same h1 size
+  // (inherited) and the same 14px offset from its divider.
   .header {
     flex-direction: row;
     align-items: center;
@@ -277,7 +288,7 @@
     &:focus {
       border-color: var(--primary);
       outline: none;
-      box-shadow: 0 0 0 3px #0080A81A;
+      box-shadow: 0 0 0 3px var(--primary-glow);
     }
   }
 
@@ -325,8 +336,74 @@
   }
 }
 
+.angle-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-x3);
+}
+
 .angle-wrapper {
-  width: fit-content;
+  flex-shrink: 0;
+  width: 100px;
+}
+
+.angle-slider {
+  flex: 1;
+  min-width: 0;
+  height: var(--spacing-x8); // comfortable hit area around the 4px track
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--bg-contrast);
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: var(--spacing-x4);
+    height: var(--spacing-x4);
+    margin-top: -6px;
+    border-radius: 50%;
+    background: var(--bg-base);
+    border: 2px solid var(--primary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    transition: box-shadow .15s ease;
+  }
+
+  &:hover::-webkit-slider-thumb,
+  &:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px var(--primary-glow);
+  }
+
+  &::-moz-range-track {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--bg-contrast);
+  }
+
+  &::-moz-range-thumb {
+    width: var(--spacing-x3);
+    height: var(--spacing-x3);
+    border-radius: 50%;
+    background: var(--bg-base);
+    border: 2px solid var(--primary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    transition: box-shadow .15s ease;
+  }
+
+  &:hover::-moz-range-thumb,
+  &:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 3px var(--primary-glow);
+  }
 }
 
 // Native arrows hidden
@@ -347,7 +424,9 @@ input[type=number] {
 // ========== ULOŽIT VŠE ==========
 .footer {
   width: 100%;
-  padding: var(--spacing-x2) var(--spacing-x4);
+  // 6px vertical + 44px button = 56px, so the footer's top border lines up
+  // with the canvas bottom bar (fixed 56px) next to it.
+  padding: var(--spacing-x1-5) var(--spacing-x4);
   border-top: 1px solid var(--border-color);
 
   .button {
@@ -356,10 +435,10 @@ input[type=number] {
   }
 
   .read-mode-note {
-    // Match the save button's vertical footprint (padding x2 + line-height x6)
-    // so the footer keeps the same height and the bottom bar stays on one line.
+    // Match the save button's 44px footprint (line-height x6 + padding x2-5)
+    // so the footer keeps the same height in read-only mode.
     @include styles.font(400, var(--font-size-x1-5), var(--spacing-x6), var(--text-secondary));
-    padding: var(--spacing-x2) 0;
+    padding: var(--spacing-x2-5) 0;
     text-align: center;
   }
 }

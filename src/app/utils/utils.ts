@@ -44,9 +44,10 @@ export const getRelativeDate = (input: string): string => {
   if (days === 1) return 'včera';
   if (days < 30) return `před ${days} dny`;
 
-  const months = Math.floor(days / 30);
-  if (months === 1) return 'před měsícem';
-  if (months < 12) return `před ${months} měsíci`;
+  if (days < 365) {
+    const months = Math.max(1, Math.floor(days / 30));
+    return months === 1 ? 'před měsícem' : `před ${months} měsíci`;
+  }
 
   const years = Math.floor(days / 365);
   return years === 1 ? 'před rokem' : `před ${years} lety`;

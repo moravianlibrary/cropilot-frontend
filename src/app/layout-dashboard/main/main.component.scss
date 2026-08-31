@@ -146,13 +146,13 @@
 
       thead {
         tr {
-          background-color: #E1E6EC;
+          background-color: var(--bg-table-header);
 
           th {
             @include styles.font(500, 13px, var(--spacing-x4), var(--text-light));
             text-align: left;
             padding-block: var(--spacing-x2-5);
-            background-color: #E1E6EC;
+            background-color: var(--bg-table-header);
             border-bottom: 1px solid var(--border-color);
           }
 
@@ -346,38 +346,38 @@
             }
 
             .info {
-              color: #08203C;
-              background-color: #007BFF1A;
+              color: var(--tag-info-text);
+              background-color: var(--tag-info-bg);
 
               .icon {
-                color: #0C3D77;
+                color: var(--tag-info-icon);
               }
             }
 
             .success {
-              color: #00310D;
-              background-color: #34C7591A;
+              color: var(--tag-success-text);
+              background-color: var(--tag-success-bg);
 
               .icon {
-                color: #3F764D;
+                color: var(--tag-success-icon);
               }
             }
-            
+
             .pending {
-              color: #362000;
-              background-color: #FF95001A;
+              color: var(--tag-pending-text);
+              background-color: var(--tag-pending-bg);
 
               .icon {
-                color: #775A32;
+                color: var(--tag-pending-icon);
               }
             }
 
             .error {
-              color: #390400;
-              background-color: #D5372C1A;
+              color: var(--tag-error-text);
+              background-color: var(--tag-error-bg);
 
               .icon {
-                color: #853D38;
+                color: var(--tag-error-icon);
               }
             }
 
@@ -637,7 +637,7 @@
   gap: var(--spacing-x2);
   flex-wrap: wrap;
   padding: var(--spacing-x2) var(--spacing-x6);
-  background-color: #E1E6EC;
+  background-color: var(--bg-table-header);
   border-top: 1px solid var(--border-light);
   border-radius: 0 0 var(--spacing-x2) var(--spacing-x2);
 
@@ -654,59 +654,8 @@
     @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-base));
   }
 
-  .info    { color: #08203C; background-color: #007BFF1A; .icon { color: #0C3D77; } }
-  .success { color: #00310D; background-color: #34C7591A; .icon { color: #3F764D; } }
-  .pending { color: #362000; background-color: #FF95001A; .icon { color: #775A32; } }
-  .error   { color: #390400; background-color: #D5372C1A; .icon { color: #853D38; } }
-}
-
-// Row action (…) dropdown menu — rendered in a CDK overlay portal.
-::ng-deep .row-action-menu {
-  min-width: 190px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-x0-5);
-  padding: var(--spacing-x1-5);
-  background-color: var(--bg-base);
-  border: 1px solid var(--border-color);
-  border-radius: var(--spacing-x2-5);
-  box-shadow: 0 8px 24px #0A0D1018;
-
-  .menu-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-x2-5);
-    padding: var(--spacing-x2) var(--spacing-x2-5);
-    border-radius: var(--spacing-x1-5);
-    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
-    user-select: none;
-
-    .icon {
-      display: inline-flex;
-      color: var(--icon-gray);
-    }
-
-    &:hover {
-      cursor: pointer;
-      background-color: var(--bg-bright);
-    }
-
-    &.red {
-      color: var(--text-destructive);
-
-      .icon {
-        color: var(--text-destructive);
-      }
-
-      &:hover {
-        background-color: var(--bg-color-error);
-      }
-    }
-  }
-
-  .menu-divider {
-    height: 1px;
-    margin: var(--spacing-x1) var(--spacing-x1-5);
-    background-color: var(--border-light);
-  }
+  .info    { color: var(--tag-info-text); background-color: var(--tag-info-bg); .icon { color: var(--tag-info-icon); } }
+  .success { color: var(--tag-success-text); background-color: var(--tag-success-bg); .icon { color: var(--tag-success-icon); } }
+  .pending { color: var(--tag-pending-text); background-color: var(--tag-pending-bg); .icon { color: var(--tag-pending-icon); } }
+  .error   { color: var(--tag-error-text); background-color: var(--tag-error-bg); .icon { color: var(--tag-error-icon); } }
 }

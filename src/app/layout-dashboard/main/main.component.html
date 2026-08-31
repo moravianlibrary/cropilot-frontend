@@ -62,7 +62,7 @@
           </colgroup>
           <thead>
             <tr>
-              @if (isAdmin) { <th></th> }
+              @if (isAdmin) { <th><span class="visually-hidden">Akce</span></th> }
               <th>Název skupiny</th>
               <th>Ořezový model</th>
               <th>Rotační</th>
@@ -242,9 +242,9 @@
                     <div class="empty-state">
                       <span>Nenalezeny žádné skupiny</span>
                       @if (dashboard.searchGroups()) {
-                        <span class="empty-action" (click)="clearSearch()">Zrušit hledání</span>
+                        <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Zrušit hledání</span>
                       } @else if (isAdmin) {
-                        <span class="empty-action" (click)="dashboard.createGroupDialog()">Vytvořit skupinu</span>
+                        <span class="empty-action" (click)="dashboard.createGroupDialog()" (keydown.enter)="dashboard.createGroupDialog()" (keydown.space)="dashboard.createGroupDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Vytvořit skupinu</span>
                       }
                     </div>
                   </td>
@@ -378,7 +378,7 @@
           </colgroup>
           <thead>
             <tr>
-              @if (seeActions) { <th></th> }
+              @if (seeActions) { <th><span class="visually-hidden">Akce</span></th> }
               <th>
                 <span
                   class="sort-wrapper"
@@ -415,6 +415,7 @@
                   [cdkConnectedOverlayPanelClass]="'crop-model-dropdown-wrapper'"
                   [cdkConnectedOverlayOrigin]="cropModelDropdown"
                   [cdkConnectedOverlayOpen]="cropModelDropdownOpen"
+                  [cdkConnectedOverlayPush]="true"
                   (overlayOutsideClick)="cropModelDropdownOpen = false"
                 >
                   <div
@@ -454,6 +455,7 @@
                   [cdkConnectedOverlayPanelClass]="'rotation-model-dropdown-wrapper'"
                   [cdkConnectedOverlayOrigin]="rotationModelDropdown"
                   [cdkConnectedOverlayOpen]="rotationModelDropdownOpen"
+                  [cdkConnectedOverlayPush]="true"
                   (overlayOutsideClick)="rotationModelDropdownOpen = false"
                 >
                   <div
@@ -493,6 +495,7 @@
                   [cdkConnectedOverlayPanelClass]="'state-dropdown-wrapper'"
                   [cdkConnectedOverlayOrigin]="stateDropdown"
                   [cdkConnectedOverlayOpen]="stateDropdownOpen"
+                  [cdkConnectedOverlayPush]="true"
                   (overlayOutsideClick)="stateDropdownOpen = false"
                 >
                   <div
@@ -616,6 +619,9 @@
                         <span
                           class="copy-id"
                           (click)="copyId(title._id, $event)"
+                          (keydown.enter)="copyId(title._id, $event)"
+                          (keydown.space)="copyId(title._id, $event)"
+                          [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                           [title]="copiedId() === title._id ? 'Zkopírováno!' : 'Kopírovat celé ID'"
                         >
                           <app-icon name="copy" [size]="14" />
@@ -657,9 +663,9 @@
                     <div class="empty-state">
                       <span>Nenalezeny žádné tituly</span>
                       @if (dashboard.searchTitles() || activeStateFilterLabel) {
-                        <span class="empty-action" (click)="clearSearch()">Zrušit hledání a filtry</span>
+                        <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Zrušit hledání a filtry</span>
                       } @else if (auth.canUpload()) {
-                        <span class="empty-action" (click)="dashboard.createTitleDialog()">Vytvořit titul</span>
+                        <span class="empty-action" (click)="dashboard.createTitleDialog()" (keydown.enter)="dashboard.createTitleDialog()" (keydown.space)="dashboard.createTitleDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Vytvořit titul</span>
                       }
                     </div>
                   </td>
@@ -765,7 +771,7 @@
           </colgroup>
           <thead>
             <tr>
-              <th></th>
+              <th><span class="visually-hidden">Akce</span></th>
               <th>Jméno</th>
               <th>E-mail</th>
               <th>Práva</th>
@@ -898,9 +904,9 @@
                     <div class="empty-state">
                       <span>Nenalezeni žádní uživatelé</span>
                       @if (dashboard.searchUsers()) {
-                        <span class="empty-action" (click)="clearSearch()">Zrušit hledání</span>
+                        <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Zrušit hledání</span>
                       } @else {
-                        <span class="empty-action" (click)="dashboard.createUserDialog()">Vytvořit uživatele</span>
+                        <span class="empty-action" (click)="dashboard.createUserDialog()" (keydown.enter)="dashboard.createUserDialog()" (keydown.space)="dashboard.createUserDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Vytvořit uživatele</span>
                       }
                     </div>
                   </td>

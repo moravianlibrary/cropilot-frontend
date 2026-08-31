@@ -56,7 +56,8 @@
     @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-bright));
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: var(--spacing-x1);
+    // 6px label→control gap, same as the right panel's section labels.
+    margin-bottom: var(--spacing-x1-5);
   }
 
   .all-filters-wrapper {
@@ -104,9 +105,20 @@
         }
       }
 
+      .filter:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 1px;
+      }
+
       .selected-filter {
         border-color: var(--primary);
         background-color: var(--bg-selected);
+        color: var(--primary);
+        font-weight: 500;
+
+        .filter-number {
+          color: var(--primary);
+        }
       }
 
       .disabled-filter {
@@ -136,7 +148,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-x3);
-  padding: var(--spacing-x3) var(--spacing-x4);
+  padding: var(--spacing-x3-5) var(--spacing-x4);
   width: 100%;
   // height: 100%;
   // overflow-y: hidden;
@@ -213,7 +225,6 @@
       transform: translateY(50%);
       background-color: var(--bg-base);
       @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-base));
-      font-family: 'Karla', sans-serif;
       padding: var(--spacing-x2) var(--spacing-x3);
       border-radius: var(--spacing-x1);
       display: inline-block;
@@ -246,7 +257,7 @@
     position: absolute;
     bottom: var(--spacing-x2);
     left: var(--spacing-x2);
-    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
+    @include styles.font(500, 13px, var(--spacing-x4), var(--text-base));
     background-color: var(--bg-base);
     padding-inline: var(--spacing-x1);
     height: var(--spacing-x4);
@@ -268,7 +279,7 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 
     .scan-name {
-      @include styles.font(400, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
+      @include styles.font(400, 13px, var(--spacing-x4), var(--text-base));
       background-color: var(--bg-base);
       padding-inline: var(--spacing-x1);
       border-radius: var(--spacing-x1);

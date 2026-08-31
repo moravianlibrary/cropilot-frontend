@@ -271,7 +271,21 @@
 
       <span class="properties">
         <h2>Otáčení (ve °)</h2>
-        <span class="input-wrapper angle-wrapper">
+        <span class="angle-row">
+          <input
+            #angleSlider
+            class="angle-slider"
+            type="range"
+            min="-45"
+            max="45"
+            step="0.1"
+            aria-label="Otáčení výřezu ve stupních"
+            title="Dvojklikem vrátíte na 0°"
+            [value]="editor.selectedPage.angle"
+            (input)="onAngleSliderInput(angleSlider)"
+            (dblclick)="onAngleSliderInput(angleSlider, 0)"
+          />
+          <span class="input-wrapper angle-wrapper">
           <input
             #angleInput
             title="Kladné stupně otáčí výřez po směru hodinových ručiček"
@@ -320,9 +334,12 @@
               <app-icon name="arrow-down-in-rect" [size]="14"></app-icon>
             </span>
           </span>
+          </span>
         </span>
       </span>
     </span>
+  } @else if (editor.currentPages.length) {
+    <span class="no-crop-hint">Vyberte výřez kliknutím na obdélník ve skenu</span>
   }
 </div>
 

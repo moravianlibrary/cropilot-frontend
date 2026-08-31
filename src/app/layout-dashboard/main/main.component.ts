@@ -46,58 +46,6 @@ export class MainComponent {
     { label: 'Zobrazení skupiny', icon: 'open-folder', klass: 'error' },
   ];
 
-  // ========== ROW ACTION MENU ==========
-  // Tracks which table row's action (…) menu is open, keyed by entity id.
-  openRowMenu = signal<string | null>(null);
-
-  toggleRowMenu(id: string): void {
-    this.openRowMenu.update(current => (current === id ? null : id));
-  }
-
-  closeRowMenu(): void {
-    this.openRowMenu.set(null);
-  }
-
-  // Groups — seed the selected detail the dialog builders read, then open.
-  groupDetail(group: Group): void {
-    this.closeRowMenu();
-    this.dashboard.openGroupDetail(group);
-  }
-
-  editGroup(group: Group): void {
-    this.closeRowMenu();
-    this.dashboard.selectedGroupDetail.set(group);
-    this.dashboard.editGroupDialog();
-  }
-
-  deleteGroup(group: Group): void {
-    this.closeRowMenu();
-    this.dashboard.selectedGroupDetail.set(group);
-    this.dashboard.deleteGroupDialog();
-  }
-
-  // Users — seed selection + form fields the edit dialog reads, then open.
-  userDetail(user: User): void {
-    this.closeRowMenu();
-    this.dashboard.openUserDetail(user);
-  }
-
-  editUser(user: User): void {
-    this.closeRowMenu();
-    this.dashboard.selectedUser.set(user);
-    this.dashboard.userFullname.set(user.full_name);
-    this.dashboard.userEmail.set(user.email);
-    this.dashboard.userNameError.set('');
-    this.dashboard.userEmailError.set('');
-    this.dashboard.editUserDialog();
-  }
-
-  deleteUser(user: User): void {
-    this.closeRowMenu();
-    this.dashboard.selectedUser.set(user);
-    this.dashboard.deleteUserDialog();
-  }
-
   // Server-side titles paging/filter state
   private currentGroupId = '';
   private titlesSearchDebounce?: ReturnType<typeof setTimeout>;
