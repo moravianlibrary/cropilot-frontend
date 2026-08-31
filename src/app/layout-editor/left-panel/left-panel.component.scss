@@ -22,7 +22,7 @@
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--border-color);
-    padding: var(--spacing-x2) var(--spacing-x4);
+    padding: var(--spacing-x3-5) var(--spacing-x4);
 
     .title {
       display: flex;
@@ -30,51 +30,77 @@
       gap: var(--spacing-x3);
 
       .icon {
-        color: var(--icon-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--spacing-x8-5);
+        height: var(--spacing-x8-5);
+        border: 1px solid var(--border-tertiary-color);
+        border-radius: var(--spacing-x2);
+        color: var(--icon-gray);
 
         &:hover {
-          cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+          cursor: pointer;
+          border-color: var(--primary);
+          color: var(--primary);
         }
       }
 
       .clickable {
-        cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+        cursor: pointer;
       }
     }
   }
 
   h2 {
-    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-bright));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     margin-bottom: var(--spacing-x1);
   }
 
   .all-filters-wrapper {
-    padding: var(--spacing-x3) var(--spacing-x4);
+    padding: var(--spacing-x3-5) var(--spacing-x4);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-x3);
+    gap: var(--spacing-x3-5);
 
     .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--spacing-x2);
+      gap: var(--spacing-x1-5);
       max-width: 100%;
 
       .filter {
-        @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
-        padding: var(--spacing-x1) var(--spacing-x2);
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-x1-5);
+        @include styles.font(400, 13px, var(--spacing-x5), var(--text-secondary));
+        padding: var(--spacing-x1-5) var(--spacing-x3);
         background-color: var(--bg-base);
         border: 1px solid var(--border-tertiary-color);
-        border-radius: var(--spacing-x2);
+        border-radius: 999px;
         white-space: nowrap;
 
         &:hover {
-          cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+          cursor: pointer;
+          border-color: var(--primary);
+        }
+
+        .dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          flex-shrink: 0;
+
+          &.warning { background-color: var(--status-icon-warning); }
+          &.edited  { background-color: var(--status-icon-edited); }
+          &.success { background-color: var(--status-icon-success); }
         }
 
         .filter-number {
-          @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+          @include styles.font(400, 13px, var(--spacing-x5), var(--text-light));
         }
       }
 
@@ -88,6 +114,14 @@
         color: var(--text-label-bright);
         border-color: var(--border-color);
         background-color: #8099B30D;
+
+        .dot {
+          background-color: var(--text-disabled) !important;
+        }
+
+        .filter-number {
+          color: var(--text-label-bright);
+        }
       }
     }
   }
@@ -118,13 +152,13 @@
   width: 100%;
   background-color: var(--bg-main-bright);
   border: 1px solid var(--border-color);
-  border-radius: var(--spacing-x2);
+  border-radius: var(--spacing-x2-5);
   position: relative;
   overflow: hidden;
   container-type: inline-size;
 
   &:hover {
-    cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+    cursor: pointer;
     background-color: var(--bg-contrast);
   }
 
@@ -262,9 +296,10 @@
 }
 
 .selected {
-  background-color: var(--bg-contrast);
-  border: 1px solid var(--primary);
-  outline: 5px solid var(--primary);
+  background-color: var(--bg-selected);
+  border-color: var(--primary);
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
 }
 
 app-loader { margin-top: var(--spacing-x5); }

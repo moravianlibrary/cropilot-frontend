@@ -17,6 +17,9 @@
       <app-icon name="arrow-right" [size]="16" />
     </span>
   </span>
+  @if (editor.displayedImagesFinal().length) {
+    <span class="scan-counter">Sken {{ editor.currentIndex() + 1 }} z {{ editor.displayedImagesFinal().length }}</span>
+  }
 </div>
 
 <div class="middle-part button-group">

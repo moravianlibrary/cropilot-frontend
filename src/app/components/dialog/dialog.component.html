@@ -135,14 +135,18 @@
               </section>
 
               <section class="settings-block">
-                <h3>Barva clony</h3>
-                <app-segmented-control
-                  ariaLabel="Barva clony"
-                  variant="swatches"
-                  [options]="dimColorOptions"
-                  [value]="editor.dimRadio()"
-                  (valueChange)="setDimColor($event)"
-                />
+                <h3>Clona</h3>
+
+                <div class="settings-row">
+                  <div class="sublabel">Barva</div>
+                  <app-segmented-control
+                    ariaLabel="Barva clony"
+                    variant="swatches"
+                    [options]="dimColorOptions"
+                    [value]="editor.dimRadio()"
+                    (valueChange)="setDimColor($event)"
+                  />
+                </div>
               </section>
             </div>
           }
@@ -208,33 +212,33 @@
       @if (dialogContentType === 'shortcuts') {
         <div class="shortcuts-content-wrapper">
           <table cellspacing="0" cellpadding="0">
-            @if (isAdmin) { <tr><th>Ukazovat původní predikce</th><td>J</td></tr> }
+            @if (isAdmin) { <tr><th>Ukazovat původní predikce</th><td><kbd>J</kbd></td></tr> }
             @if (canWriteTitle) {
-              <tr><th>Vybrat výřez</th><td>1, 2</td></tr>
-              <tr><th>Vybrat další výřez</th><td>Tab</td></tr>
-              <tr><th>Vybrat při překrývání ten druhý výřez</th><td>Shift + MouseLeftClick</td></tr>
-              <tr><th>Zrušit výběr výřezu</th><td>Esc</td></tr>
-              <tr><th>Smazat výřez</th><td>Backspace, Delete</td></tr>
-              <tr><th>Přidat výřez</th><td>P</td></tr>
-              <tr><th>Změnit pozici výřezu (X, Y)</th><td>←, →, ↑, ↓</td></tr>
-              <tr><th>Změnit šířku / výšku výřezu</th><td>Shift + ←, →, ↑, ↓</td></tr>
-              <tr><th>Otočit výřez</th><td>A, S</td></tr>
-              <tr><th>Otočit sken o -90° / 0° / 90° / 180°</th><td>D, F, G, H</td></tr>
-              <tr><th>Přepnout zobrazení mřížky</th><td>M</td></tr>
-              <tr><th>Přepnout zobrazení obrysu</th><td>O</td></tr>
-              <tr><th>Přepnout barvu clony</th><td>C</td></tr>
+              <tr><th>Vybrat výřez</th><td><kbd>1, 2</kbd></td></tr>
+              <tr><th>Vybrat další výřez</th><td><kbd>Tab</kbd></td></tr>
+              <tr><th>Vybrat při překrývání ten druhý výřez</th><td><kbd>Shift + MouseLeftClick</kbd></td></tr>
+              <tr><th>Zrušit výběr výřezu</th><td><kbd>Esc</kbd></td></tr>
+              <tr><th>Smazat výřez</th><td><kbd>Backspace, Delete</kbd></td></tr>
+              <tr><th>Přidat výřez</th><td><kbd>P</kbd></td></tr>
+              <tr><th>Změnit pozici výřezu (X, Y)</th><td><kbd>←, →, ↑, ↓</kbd></td></tr>
+              <tr><th>Změnit šířku / výšku výřezu</th><td><kbd>Shift + ←, →, ↑, ↓</kbd></td></tr>
+              <tr><th>Otočit výřez</th><td><kbd>A, S</kbd></td></tr>
+              <tr><th>Otočit sken o -90° / 0° / 90° / 180°</th><td><kbd>D, F, G, H</kbd></td></tr>
+              <tr><th>Přepnout zobrazení mřížky</th><td><kbd>M</kbd></td></tr>
+              <tr><th>Přepnout zobrazení obrysu</th><td><kbd>O</kbd></td></tr>
+              <tr><th>Přepnout barvu clony</th><td><kbd>C</kbd></td></tr>
             }
-            @if (canWriteTitle) { <tr><th>Přiblížit / oddálit / vybraný výřez / reset</th><td>Q, W, E, R</td></tr> }
-            @else { <tr><th>Přiblížit / oddálit / reset</th><td>Q, W, R</td></tr> }
-            <tr><th>Předchozí / další sken</th><td>←, ↑, PageDown / Enter, →, ↓, PageUp, B</td></tr>
-            <tr><th>První / poslední sken</th><td>Home, End</td></tr>
-            <tr><th>Přepnout filter</th><td>F1, F2, F3, F4</td></tr>
-            <tr><th>Přepnout filter počet výřezů</th><td>Alt / Cmd + 1, 2</td></tr>
+            @if (canWriteTitle) { <tr><th>Přiblížit / oddálit / vybraný výřez / reset</th><td><kbd>Q, W, E, R</kbd></td></tr> }
+            @else { <tr><th>Přiblížit / oddálit / reset</th><td><kbd>Q, W, R</kbd></td></tr> }
+            <tr><th>Předchozí / další sken</th><td><kbd>←, ↑, PageDown / Enter, →, ↓, PageUp, B</kbd></td></tr>
+            <tr><th>První / poslední sken</th><td><kbd>Home, End</kbd></td></tr>
+            <tr><th>Přepnout filter</th><td><kbd>F1, F2, F3, F4</kbd></td></tr>
+            <tr><th>Přepnout filter počet výřezů</th><td><kbd>Alt / Cmd + 1, 2</kbd></td></tr>
             @if (canWriteTitle) {
-              <tr><th>Reset mých změn ve skenu</th><td>Ctrl / Cmd + R</td></tr>
-              <tr><th>Uložit vše</th><td>Ctrl / Cmd + Enter</td></tr>
+              <tr><th>Reset mých změn ve skenu</th><td><kbd>Ctrl / Cmd + R</kbd></td></tr>
+              <tr><th>Uložit vše</th><td><kbd>Ctrl / Cmd + Enter</kbd></td></tr>
             }
-            <tr><th>Zobrazit klávesové zkratky</th><td>K</td></tr>
+            <tr><th>Zobrazit klávesové zkratky</th><td><kbd>K</kbd></td></tr>
           </table>
         </div>
       }

@@ -48,7 +48,7 @@
           cellspacing="0" cellpadding="0"
         >
           <colgroup>
-            @if (isAdmin) { <col style="width:70px"> }
+            @if (isAdmin) { <col style="width:52px"> }
             <col style="min-width:200px">
             <col style="min-width:124px">
             <col style="min-width:80px">
@@ -57,11 +57,12 @@
             <col [style]="`min-width:${isAdmin ? 232 : 120}px`">
             <col style="min-width:165px">
             <col style="min-width:175px">
+            <col style="width:44px">
             @if (tableHasScrollbar()) { <col style="width:12px"> }
           </colgroup>
           <thead>
             <tr>
-              @if (isAdmin) { <th>Akce</th> }
+              @if (isAdmin) { <th></th> }
               <th>Název skupiny</th>
               <th>Ořezový model</th>
               <th>Rotační</th>
@@ -108,6 +109,7 @@
                   </span>
                 </span>
               </th>
+              <th></th>
               @if (tableHasScrollbar()) { <th style="padding:0"></th> }
             </tr>
           </thead>
@@ -116,7 +118,7 @@
         <div class="table-body-y-scroll os-pending" #bodyScroll>
           <table class="table-body">
             <colgroup>
-              @if (isAdmin) { <col style="width:70px"> }
+              @if (isAdmin) { <col style="width:52px"> }
               <col style="min-width:200px">
               <col style="min-width:124px">
               <col style="min-width:80px">
@@ -125,6 +127,7 @@
               <col [style]="`min-width:${isAdmin ? 232 : 120}px`">
               <col style="min-width:165px">
               <col style="min-width:175px">
+              <col style="width:44px">
               @if (tableHasScrollbar()) { <col style="width:12px"> }
             </colgroup>
             <tbody>
@@ -143,18 +146,15 @@
                       <td class="actions-cell">
                         <div class="actions">
                           <span
-                            class="action-wrapper"
+                            class="button secondary action"
+                            title="Detail skupiny"
+                            (click)="$event.stopPropagation(); dashboard.openGroupDetail(group)"
                             (keydown.space)="$event.stopPropagation(); dashboard.openGroupDetail(group)"
                             (keydown.enter)="$event.stopPropagation(); dashboard.openGroupDetail(group)"
                             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                           >
-                            <span
-                              class="button secondary action"
-                              (click)="$event.stopPropagation(); dashboard.openGroupDetail(group)"
-                            >
-                              <span class="icon">
-                                <app-icon name="more-horizontal" [size]="14" />
-                              </span>
+                            <span class="icon">
+                              <app-icon name="more-horizontal" [size]="14" />
                             </span>
                           </span>
                         </div>
@@ -165,72 +165,102 @@
                     <td>{{ group.default_settings.rotation_model }}</td>
                     <td><span class="tag title-count">{{ group.title_count }}</span></td>
                     @if (isAdmin) {
-                      <td><app-tags-overflow [tags]="getTags(group)" /></td>
+                      <td>
+                        @if (getTags(group).length) {
+                          <app-tags-overflow [tags]="getTags(group)" />
+                        } @else {
+                          <span class="empty-cell">—</span>
+                        }
+                      </td>
                     }
                     <td>
-                      <div class="tags">
-                        @let permCounts = isAdmin ? getGroupPermissionsCounts(group.users) : {};
-                        @let permTypes = isAdmin ? getPermissionsTypes(permCounts) : group.permissions;
-                        @for (permType of permTypes; track permType) {
-                          @let isUploadTitle = permType === 'upload';
-                          @let isWriteTitle = permType === 'write';
-                          @let isReadTitle = permType === 'read_title';
-                          @let isReadGroup = permType === 'read_group';
-                          @if (isUploadTitle && (isAdmin ? permCounts['upload'] : true)) {
-                            <span class="tag permission success">
-                              <span class="icon">
-                                <app-icon name="settings" [size]="16" />
+                      @let permCounts = isAdmin ? getGroupPermissionsCounts(group.users) : {};
+                      @let permTypes = isAdmin ? getPermissionsTypes(permCounts) : group.permissions;
+                      @let anyGroupPerm = isAdmin ? (permCounts['upload'] || permCounts['write'] || permCounts['read_title'] || permCounts['read_group']) : group.permissions.length;
+                      @if (!anyGroupPerm) {
+                        <span class="empty-cell">—</span>
+                      } @else {
+                        <div class="tags">
+                          @for (permType of permTypes; track permType) {
+                            @let isUploadTitle = permType === 'upload';
+                            @let isWriteTitle = permType === 'write';
+                            @let isReadTitle = permType === 'read_title';
+                            @let isReadGroup = permType === 'read_group';
+                            @if (isUploadTitle && (isAdmin ? permCounts['upload'] : true)) {
+                              <span class="tag permission success" title="Správa">
+                                <span class="icon">
+                                  <app-icon name="settings" [size]="16" />
+                                </span>
+                                {{ isAdmin ? permCounts['upload'] : '' }}
                               </span>
-                              {{ isAdmin ? permCounts['upload'] : '' }}
-                            </span>
-                          }
-                          @if (isWriteTitle && (isAdmin ? permCounts['write'] : true)) {
-                            <span class="tag permission info">
-                              <span class="icon">
-                                <app-icon name="edit" [size]="16" />
+                            }
+                            @if (isWriteTitle && (isAdmin ? permCounts['write'] : true)) {
+                              <span class="tag permission info" title="Úpravy">
+                                <span class="icon">
+                                  <app-icon name="edit" [size]="16" />
+                                </span>
+                                {{ isAdmin ? permCounts['write'] : '' }}
                               </span>
-                              {{ isAdmin ? permCounts['write'] : '' }}
-                            </span>
-                          }
-                          @if (isReadTitle && (isAdmin ? permCounts['read_title'] : true)) {
-                            <span class="tag permission pending">
-                              <span class="icon">
-                                <app-icon name="book" [size]="16" />
+                            }
+                            @if (isReadTitle && (isAdmin ? permCounts['read_title'] : true)) {
+                              <span class="tag permission pending" title="Zobrazení titulů">
+                                <span class="icon">
+                                  <app-icon name="book" [size]="16" />
+                                </span>
+                                {{ isAdmin ? permCounts['read_title'] : '' }}
                               </span>
-                              {{ isAdmin ? permCounts['read_title'] : '' }}
-                            </span>
-                          }
-                          @if (isReadGroup && (isAdmin ? permCounts['read_group'] : true)) {
-                            <span class="tag permission error">
-                              <span class="icon">
-                                <app-icon name="open-folder" [size]="16" />
+                            }
+                            @if (isReadGroup && (isAdmin ? permCounts['read_group'] : true)) {
+                              <span class="tag permission error" title="Zobrazení skupiny">
+                                <span class="icon">
+                                  <app-icon name="open-folder" [size]="16" />
+                                </span>
+                                {{ isAdmin ? permCounts['read_group'] : '' }}
                               </span>
-                              {{ isAdmin ? permCounts['read_group'] : '' }}
-                            </span>
+                            }
                           }
-                        }
-                      </div>
+                        </div>
+                      }
                     </td>
                     <td>
                       @let created = getDate(group.created_at);
-                      <span class="date">{{ created[0] }}</span>{{ ' ' }}
-                      <span class="time">{{ created[1] }}</span>
+                      <span class="rel-date" [title]="created[0] + ' ' + created[1]">{{ getRelativeDate(group.created_at) }}</span>
                     </td>
                     <td>
                       @let modified = getDate(group.modified_at);
-                      <span class="date">{{ modified[0] }}</span>{{ ' ' }}
-                      <span class="time">{{ modified[1] }}</span>
+                      <span class="rel-date" [title]="modified[0] + ' ' + modified[1]">{{ getRelativeDate(group.modified_at) }}</span>
+                    </td>
+                    <td class="nav-arrow-cell">
+                      <span class="nav-arrow"><app-icon name="arrow-right" [size]="16" /></span>
                     </td>
                     @if (tableHasScrollbar()) { <td style="padding:0"></td> }
                   </tr>
                 }
               } @else {
                 <tr class="no-results">
-                  <td>Nenalezeny žádné skupiny</td>
+                  <td>
+                    <div class="empty-state">
+                      <span>Nenalezeny žádné skupiny</span>
+                      @if (dashboard.searchGroups()) {
+                        <span class="empty-action" (click)="clearSearch()">Zrušit hledání</span>
+                      } @else if (isAdmin) {
+                        <span class="empty-action" (click)="dashboard.createGroupDialog()">Vytvořit skupinu</span>
+                      }
+                    </div>
+                  </td>
                 </tr>
               }
             </tbody>
           </table>
+        </div>
+        <div class="table-legend">
+          <span class="legend-label">{{ `Práv${isAdmin ? 'a' : 'o'}` }}:</span>
+          @for (item of permLegend; track item.label) {
+            <span class="tag permission {{ item.klass }}">
+              <span class="icon"><app-icon [name]="item.icon" [size]="14" /></span>
+              {{ item.label }}
+            </span>
+          }
         </div>
       </div>
     </div>
@@ -309,6 +339,18 @@
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           />
         </label>
+        @if (activeStateFilterLabel) {
+          <span
+            class="filter-chip"
+            (click)="clearStateFilter()"
+            (keydown.enter)="clearStateFilter()"
+            (keydown.space)="clearStateFilter()"
+            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+          >
+            Stav: {{ activeStateFilterLabel }}
+            <span class="icon"><app-icon name="close" [size]="12" /></span>
+          </span>
+        }
       </span>
 
       <span class="total">{{ totalTitlesLabel }}</span>
@@ -323,7 +365,7 @@
           @let canUpload = auth.canUpload();
           @let seeActions = isAdmin || canUpload;
           <colgroup>
-            @if (seeActions) { <col [style]="`width:${isAdmin ? 110 : 70}px`"> }
+            @if (seeActions) { <col [style]="`width:${isAdmin ? 92 : 52}px`"> }
             <col style="min-width:230px">
             <col style="min-width:230px">
             <col style="min-width:140px">
@@ -331,11 +373,12 @@
             <col style="min-width:180px">
             <col style="min-width:165px">
             <col style="min-width:175px">
+            <col style="width:44px">
             @if (tableHasScrollbar()) { <col style="width:12px"> }
           </colgroup>
           <thead>
             <tr>
-              @if (seeActions) { <th>Akce</th> }
+              @if (seeActions) { <th></th> }
               <th>
                 <span
                   class="sort-wrapper"
@@ -361,10 +404,9 @@
                 <div class="filter-dropdown-title" (click)="toggleCropModelDropdown()">
                   Ořezový model
                   <span class="filter-icon-wrapper">
-                    <span class="icon filter-icon">
+                    <span class="icon filter-icon" [class.active]="selectedCropModel !== 'all'">
                       <app-icon name="filter" [size]="16" />
                     </span>
-                    @if (selectedCropModel !== 'all') { <span class="active"></span> }
                   </span>
                 </div>
 
@@ -401,10 +443,9 @@
                 <div class="filter-dropdown-title" (click)="toggleRotationModelDropdown()">
                   Rotační
                   <span class="filter-icon-wrapper">
-                    <span class="icon filter-icon">
+                    <span class="icon filter-icon" [class.active]="selectedRotationModel !== 'all'">
                       <app-icon name="filter" [size]="16" />
                     </span>
-                    @if (selectedRotationModel !== 'all') { <span class="active"></span> }
                   </span>
                 </div>
 
@@ -441,10 +482,9 @@
                 <div class="filter-dropdown-title" (click)="toggleStateDropdown()">
                   Stav
                   <span class="filter-icon-wrapper">
-                    <span class="icon filter-icon">
+                    <span class="icon filter-icon" [class.active]="selectedState !== 'all'">
                       <app-icon name="filter" [size]="16" />
                     </span>
-                    @if (selectedState !== 'all') { <span class="active"></span> }
                   </span>
                 </div>
 
@@ -518,6 +558,7 @@
                   </span>
                 </span>
               </th>
+              <th></th>
               @if (tableHasScrollbar()) { <th style="padding:0"></th> }
             </tr>
           </thead>
@@ -526,7 +567,7 @@
         <div class="table-body-y-scroll os-pending" #bodyScroll>
           <table class="table-body">
             <colgroup>
-              @if (seeActions) { <col [style]="`width:${isAdmin ? 110 : 70}px`"> }
+              @if (seeActions) { <col [style]="`width:${isAdmin ? 92 : 52}px`"> }
               <col style="min-width:230px">
               <col style="min-width:230px">
               <col style="min-width:140px">
@@ -534,6 +575,7 @@
               <col style="min-width:180px">
               <col style="min-width:165px">
               <col style="min-width:175px">
+              <col style="width:44px">
               @if (tableHasScrollbar()) { <col style="width:12px"> }
             </colgroup>
             <tbody>
@@ -552,39 +594,34 @@
                     @if (seeActions) {
                       <td class="actions-cell">
                         <div class="actions">
-                          @if (isAdmin) {
-                            <span
-                              class="action-wrapper"
-                              (click)="$event.stopPropagation(); dashboard.editTitleDialog(title)"
-                              (keydown.space)="$event.stopPropagation(); dashboard.editTitleDialog(title)"
-                              (keydown.enter)="$event.stopPropagation(); dashboard.editTitleDialog(title)"
-                              [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-                            >
-                              <span class="button secondary action">
-                                <span class="icon">
-                                  <app-icon name="edit" [size]="14" />
-                                </span>
-                              </span>
-                            </span>
-                          }
                           <span
-                            class="action-wrapper"
-                            (click)="$event.stopPropagation(); dashboard.deleteTitleDialog(title)"
-                            (keydown.space)="$event.stopPropagation(); dashboard.deleteTitleDialog(title)"
-                            (keydown.enter)="$event.stopPropagation(); dashboard.deleteTitleDialog(title)"
+                            class="button secondary action"
+                            title="Detail titulu"
+                            (click)="$event.stopPropagation(); dashboard.openTitleDetail(title)"
+                            (keydown.space)="$event.stopPropagation(); dashboard.openTitleDetail(title)"
+                            (keydown.enter)="$event.stopPropagation(); dashboard.openTitleDetail(title)"
                             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                           >
-                            <span class="button secondary action">
-                              <span class="icon">
-                                <app-icon name="delete" [size]="14" />
-                              </span>
+                            <span class="icon">
+                              <app-icon name="more-horizontal" [size]="14" />
                             </span>
                           </span>
                         </div>
                       </td>
                     }
                     <td>{{ title.external_id ?? title._id }}</td>
-                    <td>{{ title._id }}</td>
+                    <td>
+                      <span class="id-cell">
+                        <span class="mono" [title]="title._id">{{ shortId(title._id) }}</span>
+                        <span
+                          class="copy-id"
+                          (click)="copyId(title._id, $event)"
+                          [title]="copiedId() === title._id ? 'Zkopírováno!' : 'Kopírovat celé ID'"
+                        >
+                          <app-icon name="copy" [size]="14" />
+                        </span>
+                      </span>
+                    </td>
                     <td>{{ title.settings?.crop_model ?? 'Neznámý' }}</td>
                     <td>{{ title.settings?.rotation_model ?? 'Neznámý' }}</td>
                     <td>
@@ -600,19 +637,32 @@
                     </td>
                     <td>
                       @let created = getDate(title.created_at);
-                      <span class="date">{{ created[0] }}</span>{{ ' ' }}
-                      <span class="time">{{ created[1] }}</span>
+                      <span class="rel-date" [title]="created[0] + ' ' + created[1]">{{ getRelativeDate(title.created_at) }}</span>
                     </td>
                     <td>
                       @let modified = getDate(title.modified_at);
-                      <span class="date">{{ modified[0] }}</span>{{ ' ' }}
-                      <span class="time">{{ modified[1] }}</span>
+                      <span class="rel-date" [title]="modified[0] + ' ' + modified[1]">{{ getRelativeDate(title.modified_at) }}</span>
+                    </td>
+                    <td class="nav-arrow-cell">
+                      @if (canOpenTitle(title)) {
+                        <span class="nav-arrow"><app-icon name="arrow-right" [size]="16" /></span>
+                      }
                     </td>
                     @if (tableHasScrollbar()) { <td style="padding:0"></td> }
+                  </tr>
                 }
               } @else {
                 <tr class="no-results">
-                  <td>Nenalezeny žádné tituly</td>
+                  <td>
+                    <div class="empty-state">
+                      <span>Nenalezeny žádné tituly</span>
+                      @if (dashboard.searchTitles() || activeStateFilterLabel) {
+                        <span class="empty-action" (click)="clearSearch()">Zrušit hledání a filtry</span>
+                      } @else if (auth.canUpload()) {
+                        <span class="empty-action" (click)="dashboard.createTitleDialog()">Vytvořit titul</span>
+                      }
+                    </div>
+                  </td>
                 </tr>
               }
             </tbody>
@@ -705,16 +755,17 @@
           cellspacing="0" cellpadding="0"
         >
           <colgroup>
-            <col style="width:70px">
+            <col style="width:52px">
             <col style="min-width:200px">
             <col style="min-width:250px">
             <col style="min-width:200px">
             <col style="min-width:180px">
+            <col style="width:44px">
             @if (tableHasScrollbar()) { <col style="width:12px"> }
           </colgroup>
           <thead>
             <tr>
-              <th>Akce</th>
+              <th></th>
               <th>Jméno</th>
               <th>E-mail</th>
               <th>Práva</th>
@@ -738,6 +789,7 @@
                   </span>
                 </span>
               </th>
+              <th></th>
               @if (tableHasScrollbar()) { <th style="padding:0"></th> }
             </tr>
           </thead>
@@ -746,11 +798,12 @@
         <div class="table-body-y-scroll os-pending" #bodyScroll>
           <table class="table-body">
             <colgroup>
-              <col style="width:70px">
+              <col style="width:52px">
               <col style="min-width:200px">
               <col style="min-width:250px">
               <col style="min-width:200px">
               <col style="min-width:180px">
+              <col style="width:44px">
               @if (tableHasScrollbar()) { <col style="width:12px"> }
             </colgroup>
             <tbody>
@@ -768,16 +821,15 @@
                     <td class="actions-cell">
                       <div class="actions">
                         <span
-                          class="action-wrapper"
+                          class="button secondary action"
+                          title="Detail uživatele"
                           (click)="$event.stopPropagation(); dashboard.openUserDetail(user)"
                           (keydown.space)="$event.stopPropagation(); dashboard.openUserDetail(user)"
                           (keydown.enter)="$event.stopPropagation(); dashboard.openUserDetail(user)"
                           [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                         >
-                          <span class="button secondary action">
-                            <span class="icon">
-                              <app-icon name="more-horizontal" [size]="14" />
-                            </span>
+                          <span class="icon">
+                            <app-icon name="more-horizontal" [size]="14" />
                           </span>
                         </span>
                       </div>
@@ -794,57 +846,77 @@
                     </td>
                     <td>{{ user.email }}</td>
                     <td>
-                      <div class="tags">
-                        @let permTypes = getUserPermissions(user.permissions);
-                        @let isUploadTitle = permTypes.includes('upload');
-                        @let isWriteTitle = permTypes.includes('write');
-                        @let isReadTitle = permTypes.includes('read_title');
-                        @let isReadGroup = permTypes.includes('read_group');
-                        @if (isUploadTitle) {
-                          <span class="tag permission success">
-                            <span class="icon">
-                              <app-icon name="settings" [size]="16" />
+                      @let permTypes = getUserPermissions(user.permissions);
+                      @if (!permTypes.length) {
+                        <span class="empty-cell">—</span>
+                      } @else {
+                        <div class="tags">
+                          @if (permTypes.includes('upload')) {
+                            <span class="tag permission success" title="Správa">
+                              <span class="icon">
+                                <app-icon name="settings" [size]="16" />
+                              </span>
                             </span>
-                          </span>
-                        }
-                        @if (isWriteTitle) {
-                          <span class="tag permission info">
-                            <span class="icon">
-                              <app-icon name="edit" [size]="16" />
+                          }
+                          @if (permTypes.includes('write')) {
+                            <span class="tag permission info" title="Úpravy">
+                              <span class="icon">
+                                <app-icon name="edit" [size]="16" />
+                              </span>
                             </span>
-                          </span>
-                        }
-                        @if (isReadTitle) {
-                          <span class="tag permission pending">
-                            <span class="icon">
-                              <app-icon name="book" [size]="16" />
+                          }
+                          @if (permTypes.includes('read_title')) {
+                            <span class="tag permission pending" title="Zobrazení titulů">
+                              <span class="icon">
+                                <app-icon name="book" [size]="16" />
+                              </span>
                             </span>
-                          </span>
-                        }
-                        @if (isReadGroup) {
-                          <span class="tag permission error">
-                            <span class="icon">
-                              <app-icon name="open-folder" [size]="16" />
+                          }
+                          @if (permTypes.includes('read_group')) {
+                            <span class="tag permission error" title="Zobrazení skupiny">
+                              <span class="icon">
+                                <app-icon name="open-folder" [size]="16" />
+                              </span>
                             </span>
-                          </span>
-                        }
-                      </div>
+                          }
+                        </div>
+                      }
                     </td>
                     <td>
                       @let modified = getDate(user?.modified_at ?? '');
-                      <span class="date">{{ modified[0] }}</span>{{ ' ' }}
-                      <span class="time">{{ modified[1] }}</span>
+                      <span class="rel-date" [title]="modified[0] + ' ' + modified[1]">{{ getRelativeDate(user?.modified_at ?? '') }}</span>
+                    </td>
+                    <td class="nav-arrow-cell">
+                      <span class="nav-arrow"><app-icon name="arrow-right" [size]="16" /></span>
                     </td>
                     @if (tableHasScrollbar()) { <td style="padding:0"></td> }
                   </tr>
                 }
               } @else {
                 <tr class="no-results">
-                  <td>Nenalezeni žádní uživatelé</td>
+                  <td>
+                    <div class="empty-state">
+                      <span>Nenalezeni žádní uživatelé</span>
+                      @if (dashboard.searchUsers()) {
+                        <span class="empty-action" (click)="clearSearch()">Zrušit hledání</span>
+                      } @else {
+                        <span class="empty-action" (click)="dashboard.createUserDialog()">Vytvořit uživatele</span>
+                      }
+                    </div>
+                  </td>
                 </tr>
               }
             </tbody>
           </table>
+        </div>
+        <div class="table-legend">
+          <span class="legend-label">Práva:</span>
+          @for (item of permLegend; track item.label) {
+            <span class="tag permission {{ item.klass }}">
+              <span class="icon"><app-icon [name]="item.icon" [size]="14" /></span>
+              {{ item.label }}
+            </span>
+          }
         </div>
       </div>
     </div>

@@ -35,6 +35,23 @@ export const getDate = (input: string): string[] => {
     .split(' ');
 }
 
+export const getRelativeDate = (input: string): string => {
+  const then = new Date(input).getTime();
+  if (Number.isNaN(then)) return '';
+
+  const days = Math.floor((Date.now() - then) / 86400000);
+  if (days <= 0) return 'dnes';
+  if (days === 1) return 'včera';
+  if (days < 30) return `před ${days} dny`;
+
+  const months = Math.floor(days / 30);
+  if (months === 1) return 'před měsícem';
+  if (months < 12) return `před ${months} měsíci`;
+
+  const years = Math.floor(days / 365);
+  return years === 1 ? 'před rokem' : `před ${years} lety`;
+}
+
 export const checkEmailValidity = (email: string): boolean => {
   if (!email) return false;
 

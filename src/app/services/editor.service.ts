@@ -37,6 +37,7 @@ export class EditorService {
   sthWasEdited: boolean = false;
 
   mainImageItem = signal<ImageItem>({ _id: '', url: '', thumbnailUrl: '', edited: false, flags: [], pages: [] });
+  titleExternalId = signal<string>('');
   emptyImageItem: ImageItem = { _id: '', url: '', edited: false, flags: [], pages: [] };
   imgWasEdited = signal<boolean>(false);
 

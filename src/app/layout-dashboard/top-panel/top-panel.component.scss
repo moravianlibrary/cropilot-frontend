@@ -37,7 +37,7 @@
     @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-light));
 
     &:hover {
-      cursor: url('/assets/pointer-cursor.png') 6.5 0, pointer;
+      cursor: pointer;
     }
     
     .icon {
@@ -55,16 +55,22 @@
 .tabs {
   display: flex;
   align-items: center;
+  gap: var(--spacing-x0-5);
+  padding: var(--spacing-x0-7-5);
+  background-color: var(--bg-bright);
+  border-radius: 999px;
 
   .tab {
     display: flex;
     align-items: center;
     gap: var(--spacing-x2);
-    padding: var(--spacing-x2) var(--spacing-x3);
-    @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-light));
+    padding: var(--spacing-x1-5) var(--spacing-x3-5);
+    border-radius: 999px;
+    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+    transition: background-color .15s ease, color .15s ease;
 
     &:hover {
-      cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+      cursor: pointer;
       color: var(--primary);
 
       .icon {
@@ -73,8 +79,9 @@
     }
 
     &:focus-visible {
-      outline: 3px solid var(--primary);
-      border-radius: var(--spacing-x2);
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 999px;
     }
 
     .icon {
@@ -83,11 +90,24 @@
   }
 
   .active {
+    background-color: var(--bg-base);
+    box-shadow: 0 1px 3px #0A0D1014;
     color: var(--primary);
     font-weight: 500;
 
     .icon {
       color: var(--primary);
+    }
+  }
+
+  // On the titles page the "Správce skupin" tab stays active (white) but dimmed —
+  // the breadcrumb carries the location.
+  .active.dimmed {
+    color: var(--text-light);
+    font-weight: 400;
+
+    .icon {
+      color: var(--icon-gray);
     }
   }
 }

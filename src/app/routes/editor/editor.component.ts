@@ -86,6 +86,7 @@ export class EditorComponent {
 
         // Set tab title
         this.title.setTitle(`${res.external_id} | CROPILOT`);
+        editor.titleExternalId.set(res.external_id ?? '');
 
         // Set images
         const imgItems: ImageItem[] = res.scans.map(img => editor.normalizeImageForDisplay(img));

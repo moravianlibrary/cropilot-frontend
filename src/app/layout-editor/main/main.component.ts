@@ -19,7 +19,7 @@ export class MainComponent {
   private auth = inject(AuthService);
   private ui = inject(UiService);
 
-  private pointerCursor: string = "url('/assets/pointer-cursor.png') 6.5 0, pointer";
+  private pointerCursor: string = "pointer";
   private moveCursor: string = "url('/assets/move-cursor.png'), auto";
   private horizontalEdgeCursor: string = "url('/assets/horizontal-edge-cursor.png') 9.5 0, ew-resize";
   private verticalEdgeCursor: string = "url('/assets/vertical-edge-cursor.png') 0 9.5, ns-resize";

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { permissionDict, titleStateDict, titleStateFilterDict } from '../../app.config';
 import { Title, Group, GroupPage, Paginated, PagedQuery, Permission, PermissionType, SortField, SortState, TitlesQuery, User, UserInGroup } from '../../app.types';
-import { focusElement, getDate, waitForElement } from '../../utils/utils';
+import { focusElement, getDate, getRelativeDate, waitForElement } from '../../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, of, Subscription, switchMap, tap, throwError } from 'rxjs';
@@ -35,7 +35,68 @@ export class MainComponent {
   private paramsOnGroupId = new Subscription();
 
   getDate = getDate;
+  getRelativeDate = getRelativeDate;
   tableHasScrollbar = signal<boolean>(false);
+
+  // Legend of permission tags shown under the groups/users tables.
+  permLegend: { label: string; icon: string; klass: string }[] = [
+    { label: 'Správa', icon: 'settings', klass: 'success' },
+    { label: 'Úpravy', icon: 'edit', klass: 'info' },
+    { label: 'Zobrazení titulů', icon: 'book', klass: 'pending' },
+    { label: 'Zobrazení skupiny', icon: 'open-folder', klass: 'error' },
+  ];
+
+  // ========== ROW ACTION MENU ==========
+  // Tracks which table row's action (…) menu is open, keyed by entity id.
+  openRowMenu = signal<string | null>(null);
+
+  toggleRowMenu(id: string): void {
+    this.openRowMenu.update(current => (current === id ? null : id));
+  }
+
+  closeRowMenu(): void {
+    this.openRowMenu.set(null);
+  }
+
+  // Groups — seed the selected detail the dialog builders read, then open.
+  groupDetail(group: Group): void {
+    this.closeRowMenu();
+    this.dashboard.openGroupDetail(group);
+  }
+
+  editGroup(group: Group): void {
+    this.closeRowMenu();
+    this.dashboard.selectedGroupDetail.set(group);
+    this.dashboard.editGroupDialog();
+  }
+
+  deleteGroup(group: Group): void {
+    this.closeRowMenu();
+    this.dashboard.selectedGroupDetail.set(group);
+    this.dashboard.deleteGroupDialog();
+  }
+
+  // Users — seed selection + form fields the edit dialog reads, then open.
+  userDetail(user: User): void {
+    this.closeRowMenu();
+    this.dashboard.openUserDetail(user);
+  }
+
+  editUser(user: User): void {
+    this.closeRowMenu();
+    this.dashboard.selectedUser.set(user);
+    this.dashboard.userFullname.set(user.full_name);
+    this.dashboard.userEmail.set(user.email);
+    this.dashboard.userNameError.set('');
+    this.dashboard.userEmailError.set('');
+    this.dashboard.editUserDialog();
+  }
+
+  deleteUser(user: User): void {
+    this.closeRowMenu();
+    this.dashboard.selectedUser.set(user);
+    this.dashboard.deleteUserDialog();
+  }
 
   // Server-side titles paging/filter state
   private currentGroupId = '';
@@ -479,5 +540,58 @@ export class MainComponent {
 
   getUserPermissions(perms: Permission[]): PermissionType[] {
     return [...new Set(perms.flatMap(p => p.permission))];
+  }
+
+
+  // ========== SHARED CELL HELPERS ==========
+  // Shortened id for display (full id shown in tooltip + copyable).
+  shortId(id: string): string {
+    return id && id.length > 12 ? `${id.slice(0, 6)}…${id.slice(-4)}` : id;
+  }
+
+  copiedId = signal<string | null>(null);
+  private copiedIdTimer?: ReturnType<typeof setTimeout>;
+
+  copyId(id: string, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    navigator.clipboard?.writeText(id);
+    this.copiedId.set(id);
+    clearTimeout(this.copiedIdTimer);
+    this.copiedIdTimer = setTimeout(() => {
+      if (this.copiedId() === id) this.copiedId.set(null);
+    }, 1200);
+  }
+
+  // Active state filter shown as a removable chip next to the search field.
+  get activeStateFilterLabel(): string | null {
+    if (this.selectedState === 'all' || !this.selectedState) return null;
+    return this.titleStateDict[this.selectedState as keyof typeof titleStateDict] ?? this.selectedState;
+  }
+
+  clearStateFilter(): void {
+    this.selectedState = 'all';
+    this.loadTitles(1);
+  }
+
+  // Empty-state action: clear search (and titles filters) on the active list.
+  clearSearch(): void {
+    switch (this.dashboard.dashboardPage()) {
+      case 'groups':
+        this.dashboard.searchGroups.set('');
+        this.loadGroups(1);
+        break;
+      case 'titles':
+        this.dashboard.searchTitles.set('');
+        this.selectedState = 'all';
+        this.selectedCropModel = 'all';
+        this.selectedRotationModel = 'all';
+        this.loadTitles(1);
+        break;
+      case 'users':
+        this.dashboard.searchUsers.set('');
+        this.loadUsers(1);
+        break;
+    }
   }
 }

@@ -36,9 +36,9 @@ export class RightPanelComponent {
   ];
 
   orientationOptions: SegmentedControlOption[] = [
-    { value: 270, label: '90', ariaLabel: 'Otočit vlevo o 90°', icon: 'reset', iconSize: 12 },
+    { value: 270, label: '90', ariaLabel: 'Otočit vlevo o 90°', icon: 'reset', iconSize: 15 },
     { value: 0, label: '0°' },
-    { value: 90, label: '90', ariaLabel: 'Otočit vpravo o 90°', icon: 'forward', iconSize: 12 },
+    { value: 90, label: '90', ariaLabel: 'Otočit vpravo o 90°', icon: 'forward', iconSize: 15 },
     { value: 180, label: '180°' }
   ];
 

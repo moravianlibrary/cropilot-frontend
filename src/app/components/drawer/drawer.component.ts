@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
-import { getDate } from '../../utils/utils';
+import { getDate, getRelativeDate } from '../../utils/utils';
 import { permissionDict, titleStateDict } from '../../app.config';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
@@ -21,8 +21,71 @@ export class DrawerComponent {
   ui = inject(UiService);
 
   getDate = getDate;
+  getRelativeDate = getRelativeDate;
   permissionDict = permissionDict;
   titleStateDict = titleStateDict;
+
+  // Group detail API key masking.
+  showApiKey = signal<boolean>(false);
+
+  constructor() {
+    // Re-mask the API key whenever a different group detail is opened.
+    effect(() => {
+      this.dashboard.selectedGroupDetail();
+      this.showApiKey.set(false);
+    });
+  }
+
+  toggleApiKey(): void {
+    this.showApiKey.update(v => !v);
+  }
+
+  // Count of unsaved changes shown in the drawer footer.
+  dirtyCount = computed<number>(() => {
+    const page = this.ui.drawerContentType();
+
+    if (page === 'titles') {
+      const t = this.dashboard.selectedTitle();
+      if (!t) return 0;
+      let c = 0;
+      if ((t.external_id ?? '') !== this.dashboard.titleName()) c++;
+      if ((t.settings?.crop_model ?? '') !== this.dashboard.selectedCropModel()) c++;
+      if ((t.settings?.rotation_model ?? '') !== this.dashboard.selectedRotationModel()) c++;
+      return c;
+    }
+
+    if (page === 'groups') {
+      return (this.dashboard.groupNonmembersDataChanged() ? 1 : 0)
+        + this.dashboard.membersAdded().length
+        + this.dashboard.membersUpdated().length
+        + this.dashboard.membersRemoved().length;
+    }
+
+    if (page === 'users') {
+      let count = this.dashboard.userNonmembersDataChanged() ? 1 : 0;
+      const user = this.dashboard.selectedUser();
+      if (user) {
+        const before = new Map(user.permissions.map(p => [p.group_id, [...p.permission].sort().join(',')]));
+        const after = this.dashboard.userPermissions();
+        const afterIds = new Set(after.map(p => p.group_id));
+        for (const id of before.keys()) if (!afterIds.has(id)) count++;
+        for (const p of after) {
+          const b = before.get(p.group_id);
+          const now = [...p.permission].sort().join(',');
+          if (b === undefined || b !== now) count++;
+        }
+      }
+      return count;
+    }
+
+    return 0;
+  });
+
+  maskApiKey(key: string): string {
+    if (!key) return '';
+    if (key.length <= 8) return '••••••••';
+    return `${key.slice(0, 4)}••••••••••••${key.slice(-4)}`;
+  }
 
   copied: Record<string, boolean> = {};
   private copiedTimers: Record<string, number> = {};
@@ -37,7 +100,7 @@ export class DrawerComponent {
 
   drawerEditAction(): void {
     const dashboard = this.dashboard;
-    switch (dashboard.dashboardPage()) {
+    switch (this.ui.drawerContentType()) {
       case 'groups':
         dashboard.editGroupDialog();
         break;
@@ -49,13 +112,18 @@ export class DrawerComponent {
 
   drawerDeleteAction(): void {
     const dashboard = this.dashboard;
-    switch (dashboard.dashboardPage()) {
+    switch (this.ui.drawerContentType()) {
       case 'groups':
         dashboard.deleteGroupDialog();
         break;
       case 'users':
         dashboard.deleteUserDialog();
         break;
+      case 'titles': {
+        const title = dashboard.selectedTitle();
+        if (title) dashboard.deleteTitleDialog(title);
+        break;
+      }
     }
   }
 }

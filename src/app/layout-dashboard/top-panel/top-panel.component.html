@@ -50,6 +50,7 @@
       <span
         class="tab"
         [class.active]="['groups', 'titles'].includes(dashboardPage)"
+        [class.dimmed]="onTitlesPage"
         (click)="dashboard.navigateToGroups()"
         (keydown.space)="dashboard.navigateToGroups()"
         (keydown.enter)="dashboard.navigateToGroups()"

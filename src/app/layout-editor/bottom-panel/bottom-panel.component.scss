@@ -16,12 +16,22 @@
   transform: translate(-50%, -50%);
 }
 
+.left-part {
+  align-items: center;
+}
+
+.left-part .button, .middle-part .button {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+}
+
 .left-part .icon, .middle-part .icon {
   color: var(--icon-dark);
 }
 
-.mark-ok {
-  @include styles.font(400, var(--font-size-x1-5), var(--spacing-x4));
-  gap: var(--spacing-x2);
-  margin-left: var(--spacing-x3);
+.scan-counter {
+  margin-left: var(--spacing-x2);
+  white-space: nowrap;
+  @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
 }

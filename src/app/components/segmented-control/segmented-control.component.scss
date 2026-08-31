@@ -13,10 +13,11 @@
 
 .segmented-control {
   display: flex;
+  align-items: stretch;
   gap: var(--spacing-x0-5);
   width: 100%;
   padding: var(--spacing-x0-5);
-  border-radius: var(--spacing-x2);
+  border-radius: 999px;
   background: var(--bg-bright);
 
   &.fit {
@@ -35,39 +36,41 @@
   flex: 1 1 0;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-x1);
+  gap: var(--spacing-x1-5);
   min-width: 0;
-  min-height: var(--spacing-x7-5);
-  padding: 5px var(--spacing-x2);
+  height: 34px;
+  padding: 0 var(--spacing-x2);
   border: 1px solid transparent;
-  border-radius: var(--spacing-x1-5);
+  border-radius: 999px;
   background: transparent;
   white-space: nowrap;
-  cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
-  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
-  @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+  @include styles.font(400, 13px, var(--spacing-x4), var(--text-secondary));
 
   &:hover:not(.active, :disabled) {
     color: var(--text-secondary);
-    background: color-mix(in srgb, var(--bg-base) 48%, transparent);
+    background: var(--bg-base);
   }
 
   &:focus-visible {
     z-index: 2;
     outline: 2px solid var(--primary);
-    outline-offset: 1px;
+    outline-offset: -1px;
   }
 
-  &.active {
+  // Active pill matches the filter pills: light-blue bg + primary border + dark text.
+  &.active:not(.has-color) {
     z-index: 1;
-    color: var(--text-base);
-    border-color: var(--border-tertiary-color);
-    background: var(--bg-base);
-    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-selected);
+    border-color: var(--primary);
+    font-weight: 600;
   }
 
   &:disabled {
     color: var(--text-disabled);
+    background: transparent;
     cursor: default;
   }
 }
@@ -87,12 +90,15 @@
 }
 
 .swatches {
+  border-radius: var(--spacing-x2);
+
   .segment {
     overflow: hidden;
+    height: var(--spacing-x8);
+    border-radius: var(--spacing-x1-5);
   }
 
   .segment.has-color {
-    min-height: var(--spacing-x7-5);
     border-color: rgba(10, 13, 16, .12);
     background: var(--segment-color);
     box-shadow: none;

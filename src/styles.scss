@@ -21,8 +21,9 @@
   --bg-main-bright: #DFE5EC;
   --bg-light: #E4E7E9;
   --bg-contrast: #BFCCD9;
-  --bg-destructive: #FF3A30;
-  --bg-destructive-hover: #D92C23;
+  --bg-destructive: #D5372C;
+  --bg-destructive-hover: #B02E24;
+  --bg-canvas: #1C2126;
   --border-color: #DFE5EC;
   --border-light: #EFF2F5;
   --border-tertiary-pressed: #8099B3;
@@ -31,7 +32,7 @@
   --text-base: #0A0D10;
   --text-secondary: #263340;
   --text-tertiary: #394C60;
-  --text-destructive: #FF3A30;
+  --text-destructive: #D5372C;
   --text-destructive-disabled: #9FB2C6;
   --text-light: #4C6580;
   --text-white: #FFFFFF;
@@ -44,16 +45,16 @@
   --icon-gray: #4C6580;
   --icon-disabled: #BFCCD9;
   --icon-inactive: #9FB2C6;
-  --icon-destructive: #FF3A30;
+  --icon-destructive: #D5372C;
   --status-icon-info: #60A5FA;
   --status-icon-success: #2AA248;
   --status-icon-warning: #FF9500;
   --status-icon-edited: #FFCC00;
-  --status-icon-error: #FF3A30;
+  --status-icon-error: #D5372C;
   --bg-color-success: #2AA24810;
   --bg-color-warning: #FF950010;
   --bg-color-edited: #FFCC0010;
-  --bg-color-error: #FF3A3010;
+  --bg-color-error: #D5372C14;
   --font-size-x0-5: 10px;
   --font-size-x1: 12px;
   --font-size-x1-5: 14px;
@@ -95,7 +96,7 @@ html, body {
 }
 
 #logo {
-  @include font(400, 19.33px, 29px, var(--text-base), 7%);
+  @include font(500, 18px, 29px, var(--text-base), 8%);
   text-decoration: none;
   display: flex;
   justify-content: center;
@@ -110,10 +111,10 @@ html, body {
 }
 
 #logo.clickable {
-  cursor: url('/assets/pointer-cursor.png') 6.5 0, pointer;
+  cursor: pointer;
 
   svg {
-    cursor: url('/assets/pointer-cursor.png') 6.5 0, pointer;
+    cursor: pointer;
   }
 
   &:focus-visible {
@@ -141,11 +142,12 @@ html, body {
   white-space: nowrap;
 
   &:hover {
-    cursor: url('/assets/pointer-cursor.png') 6.5 0, pointer;
+    cursor: pointer;
   }
 }
 
 .real-button {
+  height: 40px;
   padding: var(--spacing-x2) var(--spacing-x4);
   font-size: var(--font-size-x1-5);
   line-height: var(--spacing-x4);
@@ -322,6 +324,14 @@ html, body {
   }
 }
 
+// ========== UNIFIED FOCUS RING ==========
+// 2px primary outline with 2px offset on all interactive controls (except disabled).
+.button:not(.disabled):focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--primary) !important;
+  outline-offset: 2px !important;
+}
+
 
 // ========== RADIO BUTTONS ==========
 .radios-wrapper {
@@ -333,7 +343,7 @@ html, body {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-x2);
-    cursor: url('/assets/pointer-cursor.png') 6.5 0, pointer;
+    cursor: pointer;
     
     .radio-value {
       @include font(450, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));

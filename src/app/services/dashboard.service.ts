@@ -851,6 +851,79 @@ export class DashboardService {
     ui.openDialog();
   }
 
+  // Title detail drawer — view info + change name/model + delete.
+  openTitleDetail(title: Title): void {
+    const ui = this.ui;
+
+    ui.drawerTitle.set(title.external_id ?? title._id);
+    ui.drawerContent.set(true);
+    ui.drawerContentType.set('titles');
+
+    this.selectedTitle.set(title);
+    this.titleName.set(title.external_id ?? '');
+    this.titleNameError.set('');
+
+    ui.drawerButtons.set([
+      {
+        label: 'Zavřít',
+        action: () => this.closeDrawer()
+      },
+      {
+        label: 'Uložit změny',
+        primary: true,
+        action: () => {
+          const current = this.selectedTitle();
+          if (!current || !this.titleChanged()) return;
+
+          const titleName = this.titleName();
+          if (!titleName) {
+            this.titleNameError.set(this.errors['titleNameEmpty']);
+            return;
+          }
+
+          return this.updateTitle(current._id).pipe(
+            catchError(err => {
+              this.ui.showToast('Při ukládání změn se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+              console.error(err);
+              return throwError(() => err);
+            })
+          ).subscribe((res: Title) => {
+            const editedTitle: Title = {
+              ...current,
+              external_id: titleName,
+              settings: {
+                crop_model: this.selectedCropModel(),
+                rotation_model: this.selectedRotationModel()
+              },
+              modified_at: Date(),
+              state: res.state
+            };
+            this.titles.update(prev => prev.map(t => t._id === current._id ? editedTitle : t));
+            this.displayedTitles.set(this.titles());
+            this.selectedTitle.set(editedTitle);
+            this.closeDrawer();
+          });
+        }
+      }
+    ]);
+
+    this.fetchModels().pipe(
+      catchError(err => {
+        this.ui.showToast('Nepodařilo se načíst dostupné modely. Zkuste panel znovu otevřít.', { type: 'error' });
+        console.error(err);
+        return throwError(() => err);
+      })
+    ).subscribe((res: Models) => {
+      this.availableCropModels.set(res.crop_models.map(m => ({ value: m, label: m })));
+      this.selectedCropModel.set(title.settings?.crop_model ?? res.crop_models[0]);
+      this.selectedCropModelUsed.set(false);
+      this.availableRotationModels.set(res.rotation_models.map(m => ({ value: m, label: m })));
+      this.selectedRotationModel.set(title.settings?.rotation_model ?? res.rotation_models[0]);
+      this.selectedRotationModelUsed.set(false);
+      ui.openDrawer();
+    });
+  }
+
   // User
   createUserDialog(): void {
     const ui = this.ui;

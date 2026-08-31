@@ -1,7 +1,7 @@
 <div 
   #mainWrapper
   class="main-wrapper"
-  (click)="!ui.dialogOpen() ? dashboard.selectedTitle.set(null) : null"
+  (click)="!ui.dialogOpen() && !ui.drawerOpen() ? dashboard.selectedTitle.set(null) : null"
   (keydown)="dashboard.onKeyDown($event)"
   tabindex="0"
 >

@@ -37,18 +37,21 @@
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'flagged'"
+        [class.disabled-filter]="editor.flaggedRemaining() === 0"
         (click)="editor.switchFilter('flagged')"
-      >Podezřelé <span class="filter-number">({{ editor.flaggedRemaining() }})</span></span>
+      ><span class="dot warning"></span>Podezřelé <span class="filter-number">({{ editor.flaggedRemaining() }})</span></span>
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'edited'"
+        [class.disabled-filter]="editor.editedImages().length === 0"
         (click)="editor.switchFilter('edited')"
-      >Upravené <span class="filter-number">({{ editor.editedImages().length }})</span></span>
+      ><span class="dot edited"></span>Upravené <span class="filter-number">({{ editor.editedImages().length }})</span></span>
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'ok'"
+        [class.disabled-filter]="editor.notFlaggedImages().length === 0"
         (click)="editor.switchFilter('ok')"
-      >OK <span class="filter-number">({{ editor.notFlaggedImages().length }})</span></span>
+      ><span class="dot success"></span>OK <span class="filter-number">({{ editor.notFlaggedImages().length }})</span></span>
     </div>
 
     <!-- Number of pages filters -->

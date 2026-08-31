@@ -6,7 +6,7 @@
 }
 
 .menu-icon {
-  cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+  cursor: pointer;
   padding: var(--spacing-x2);
 
   .icon {
@@ -16,40 +16,38 @@
 
 .menu-bubble {
   position: absolute;
-  top: var(--spacing-x1);
+  top: var(--spacing-x1-5);
+  min-width: 200px;
+  padding: var(--spacing-x1-5);
   background-color: var(--bg-base);
-  border: 1px solid var(--border-tertiary-pressed);
-  border-radius: var(--spacing-x2);
-  box-shadow: 0 2px 16px 2px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
+  border-radius: var(--spacing-x2-5);
+  box-shadow: 0 8px 24px #0A0D1018;
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-x0-5);
 
   .menu-item {
     display: flex;
     align-items: center;
-    gap: var(--spacing-x4);
+    gap: var(--spacing-x2-5);
     min-width: fit-content;
     white-space: nowrap;
     word-break: keep-all;
     overflow-wrap: normal;
     hyphens: none;
-    padding: var(--spacing-x4) var(--spacing-x6);
-    padding-right: var(--spacing-x7);
-    font-family: 'IBM Plex Sans', sans-serif;
-    letter-spacing: 0%;
-    font-weight: 450;
-    font-size: var(--font-size-x2);
-    line-height: var(--spacing-x6);
-    color: var(--text-tertiary);
+    padding: var(--spacing-x2) var(--spacing-x2-5);
+    border-radius: var(--spacing-x1-5);
+    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
 
     .icon {
-      color: var(--text-tertiary);
+      display: inline-flex;
+      color: var(--icon-gray);
     }
 
     &:hover {
-      cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+      cursor: pointer;
       background-color: var(--bg-bright);
-      color: var(--primary);
 
       .icon {
         color: var(--primary);
@@ -63,18 +61,14 @@
     .icon {
       color: var(--text-destructive);
     }
-  }
 
-  .first {
-    border-radius: var(--spacing-x2) var(--spacing-x2) 0 0;
-  }
+    &:hover {
+      background-color: var(--bg-color-error);
 
-  .last {
-    border-radius: 0 0 var(--spacing-x2) var(--spacing-x2);
-  }
-
-  .only-item {
-    border-radius: var(--spacing-x2);
+      .icon {
+        color: var(--text-destructive);
+      }
+    }
   }
 }
 

@@ -64,7 +64,7 @@
 }
 
 .dialog-close {
-  cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+  cursor: pointer;
 
   &:focus-visible {
     outline: 1px solid var(--primary);
@@ -126,7 +126,7 @@
       border: 0;
       border-bottom: 2px solid transparent;
       background: transparent;
-      cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+      cursor: pointer;
       transition: color .15s ease, border-color .15s ease;
       @include styles.font(400, var(--font-size-x1-5), var(--spacing-x4), var(--text-light));
 
@@ -224,7 +224,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-x2-5);
-    cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+    cursor: pointer;
     @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-secondary));
 
     input {
@@ -290,32 +290,42 @@
 .shortcuts-content-wrapper {
   height: 100%;
   padding: var(--spacing-x4);
-  
+
   table {
     width: 100%;
-    border: none;
-    padding-bottom: var(--spacing-x4);
+    border-collapse: collapse;
   }
 
   tr {
     height: 40px;
     width: 100%;
-    padding: var(--spacing-x2);
-  }
 
-  tr:nth-child(odd) {
-    background-color: var(--bg-main-light);
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--border-light);
+    }
   }
 
   th {
     text-align: left;
-    padding-left: var(--spacing-x2);
-    @include styles.font(450, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+    padding: var(--spacing-x2) var(--spacing-x3);
+    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
   }
 
   td {
-    padding-right: var(--spacing-x2);
-    @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-light));
+    text-align: right;
+    padding: var(--spacing-x2) var(--spacing-x3);
+    white-space: nowrap;
+
+    kbd {
+      display: inline-block;
+      padding: var(--spacing-x0-7-5) var(--spacing-x2);
+      border: 1px solid var(--border-color);
+      border-radius: var(--spacing-x1-5);
+      background-color: var(--bg-main-light);
+      font-family: 'IBM Plex Mono', monospace;
+      @include styles.font(500, 13px, var(--spacing-x4), var(--text-tertiary));
+      white-space: nowrap;
+    }
   }
 }
 
@@ -354,7 +364,7 @@
         left: var(--spacing-x4);
 
         &:hover {
-          cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+          cursor: pointer;
         }
       }
 
@@ -516,7 +526,7 @@
           align-items: center;
           width: 100%;
           @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-secondary));
-          cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+          cursor: pointer;
 
           &:hover {
             input {
@@ -538,7 +548,7 @@
             width: var(--spacing-x4);
             height: var(--spacing-x4);
             border-radius: var(--spacing-x1);
-            cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+            cursor: pointer;
             background-color: var(--bg-base);
             transition: background-color 0.2s ease;
 
@@ -591,7 +601,7 @@
         border: 1px solid var(--border-tertiary-color);
 
         &:hover {
-          cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+          cursor: pointer;
         }
 
         &:focus-visible {
@@ -712,7 +722,7 @@
           left: auto !important;
           color: var(--primary);
           &:hover { 
-            cursor: url('../../../assets/pointer-cursor.png') 6.5 0, pointer;
+            cursor: pointer;
           }
         }
 

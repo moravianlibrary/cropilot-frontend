@@ -4,20 +4,24 @@
 <header class="drawer-header">
   <h2>{{ ui.drawerTitle() }}</h2>
 
+  @let isTitlesDrawer = ui.drawerContentType() === 'titles';
+  @let canActOnTitle = isTitlesDrawer && auth.canUpload();
   <span class="drawer-actions">
-    @if (isAdmin) {
+    @if (isAdmin || canActOnTitle) {
       <span class="icon-button-actions">
-        <span
-          class="drawer-edit action icon-button"
-          (click)="drawerEditAction()"
-          (keydown.space)="drawerEditAction()"
-          (keydown.enter)="drawerEditAction()"
-          [tabindex]="dialogOpen ? -1 : 0"
-        >
-          <span class="icon">
-            <app-icon name="edit" [size]="16" />
+        @if (isAdmin && !isTitlesDrawer) {
+          <span
+            class="drawer-edit action icon-button"
+            (click)="drawerEditAction()"
+            (keydown.space)="drawerEditAction()"
+            (keydown.enter)="drawerEditAction()"
+            [tabindex]="dialogOpen ? -1 : 0"
+          >
+            <span class="icon">
+              <app-icon name="edit" [size]="16" />
+            </span>
           </span>
-        </span>
+        }
         <span
           class="drawer-delete action icon-button"
           (click)="drawerDeleteAction()"
@@ -98,7 +102,7 @@
           </span>
         </div>
         
-        <div class="many-blocks">
+        <div class="credentials">
           <div class="block">
             <div class="label">
               ID
@@ -112,7 +116,7 @@
                 <span class="tooltip" [class.show]="copied['groupId']">Zkopírováno!</span>
               </span>
             </div>
-            <div class="value">{{ group?._id }}</div>
+            <div class="value mono">{{ group?._id }}</div>
           </div>
 
           <div class="block">
@@ -128,7 +132,16 @@
                 <span class="tooltip" [class.show]="copied['apiKey']">Zkopírováno!</span>
               </span>
             </div>
-            <div class="value api-key">{{ group?.api_key?.key }}</div>
+            <div class="value api-key-row">
+              <span class="api-key">{{ showApiKey() ? group?.api_key?.key : maskApiKey(group?.api_key?.key ?? '') }}</span>
+              <span
+                class="api-key-toggle"
+                (click)="toggleApiKey()"
+                (keydown.space)="toggleApiKey()"
+                (keydown.enter)="toggleApiKey()"
+                [tabindex]="dialogOpen ? -1 : 0"
+              >{{ showApiKey() ? 'Skrýt' : 'Zobrazit' }}</span>
+            </div>
           </div>
         </div>
 
@@ -142,7 +155,7 @@
                   [(ngModel)]="dashboard.selectedUserId"
                   [inputName]="'add-user-to-group'"
                   location="drawer"
-                  [options]="dashboard.availableUsers()"x
+                  [options]="dashboard.availableUsers()"
                   [placeholder]="'Napište jméno'"
                   [usedIn]="dashboard.selectedUserUsed()"
                   (usedOut)="dashboard.onSelectUserUsed($event)"
@@ -278,10 +291,109 @@
         </div>
       }
 
+      <!-- Titles -->
+      @if (ui.drawerContentType() === 'titles') {
+        @let title = dashboard.selectedTitle();
+
+        <div class="block">
+          <div class="label">STAV</div>
+          <div class="value">
+            <span
+              class="tag state"
+              [class.info]="title?.state === 'ready'"
+              [class.success]="['user_approved', 'retrain', 'completed'].includes(title?.state ?? '')"
+              [class.pending]="['new', 'scheduled', 'in_progress'].includes(title?.state ?? '')"
+              [class.error]="title?.state === 'failed'"
+            >{{ titleStateDict[title?.state ?? 'new'] }}</span>
+          </div>
+        </div>
+
+        <div class="many-blocks dates">
+          <span class="block">
+            <div class="label">VYTVOŘENO</div>
+            <div class="value date-time">
+              @let tCreated = getDate(title?.created_at ?? '');
+              <span class="date">{{ tCreated[0] }}</span>{{ ' ' }}
+              <span class="time">{{ tCreated[1] }}</span>
+            </div>
+          </span>
+          <span class="block">
+            <div class="label">UPRAVENO</div>
+            <div class="value date-time">
+              @let tModified = getDate(title?.modified_at ?? '');
+              <span class="date">{{ tModified[0] }}</span>{{ ' ' }}
+              <span class="time">{{ tModified[1] }}</span>
+            </div>
+          </span>
+        </div>
+
+        <div class="credentials">
+          <div class="block">
+            <div class="label">
+              ID
+              <span class="copy-wrap">
+                <span class="icon" (click)="copy('titleId', title?._id ?? '')">
+                  <app-icon name="copy" [size]="16" />
+                </span>
+                <span class="tooltip" [class.show]="copied['titleId']">Zkopírováno!</span>
+              </span>
+            </div>
+            <div class="value mono">{{ title?._id }}</div>
+          </div>
+        </div>
+
+        <div class="block">
+          <label class="above-input" for="drawer-title-name">
+            NÁZEV TITULU
+            <input
+              id="drawer-title-name"
+              name="drawer-title-name"
+              type="text"
+              [(ngModel)]="dashboard.titleName"
+              [tabindex]="dialogOpen ? -1 : 0"
+            />
+          </label>
+          @if (dashboard.titleNameError()) {
+            <span class="error">{{ dashboard.titleNameError() }}</span>
+          }
+        </div>
+
+        <div class="many-blocks title-models">
+          <div class="block">
+            <label class="above-input select">
+              OŘEZOVÝ MODEL
+              <app-select
+                [(ngModel)]="dashboard.selectedCropModel"
+                [inputName]="'drawer-title-crop-model'"
+                location="drawer"
+                [width]="248"
+                [options]="dashboard.availableCropModels()"
+                [usedIn]="dashboard.selectedCropModelUsed()"
+                (usedOut)="dashboard.onSelectCropModelUsed($event)"
+              ></app-select>
+            </label>
+          </div>
+          <div class="block">
+            <label class="above-input select">
+              ROTAČNÍ MODEL
+              <app-select
+                [(ngModel)]="dashboard.selectedRotationModel"
+                [inputName]="'drawer-title-rotation-model'"
+                location="drawer"
+                [width]="248"
+                [options]="dashboard.availableRotationModels()"
+                [usedIn]="dashboard.selectedRotationModelUsed()"
+                (usedOut)="dashboard.onSelectRotationModelUsed($event)"
+              ></app-select>
+            </label>
+          </div>
+        </div>
+      }
+
       <!-- Users -->
       @if (ui.drawerContentType() === 'users') {
         @let user = dashboard.selectedUser();
-        
+
         <div class="block">
           <div class="label">
             ID
@@ -295,7 +407,7 @@
               <span class="tooltip" [class.show]="copied['userId']">Zkopírováno!</span>
             </span>
           </div>
-          <div class="value">{{ user?._id }}</div>
+          <div class="value mono">{{ user?._id }}</div>
         </div>
 
         <div class="block">
@@ -463,25 +575,31 @@
 
 @let drawerButtons = ui.drawerButtons();
 @if (drawerButtons.length) {
+  @let count = dirtyCount();
   <footer class="drawer-footer">
-    @for (btn of drawerButtons; track $index) {
-      <span
-        class="button real-button"
-        [class.tertiary]="!btn.primary"
-        [class.primary]="btn.primary"
-        [class.destructive]="btn.destructive"
-        [class.disabled]="btn.primary && (
-          !isAdmin
-          || (dashboard.dashboardPage() === 'groups' && !dashboard.groupChanged())
-          || (dashboard.dashboardPage() === 'users' && !dashboard.userChanged())
-        )"
-        (click)="btn.action ? btn.action() : dashboard.closeDrawer()"
-        (keydown.space)="btn.action ? btn.action() : dashboard.closeDrawer()"
-        (keydown.enter)="btn.action ? btn.action() : dashboard.closeDrawer()"
-        [tabindex]="dialogOpen ? -1 : 0"
-      >
-        {{ btn.label }}
-      </span>
+    @if (count > 0) {
+      <span class="dirty-note">Neuložené změny: {{ count }}</span>
     }
+    <span class="footer-buttons">
+      @for (btn of drawerButtons; track $index) {
+        <span
+          class="button real-button"
+          [class.tertiary]="!btn.primary"
+          [class.primary]="btn.primary"
+          [class.destructive]="btn.destructive"
+          [class.disabled]="btn.primary && (
+            (ui.drawerContentType() === 'groups' && (!isAdmin || !dashboard.groupChanged()))
+            || (ui.drawerContentType() === 'users' && (!isAdmin || !dashboard.userChanged()))
+            || (ui.drawerContentType() === 'titles' && !dashboard.titleChanged())
+          )"
+          (click)="btn.action ? btn.action() : dashboard.closeDrawer()"
+          (keydown.space)="btn.action ? btn.action() : dashboard.closeDrawer()"
+          (keydown.enter)="btn.action ? btn.action() : dashboard.closeDrawer()"
+          [tabindex]="dialogOpen ? -1 : 0"
+        >
+          {{ btn.primary && count > 0 ? btn.label + ' (' + count + ')' : btn.label }}
+        </span>
+      }
+    </span>
   </footer>
 }
