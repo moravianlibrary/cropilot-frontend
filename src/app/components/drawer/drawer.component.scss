@@ -65,9 +65,20 @@
         padding: var(--spacing-x2);
         border-radius: var(--spacing-x2);
         border: 1px solid var(--border-tertiary-color);
+        transition: border-color .15s ease;
 
         .icon {
           color: var(--icon-dark);
+        }
+
+        // Unified icon-button hover (matches the table "…" action).
+        &:hover {
+          border-color: var(--border-tertiary-hover);
+          outline: 5px solid var(--border-light);
+
+          .icon {
+            color: var(--primary);
+          }
         }
       };
     }

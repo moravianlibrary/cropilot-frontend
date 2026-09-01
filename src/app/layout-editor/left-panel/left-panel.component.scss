@@ -29,20 +29,26 @@
       align-items: center;
       gap: var(--spacing-x3);
 
+      // Borderless icon button — hover uses the fill pattern (like close buttons).
       .icon {
         display: flex;
         align-items: center;
         justify-content: center;
         width: var(--spacing-x8-5);
         height: var(--spacing-x8-5);
-        border: 1px solid var(--border-tertiary-color);
         border-radius: var(--spacing-x2);
         color: var(--icon-gray);
+        transition: background-color .15s ease;
 
         &:hover {
           cursor: pointer;
-          border-color: var(--primary);
+          background-color: var(--bg-bright);
           color: var(--primary);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--primary);
+          outline-offset: 2px;
         }
       }
 

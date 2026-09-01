@@ -15,6 +15,7 @@
   --primary-disabled: #D6EEF5;
   --primary-glow: #0080A81A;
   --bg-base: #FFFFFF;
+  --bg-hover: #F9FAFB;
   --bg-bright: #EFF2F5;
   --bg-selected: #EAF6FA;
   --bg-selected-hover: #DDF0F6;
@@ -192,9 +193,21 @@ html, body {
   background-color: var(--bg-base);
   border: 1px solid var(--border-tertiary-color);
   color: var(--text-secondary);
+  transition: border-color .15s ease;
 
   .icon {
     color: var(--text-secondary);
+  }
+
+  // Unified hover for square icon buttons (matches the table "…" action):
+  // slightly darker border, soft halo, primary icon.
+  &:not(.disabled):hover {
+    border-color: var(--border-tertiary-hover);
+    outline: 5px solid var(--border-light);
+
+    .icon {
+      color: var(--primary);
+    }
   }
 }
 

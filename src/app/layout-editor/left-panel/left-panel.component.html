@@ -5,8 +5,16 @@
       <!-- Back button -->
       @let canReadGroup = auth.canReadGroup();
       @if (canReadGroup.length) {
-        <span class="icon">
-          <app-icon name="back" [size]="16" (click)="backToMyGroupsTitles(canReadGroup)" />
+        <span
+          class="icon"
+          role="button"
+          title="Zpět na seznam titulů"
+          tabindex="0"
+          (click)="backToMyGroupsTitles(canReadGroup)"
+          (keydown.enter)="backToMyGroupsTitles(canReadGroup)"
+          (keydown.space)="backToMyGroupsTitles(canReadGroup)"
+        >
+          <app-icon name="back" [size]="16" />
         </span>
       }
       

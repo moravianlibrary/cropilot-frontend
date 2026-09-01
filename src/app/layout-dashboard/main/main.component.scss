@@ -97,16 +97,23 @@
         &:focus {
           border-color: var(--primary);
           outline: none;
+          box-shadow: 0 0 0 3px var(--primary-glow);
         }
-        
+
         &::placeholder {
           @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-bright));
         }
       }
     }
 
+    // Pill per the redesign mockup: white bg, light border, fully rounded.
     .total {
-      @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-light));
+      @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+      padding: var(--spacing-x1-5) var(--spacing-x3-5);
+      background-color: var(--bg-base);
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      white-space: nowrap;
     }
   }
 
@@ -198,6 +205,12 @@
             align-items: center;
             gap: var(--spacing-x1);
             @include styles.font(500, 13px, var(--spacing-x4), var(--text-light));
+            transition: color .15s ease;
+
+            &:hover {
+              cursor: pointer;
+              color: var(--primary);
+            }
             width: fit-content;
             position: relative;
 
@@ -470,20 +483,11 @@
           display: flex;
           align-items: center;
 
+          // Hover comes from the global .secondary icon-button style.
           .action {
             width: var(--spacing-x8);
             height: var(--spacing-x8);
             padding: var(--spacing-x2);
-
-            &:hover, &:focus-visible {
-              cursor: pointer;
-              border-color: var(--border-tertiary-hover);
-              outline: 5px solid var(--border-light);
-
-              .icon {
-                color: var(--primary);
-              }
-            }
           }
         }
       }
@@ -494,24 +498,10 @@
         border-radius: var(--spacing-x2);
       }
 
+      // Flat row hover per the mockup — just a subtle fill, no shadow/lift.
       .clickable:hover:not(:has(.action:hover)) {
         cursor: pointer;
-        background-color: #F9FAFB;
-        position: relative;
-        z-index: 512;
-        box-shadow: 0px 0px 12px 2px #0000000A, 0px 0px 4px 0px #00000005;
-
-        &:last-child {
-          border-radius: 0 0 var(--spacing-x2) var(--spacing-x2);
-        }
-
-        td {
-          border-bottom: 1px solid var(--border-light);
-        }
-
-        + tr td {
-          border-top: none;
-        }
+        background-color: var(--bg-hover);
 
         .icon-btn {
           background: #EEF1F4;

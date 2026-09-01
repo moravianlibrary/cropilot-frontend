@@ -12,6 +12,11 @@
   .icon {
     color: var(--icon-dark);
   }
+
+  // Unified icon-button hover (the border + halo come from global .secondary).
+  &:hover .icon {
+    color: var(--primary);
+  }
 }
 
 .menu-bubble {

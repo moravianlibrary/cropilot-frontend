@@ -68,11 +68,11 @@ export class AuthService {
       this.user.set(user);
       
       const permissions = user.permissions;
-      const permission = permissions[0].permission;
       this.canWriteTitle.set(false);
       this.canReadGroup.set('');
       this.canUpload.set(!!permissions.filter(p => p.permission.includes('upload')).length);
-      if (titleId) {
+      if (titleId && permissions.length) {
+        const permission = permissions[0].permission;
         if (permission.includes('write')) this.canWriteTitle.set(true);
         if (permission.includes('read_group')) this.canReadGroup.set(permissions[0].group_id);
       }

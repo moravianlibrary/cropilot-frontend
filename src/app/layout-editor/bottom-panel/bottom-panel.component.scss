@@ -30,6 +30,12 @@
   color: var(--icon-dark);
 }
 
+// Unified icon-button hover (the border + halo come from global .secondary).
+.left-part .button:not(.disabled):hover .icon,
+.middle-part .button:not(.disabled):hover .icon {
+  color: var(--primary);
+}
+
 .scan-counter {
   margin-left: var(--spacing-x2);
   white-space: nowrap;

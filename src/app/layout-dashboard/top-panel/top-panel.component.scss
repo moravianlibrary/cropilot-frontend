@@ -114,6 +114,19 @@
 
 .logout, .login {
   gap: var(--spacing-x3);
+  transition: background-color .15s ease, border-color .15s ease;
+
+  // Text chip, not a square icon button — mockup uses a subtle fill hover
+  // instead of the global .secondary halo.
+  &:hover {
+    outline: none;
+    background-color: var(--bg-hover);
+    border-color: var(--border-tertiary-hover);
+
+    .icon {
+      color: var(--icon-gray);
+    }
+  }
 
   &:focus-visible {
     outline: 2px solid var(--primary);
