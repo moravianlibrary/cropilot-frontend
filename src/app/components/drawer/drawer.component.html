@@ -247,7 +247,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="16" />
                     </span>
-                    Zobrazení titulů
+                    Detail titulu
                     <span class="icon">
                       <app-icon name="book" [size]="16" />
                     </span>
@@ -265,7 +265,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="16" />
                     </span>
-                    Zobrazení skupiny
+                    Zobrazení všech titulů
                     <span class="icon">
                       <app-icon name="open-folder" [size]="16" />
                     </span>
@@ -358,6 +358,23 @@
           }
         </div>
 
+        @if (dashboard.canAssignInCurrentGroup()) {
+          <div class="block">
+            <label class="above-input select">
+              PŘIŘAZENO
+              <app-select
+                [(ngModel)]="dashboard.selectedAssigneeId"
+                [inputName]="'drawer-title-assignee'"
+                location="drawer"
+                [width]="248"
+                [options]="dashboard.availableAssignees()"
+                [usedIn]="dashboard.selectedAssigneeUsed()"
+                (usedOut)="dashboard.onSelectAssigneeUsed($event)"
+              ></app-select>
+            </label>
+          </div>
+        }
+
         <div class="many-blocks title-models">
           <div class="block">
             <label class="above-input select">
@@ -388,6 +405,13 @@
             </label>
           </div>
         </div>
+
+        @if (dashboard.modelChangedFromBaseline()) {
+          <div class="model-change-warning">
+            <span class="icon"><app-icon name="warning-triangle" [size]="18" /></span>
+            <span>Změnou modelu se zahodí dosavadní uživatelské úpravy titulu a titul se znovu zařadí do fronty ke zpracování.</span>
+          </div>
+        }
       }
 
       <!-- Users -->
@@ -525,7 +549,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="16" />
                     </span>
-                    Zobrazení titulů
+                    Detail titulu
                     <span class="icon">
                       <app-icon name="book" [size]="16" />
                     </span>
@@ -543,7 +567,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="16" />
                     </span>
-                    Zobrazení skupiny
+                    Zobrazení všech titulů
                     <span class="icon">
                       <app-icon name="open-folder" [size]="16" />
                     </span>

@@ -30,15 +30,17 @@
 
 // Assign-title cell + its dropdown (managers only).
 .assign-cell {
-  .assign-trigger {
+  // Shared chip look — matches the member tags in the groups table
+  // (tags-overflow .tag): bg-bright pill, same radius/padding/typography.
+  .assign-trigger,
+  .assign-static {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-x1-5);
+    gap: var(--spacing-x1);
     max-width: 100%;
-    padding: var(--spacing-x1) var(--spacing-x2);
-    border-radius: var(--spacing-x1-5);
-    cursor: pointer;
-    color: var(--text-light);
+    border-radius: var(--spacing-x1);
+    padding: var(--spacing-x0-5) var(--spacing-x2);
+    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
 
     .assign-name {
       overflow: hidden;
@@ -46,9 +48,15 @@
       white-space: nowrap;
     }
 
+    // Assigned: render as the member-style pill.
     &.assigned {
+      background-color: var(--bg-bright);
       color: var(--text-base);
     }
+  }
+
+  .assign-trigger {
+    cursor: pointer;
 
     &:hover {
       background-color: var(--bg-selected-hover);
@@ -59,7 +67,7 @@
       pointer-events: none;
     }
 
-    .assign-caret {
+    .assign-add {
       color: var(--icon-dark);
       flex-shrink: 0;
     }

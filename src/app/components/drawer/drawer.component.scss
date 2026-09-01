@@ -434,6 +434,10 @@
             .icon {
               display: inline-flex;
               color: var(--icon-inactive);
+              // The generic `.block label .icon` rule positions leading input icons
+              // absolutely; reset it here so the chip icon stays inline (else it
+              // escapes the chip and overflows the row).
+              position: static;
             }
 
             // Active (checked) chip: show checkmark + colored background per permission.
@@ -546,5 +550,24 @@
   .footer-buttons {
     display: flex;
     gap: var(--spacing-x3);
+  }
+}
+
+// Warning shown in the title detail when the crop/rotation model is changed:
+// saving will discard user edits and re-queue the title for processing.
+.model-change-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-x2);
+  margin: 0 var(--spacing-x4);
+  padding: var(--spacing-x3) var(--spacing-x3-5);
+  border-radius: var(--spacing-x2);
+  background-color: var(--tag-pending-bg);
+  @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--tag-pending-text));
+
+  .icon {
+    color: var(--tag-pending-icon);
+    flex-shrink: 0;
+    margin-top: 1px;
   }
 }

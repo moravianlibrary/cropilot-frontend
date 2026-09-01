@@ -42,8 +42,8 @@ export class MainComponent {
   permLegend: { label: string; icon: string; klass: string }[] = [
     { label: 'Správa', icon: 'settings', klass: 'success' },
     { label: 'Úpravy', icon: 'edit', klass: 'info' },
-    { label: 'Zobrazení titulů', icon: 'book', klass: 'pending' },
-    { label: 'Zobrazení skupiny', icon: 'open-folder', klass: 'error' },
+    { label: 'Detail titulu', icon: 'book', klass: 'pending' },
+    { label: 'Zobrazení všech titulů', icon: 'open-folder', klass: 'error' },
   ];
 
   // Server-side titles paging/filter state

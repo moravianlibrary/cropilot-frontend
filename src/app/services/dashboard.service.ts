@@ -126,7 +126,7 @@ export class DashboardService {
   rotationModelChanged = computed<boolean>(() => this.selectedTitle()?.settings?.rotation_model !== this.selectedRotationModel());
   // Baseline of the title edit form as it was opened (with defaulted models),
   // so a title without settings doesn't open as already "changed".
-  titleBaseline = signal<{ name: string; crop: string; rotation: string } | null>(null);
+  titleBaseline = signal<{ name: string; crop: string; rotation: string; assignee: string } | null>(null);
   titleDirtyCount = computed<number>(() => {
     const base = this.titleBaseline();
     if (!base || !this.selectedTitle()) return 0;
@@ -135,9 +135,34 @@ export class DashboardService {
     if (base.name !== this.titleName()) count++;
     if (base.crop !== this.selectedCropModel()) count++;
     if (base.rotation !== this.selectedRotationModel()) count++;
+    if (base.assignee !== this.selectedAssigneeId()) count++;
     return count;
   });
   titleChanged = computed<boolean>(() => this.titleDirtyCount() > 0);
+
+  // True only when the user actually changed a model from what the title had on open.
+  // Uses the baseline (not the raw stored value) so a settings-less title, whose model
+  // selects default to the first option, doesn't show a false "will re-queue" warning.
+  modelChangedFromBaseline = computed<boolean>(() => {
+    const base = this.titleBaseline();
+    return !!base && (base.crop !== this.selectedCropModel() || base.rotation !== this.selectedRotationModel());
+  });
+
+  // Who can assign titles here: an admin (anywhere), or a manager (upload) in THIS
+  // group. Read straight from the signed-in user's own per-group permissions, which
+  // are always available from the token — no dependency on the titles/list payload.
+  canAssignInCurrentGroup = computed<boolean>(() => {
+    if (this.auth.isAdmin()) return true;
+    const groupId = this.selectedGroupPage()?._id;
+    if (!groupId) return false;
+    const perms = this.auth.user()?.permissions?.find(p => p.group_id === groupId)?.permission;
+    return perms?.includes('upload') ?? false;
+  });
+  // Title assignment (drawer): available group members + current selection ('' = unassigned).
+  availableAssignees = signal<SelectOption[]>([]);
+  selectedAssigneeId = signal<string>('');
+  selectedAssigneeUsed = signal<boolean>(false);
+  assigneeChanged = computed<boolean>(() => (this.selectedTitle()?.assigned_to ?? '') !== this.selectedAssigneeId());
 
   // Users
   users = signal<User[]>([]);
@@ -806,16 +831,14 @@ export class DashboardService {
               return throwError(() => err);
             })
           ).subscribe((res: Title) => {
-            const now = new Date().toISOString();
             const editedTitle: Title = {
-              _id: res._id,
+              ...title,
               external_id: titleName,
-              settings: { 
+              settings: {
                 crop_model: this.selectedCropModel(),
                 rotation_model: this.selectedRotationModel()
               },
-              created_at: now,
-              modified_at: now,
+              modified_at: new Date().toISOString(),
               state: res.state
             };
 
@@ -845,10 +868,13 @@ export class DashboardService {
       this.availableRotationModels.set(res.rotation_models.map(m => ({ value: m, label: m })));
       this.selectedRotationModel.set(title.settings?.rotation_model ?? res.rotation_models[0]);
       this.selectedRotationModelUsed.set(false);
+      this.selectedAssigneeId.set(title.assigned_to ?? '');
+      this.selectedAssigneeUsed.set(false);
       this.titleBaseline.set({
         name: this.titleName(),
         crop: this.selectedCropModel(),
         rotation: this.selectedRotationModel(),
+        assignee: this.selectedAssigneeId(),
       });
       this.closeDrawer();
       ui.openDialog();
@@ -910,13 +936,19 @@ export class DashboardService {
             return;
           }
 
+          const assigneeChanged = this.assigneeChanged();
+          const newAssigneeId = this.selectedAssigneeId();
+
           return this.updateTitle(current._id).pipe(
+            switchMap(res => assigneeChanged
+              ? this.assignTitle(current._id, newAssigneeId || null).pipe(map(a => ({ res, a })))
+              : of({ res, a: null as { assigned_to: string | null; assigned_to_name: string | null } | null })),
             catchError(err => {
               this.ui.showToast('Při ukládání změn se něco pokazilo. Zkuste to znovu.', { type: 'error' });
               console.error(err);
               return throwError(() => err);
             })
-          ).subscribe((res: Title) => {
+          ).subscribe(({ res, a }) => {
             const editedTitle: Title = {
               ...current,
               external_id: titleName,
@@ -925,7 +957,8 @@ export class DashboardService {
                 rotation_model: this.selectedRotationModel()
               },
               modified_at: new Date().toISOString(),
-              state: res.state
+              state: res.state,
+              ...(a ? { assigned_to: a.assigned_to, assigned_to_name: a.assigned_to_name } : {})
             };
             this.titles.update(prev => prev.map(t => t._id === current._id ? editedTitle : t));
             this.displayedTitles.set(this.titles());
@@ -959,12 +992,47 @@ export class DashboardService {
       this.availableRotationModels.set(res.rotation_models.map(m => ({ value: m, label: m })));
       this.selectedRotationModel.set(title.settings?.rotation_model ?? res.rotation_models[0]);
       this.selectedRotationModelUsed.set(false);
+      this.selectedAssigneeId.set(title.assigned_to ?? '');
+      this.selectedAssigneeUsed.set(false);
       this.titleBaseline.set({
         name: this.titleName(),
         crop: this.selectedCropModel(),
         rotation: this.selectedRotationModel(),
+        assignee: this.selectedAssigneeId(),
       });
+      this.loadAssignees(title);
       ui.openDrawer();
+    });
+  }
+
+  onSelectAssigneeUsed(used: boolean): void {
+    this.selectedAssigneeUsed.set(used);
+  }
+
+  // Loads the group members a title can be assigned to for the drawer select.
+  private loadAssignees(title: Title): void {
+    const unassigned: SelectOption = { value: '', label: '— Nepřiřazeno —' };
+    // Baseline options always include "unassigned" and the current assignee, so
+    // the drawer shows who a title is assigned to even if the member list fails.
+    const base: SelectOption[] = [unassigned];
+    if (title.assigned_to && title.assigned_to_name) {
+      base.push({ value: title.assigned_to, label: title.assigned_to_name });
+    }
+    this.availableAssignees.set(base);
+
+    const groupId = this.selectedGroupPage()?._id;
+    if (!groupId || !this.canAssignInCurrentGroup()) return;
+
+    this.fetchAssignableUsers(groupId).subscribe({
+      next: users => {
+        const options: SelectOption[] = [unassigned, ...users.map(u => ({ value: u._id, label: u.full_name }))];
+        // Keep the current assignee selectable even if they're no longer in the list.
+        if (title.assigned_to && title.assigned_to_name && !users.some(u => u._id === title.assigned_to)) {
+          options.push({ value: title.assigned_to, label: title.assigned_to_name });
+        }
+        this.availableAssignees.set(options);
+      },
+      error: err => console.error('Fetching assignable users failed:', err)
     });
   }
 
@@ -1335,7 +1403,8 @@ export class DashboardService {
 
   removeAllUsers(): void {
     this.groupPermissions.set([]);
-    this.availableUsers.set(this.users().map(u => ({ value: u._id, label: u.full_name })));
+    // Only regular users are assignable to a group — never admins.
+    this.availableUsers.set(this.users().filter(u => u.role !== 'admin').map(u => ({ value: u._id, label: u.full_name })));
   }
 
   removeFromGroup(userId: string): void {

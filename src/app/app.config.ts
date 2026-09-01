@@ -86,8 +86,8 @@ export const userRolesDict: Record<Role, string> = {
 };
 
 export const permissionDict: Record<PermissionType, string> = {
-  'read_group': 'Čtení',
-  'read_title': 'Čtení',
+  'read_group': 'Zobrazení všech titulů',
+  'read_title': 'Detail titulu',
   'write': 'Úpravy',
   'upload': 'Správa'
 };

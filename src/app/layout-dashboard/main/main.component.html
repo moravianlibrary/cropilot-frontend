@@ -203,7 +203,7 @@
                               </span>
                             }
                             @if (isReadTitle && (isAdmin ? permCounts['read_title'] : true)) {
-                              <span class="tag permission pending" title="Zobrazení titulů">
+                              <span class="tag permission pending" title="Detail titulu">
                                 <span class="icon">
                                   <app-icon name="book" [size]="16" />
                                 </span>
@@ -211,7 +211,7 @@
                               </span>
                             }
                             @if (isReadGroup && (isAdmin ? permCounts['read_group'] : true)) {
-                              <span class="tag permission error" title="Zobrazení skupiny">
+                              <span class="tag permission error" title="Zobrazení všech titulů">
                                 <span class="icon">
                                   <app-icon name="open-folder" [size]="16" />
                                 </span>
@@ -666,7 +666,7 @@
                       <span class="rel-date" [title]="modified[0] + ' ' + modified[1]">{{ getRelativeDate(title.modified_at) }}</span>
                     </td>
                     <td class="assign-cell">
-                      @if (auth.canUpload()) {
+                      @if (dashboard.canAssignInCurrentGroup()) {
                         <span
                           class="assign-trigger"
                           cdkOverlayOrigin
@@ -679,8 +679,11 @@
                           [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                           [title]="title.assigned_to_name || 'Přiřadit uživateli'"
                         >
-                          <span class="assign-name">{{ title.assigned_to_name || '—' }}</span>
-                          <span class="icon assign-caret"><app-icon name="arrow-down" [size]="12" /></span>
+                          @if (title.assigned_to_name) {
+                            <span class="assign-name">{{ title.assigned_to_name }}</span>
+                          } @else {
+                            <span class="icon assign-add"><app-icon name="plus" [size]="14" /></span>
+                          }
                         </span>
 
                         <ng-template
@@ -688,7 +691,10 @@
                           [cdkConnectedOverlayOrigin]="assignOrigin"
                           [cdkConnectedOverlayOpen]="assignMenuTitleId() === title._id"
                           [cdkConnectedOverlayPush]="true"
-                          (overlayOutsideClick)="closeAssignMenu()"
+                          [cdkConnectedOverlayHasBackdrop]="true"
+                          cdkConnectedOverlayBackdropClass="assign-backdrop"
+                          (backdropClick)="closeAssignMenu()"
+                          (detach)="closeAssignMenu()"
                         >
                           <div class="assign-dropdown">
                             @if (title.assigned_to) {
@@ -711,7 +717,7 @@
                           </div>
                         </ng-template>
                       } @else {
-                        <span [title]="title.assigned_to_name || ''">{{ title.assigned_to_name || '—' }}</span>
+                        <span class="assign-static" [class.assigned]="!!title.assigned_to_name" [title]="title.assigned_to_name || ''">{{ title.assigned_to_name || '—' }}</span>
                       }
                     </td>
                     <td class="nav-arrow-cell">
@@ -937,14 +943,14 @@
                             </span>
                           }
                           @if (permTypes.includes('read_title')) {
-                            <span class="tag permission pending" title="Zobrazení titulů">
+                            <span class="tag permission pending" title="Detail titulu">
                               <span class="icon">
                                 <app-icon name="book" [size]="16" />
                               </span>
                             </span>
                           }
                           @if (permTypes.includes('read_group')) {
-                            <span class="tag permission error" title="Zobrazení skupiny">
+                            <span class="tag permission error" title="Zobrazení všech titulů">
                               <span class="icon">
                                 <app-icon name="open-folder" [size]="16" />
                               </span>

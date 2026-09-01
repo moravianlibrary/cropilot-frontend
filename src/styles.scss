@@ -534,3 +534,9 @@ a:focus-visible {
     border-bottom: 6px solid var(--bg-base);
   }
 }
+
+// Transparent backdrop for the inline title-assign dropdown, so the opening click
+// never immediately closes the overlay and outside clicks dismiss it reliably.
+.cdk-overlay-backdrop.assign-backdrop {
+  background: transparent;
+}
