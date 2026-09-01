@@ -3,8 +3,8 @@ import { DashboardService } from '../../services/dashboard.service';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { permissionDict, titleStateDict, titleStateFilterDict } from '../../app.config';
-import { Title, Group, GroupPage, Paginated, PagedQuery, Permission, PermissionType, SortField, SortState, TitlesQuery, User, UserInGroup } from '../../app.types';
-import { focusElement, getDate, getRelativeDate, waitForElement } from '../../utils/utils';
+import { AssignableUser, Title, Group, GroupPage, Paginated, PagedQuery, Permission, PermissionType, SortField, SortState, TitlesQuery, User, UserInGroup } from '../../app.types';
+import { downloadCsv, focusElement, getDate, getRelativeDate, rowsToCsv, waitForElement } from '../../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, of, Subscription, switchMap, tap, throwError } from 'rxjs';
@@ -269,6 +269,94 @@ export class MainComponent {
   get totalTitlesLabel(): string {
     const length = this.dashboard.titlesTotal();
     return `Celkem ${length} titul${length === 1 ? '' : [2, 3, 4].includes(length) ? 'y' : 'ů' }`;
+  }
+
+  exportingTitles = signal<boolean>(false);
+
+  // Exports the whole group's titles (ignoring active filters) as a CSV download.
+  exportTitlesCsv(): void {
+    if (!this.currentGroupId || this.exportingTitles()) return;
+    this.exportingTitles.set(true);
+
+    this.dashboard.fetchAllTitles(this.currentGroupId).pipe(
+      catchError(err => {
+        this.ui.showToast('Export titulů se nezdařil. Zkuste to znovu.', { type: 'error' });
+        console.error('Exporting titles failed:', err);
+        this.exportingTitles.set(false);
+        return throwError(() => err);
+      })
+    ).subscribe(titles => {
+      const header = ['Název titulu', 'ID titulu', 'Ořezový model', 'Rotační model', 'Stav', 'Vytvořeno', 'Upraveno', 'Přiřazeno'];
+      const rows = titles.map(t => [
+        t.external_id ?? t._id,
+        t._id,
+        t.settings?.crop_model ?? 'Neznámý',
+        t.settings?.rotation_model ?? 'Neznámý',
+        titleStateDict[t.state] ?? t.state,
+        getDate(t.created_at).join(' '),
+        getDate(t.modified_at).join(' '),
+        t.assigned_to_name ?? '',
+      ]);
+
+      const groupName = this.dashboard.selectedGroupPage()?.name ?? 'skupina';
+      const date = new Date().toISOString().slice(0, 10);
+      const safeName = groupName.replace(/[^\p{L}\p{N}_-]+/gu, '_');
+      downloadCsv(`tituly_${safeName}_${date}.csv`, rowsToCsv([header, ...rows]));
+      this.exportingTitles.set(false);
+    });
+  }
+
+  // ========== ASSIGN TITLE (managers only) ==========
+  // Id of the title whose assignee picker is open (null = none open).
+  assignMenuTitleId = signal<string | null>(null);
+  // Group members that can be assigned, loaded lazily on first open.
+  assignableUsers = signal<AssignableUser[]>([]);
+  private assignableUsersLoaded = false;
+  // Id of the title currently being (re)assigned, for a per-row spinner/disabled state.
+  assigningTitleId = signal<string | null>(null);
+
+  openAssignMenu(title: Title, event: Event): void {
+    event.stopPropagation();
+    this.assignMenuTitleId.set(title._id);
+    if (!this.assignableUsersLoaded && this.currentGroupId) {
+      this.dashboard.fetchAssignableUsers(this.currentGroupId).subscribe({
+        next: users => { this.assignableUsers.set(users); this.assignableUsersLoaded = true; },
+        error: err => {
+          this.ui.showToast('Načtení uživatelů se nezdařilo.', { type: 'error' });
+          console.error('Fetching assignable users failed:', err);
+        },
+      });
+    }
+  }
+
+  closeAssignMenu(): void {
+    this.assignMenuTitleId.set(null);
+  }
+
+  // Assigns the title to a user (or clears it with userId === null) and updates the row.
+  assignTitleTo(title: Title, userId: string | null, event: Event): void {
+    event.stopPropagation();
+    if (title.assigned_to === userId || this.assigningTitleId()) {
+      this.closeAssignMenu();
+      return;
+    }
+    this.assigningTitleId.set(title._id);
+    this.dashboard.assignTitle(title._id, userId).subscribe({
+      next: res => {
+        this.dashboard.titles.update(prev =>
+          prev.map(t => t._id === title._id
+            ? { ...t, assigned_to: res.assigned_to, assigned_to_name: res.assigned_to_name }
+            : t));
+        this.dashboard.displayedTitles.set(this.dashboard.titles());
+        this.assigningTitleId.set(null);
+        this.closeAssignMenu();
+      },
+      error: err => {
+        this.ui.showToast('Přiřazení se nezdařilo.', { type: 'error' });
+        console.error('Assigning title failed:', err);
+        this.assigningTitleId.set(null);
+      },
+    });
   }
 
   // Debounced server-side search (resets to first page).

@@ -94,7 +94,16 @@ export interface Title {
   };
   created_at: string;
   modified_at: string;
+  // The user this title is assigned to (id) and their display name. Both absent
+  // on older backend instances / unassigned titles (backward compatible).
+  assigned_to?: string | null;
+  assigned_to_name?: string | null;
   state: TitleState;
+}
+
+export interface AssignableUser {
+  _id: string;
+  full_name: string;
 }
 
 export interface TitleDetail {

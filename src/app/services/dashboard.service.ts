@@ -1,8 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { catchError, forkJoin, from, map, mergeMap, Observable, of, switchMap, tap, throwError, toArray } from 'rxjs';
+import { catchError, EMPTY, expand, forkJoin, from, map, mergeMap, Observable, of, reduce, switchMap, tap, throwError, toArray } from 'rxjs';
 import { AuthService } from './auth.service';
-import { ChangedGroupMember, DashboardPage, DrawerButton, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Paginated, PagedQuery, Permission, PermissionType, SelectOption, Title, TitlesQuery, User, UserInGroup } from '../app.types';
+import { AssignableUser, ChangedGroupMember, DashboardPage, DrawerButton, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Paginated, PagedQuery, Permission, PermissionType, SelectOption, Title, TitlesQuery, User, UserInGroup } from '../app.types';
 import { Router } from '@angular/router';
 import { checkEmailValidity, defer, focusMainWrapper, scrollToAndFocusElement, scrollToElement } from '../utils/utils';
 import { inlineErrors } from '../app.config';
@@ -275,6 +275,20 @@ export class DashboardService {
     });
   }
 
+  // Fetches every title in a group across all pages (no search/filters applied),
+  // used by the CSV export. Pages through the endpoint until the last page.
+  fetchAllTitles(groupId: string): Observable<Title[]> {
+    const pageSize = 200;
+    return this.fetchTitles(groupId, { page: 1, page_size: pageSize }).pipe(
+      expand(res =>
+        res.page < res.total_pages
+          ? this.fetchTitles(groupId, { page: res.page + 1, page_size: pageSize })
+          : EMPTY
+      ),
+      reduce((acc, res) => acc.concat(res.titles), [] as Title[]),
+    );
+  }
+
   fetchModels(): Observable<Models> {
     return this.http.get<Models>(`${this.auth.apiUrl}/models`, { headers: this.auth.authHeaders() });
   }
@@ -323,6 +337,20 @@ export class DashboardService {
 
   deleteTitle(titleId: string): Observable<void> {
     return this.http.delete<void>(`${this.auth.apiUrl}/${titleId}`, { headers: this.auth.authHeaders() });
+  }
+
+  // Group members a title can be assigned to (manager only).
+  fetchAssignableUsers(groupId: string): Observable<AssignableUser[]> {
+    return this.http.get<AssignableUser[]>(`${this.auth.apiUrl}/groups/${groupId}/assignable-users`, { headers: this.auth.authHeaders() });
+  }
+
+  // Assign a title to a user, or clear it with userId === null.
+  assignTitle(titleId: string, userId: string | null): Observable<{ assigned_to: string | null; assigned_to_name: string | null }> {
+    return this.http.patch<{ assigned_to: string | null; assigned_to_name: string | null }>(
+      `${this.auth.apiUrl}/${titleId}/assign`,
+      { user_id: userId },
+      { headers: this.auth.authHeaders('json', true) }
+    );
   }
 
   // Users

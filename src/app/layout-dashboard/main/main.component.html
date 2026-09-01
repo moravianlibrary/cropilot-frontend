@@ -324,6 +324,19 @@
             </span>
             Vytvořit titul
           </span>
+          <span
+            class="button real-button with-icon secondary"
+            [class.disabled]="exportingTitles()"
+            (click)="exportTitlesCsv()"
+            (keydown.space)="exportTitlesCsv()"
+            (keydown.enter)="exportTitlesCsv()"
+            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+          >
+            <span class="icon">
+              <app-icon name="arrow-down-in-rect" [size]="16" />
+            </span>
+            Exportovat CSV
+          </span>
         }
         <label for="search-title" #searchLabel>
           <span class="icon">
@@ -373,6 +386,7 @@
             <col style="min-width:180px">
             <col style="min-width:165px">
             <col style="min-width:175px">
+            <col style="min-width:160px">
             <col style="width:44px">
             @if (tableHasScrollbar()) { <col style="width:12px"> }
           </colgroup>
@@ -561,12 +575,13 @@
                   </span>
                 </span>
               </th>
+              <th>Přiřazeno</th>
               <th></th>
               @if (tableHasScrollbar()) { <th style="padding:0"></th> }
             </tr>
           </thead>
         </table>
-        
+
         <div class="table-body-y-scroll os-pending" #bodyScroll>
           <table class="table-body">
             <colgroup>
@@ -578,6 +593,7 @@
               <col style="min-width:180px">
               <col style="min-width:165px">
               <col style="min-width:175px">
+              <col style="min-width:160px">
               <col style="width:44px">
               @if (tableHasScrollbar()) { <col style="width:12px"> }
             </colgroup>
@@ -648,6 +664,55 @@
                     <td>
                       @let modified = getDate(title.modified_at);
                       <span class="rel-date" [title]="modified[0] + ' ' + modified[1]">{{ getRelativeDate(title.modified_at) }}</span>
+                    </td>
+                    <td class="assign-cell">
+                      @if (auth.canUpload()) {
+                        <span
+                          class="assign-trigger"
+                          cdkOverlayOrigin
+                          #assignOrigin="cdkOverlayOrigin"
+                          [class.assigned]="!!title.assigned_to_name"
+                          [class.busy]="assigningTitleId() === title._id"
+                          (click)="openAssignMenu(title, $event)"
+                          (keydown.enter)="openAssignMenu(title, $event)"
+                          (keydown.space)="$event.preventDefault(); openAssignMenu(title, $event)"
+                          [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+                          [title]="title.assigned_to_name || 'Přiřadit uživateli'"
+                        >
+                          <span class="assign-name">{{ title.assigned_to_name || '—' }}</span>
+                          <span class="icon assign-caret"><app-icon name="arrow-down" [size]="12" /></span>
+                        </span>
+
+                        <ng-template
+                          cdkConnectedOverlay
+                          [cdkConnectedOverlayOrigin]="assignOrigin"
+                          [cdkConnectedOverlayOpen]="assignMenuTitleId() === title._id"
+                          [cdkConnectedOverlayPush]="true"
+                          (overlayOutsideClick)="closeAssignMenu()"
+                        >
+                          <div class="assign-dropdown">
+                            @if (title.assigned_to) {
+                              <button type="button" class="assign-option unassign" (click)="assignTitleTo(title, null, $event)">
+                                Zrušit přiřazení
+                              </button>
+                            }
+                            @for (u of assignableUsers(); track u._id) {
+                              <button
+                                type="button"
+                                class="assign-option"
+                                [class.current]="u._id === title.assigned_to"
+                                (click)="assignTitleTo(title, u._id, $event)"
+                              >
+                                {{ u.full_name }}
+                              </button>
+                            } @empty {
+                              <div class="assign-empty">Žádní uživatelé k přiřazení</div>
+                            }
+                          </div>
+                        </ng-template>
+                      } @else {
+                        <span [title]="title.assigned_to_name || ''">{{ title.assigned_to_name || '—' }}</span>
+                      }
                     </td>
                     <td class="nav-arrow-cell">
                       @if (canOpenTitle(title)) {

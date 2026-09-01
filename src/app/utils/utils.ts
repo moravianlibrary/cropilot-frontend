@@ -64,6 +64,34 @@ export const checkEmailValidity = (email: string): boolean => {
 }
 
 
+// ========== CSV EXPORT ==========
+// Escapes a single CSV cell: wraps in quotes and doubles inner quotes when the
+// value contains the delimiter, a quote, or a newline.
+export const escapeCsvCell = (value: unknown): string => {
+  const str = value == null ? '' : String(value);
+  return /[";\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
+// Serializes rows to a CSV string using ';' as the delimiter (Czech Excel default).
+export const rowsToCsv = (rows: unknown[][]): string => {
+  return rows.map(row => row.map(escapeCsvCell).join(';')).join('\r\n');
+}
+
+// Triggers a client-side download of CSV content. Prepends a UTF-8 BOM so Excel
+// opens Czech diacritics correctly.
+export const downloadCsv = (filename: string, content: string): void => {
+  const blob = new Blob(['﻿' + content], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+
 // ========== UI ==========
 export const defer = (fn: () => void, delay: number = 0) => {
   return setTimeout(fn, delay);
