@@ -1,0 +1,25 @@
+@if (!total()) {
+  <div class="empty">{{ emptyText() }}</div>
+} @else {
+  <div class="bar" role="img" [attr.aria-label]="segments().length + ' hodnot'">
+    @for (s of colored(); track s.label) {
+      <span
+        class="segment"
+        [style.flex]="s.value"
+        [style.background-color]="s.color"
+        [title]="s.label + ': ' + s.value + ' (' + fmtPct(s.pct) + ' %)'"
+      ></span>
+    }
+  </div>
+  @if (showLegend()) {
+    <div class="legend">
+      @for (s of colored(); track s.label) {
+        <span class="item">
+          <span class="dot" [style.background-color]="s.color"></span>
+          <span class="name">{{ s.label }}</span>
+          <span class="count">{{ s.value }} ({{ fmtPct(s.pct) }} %)</span>
+        </span>
+      }
+    </div>
+  }
+}

@@ -1,5 +1,5 @@
 // ========== DASHBOARD ==========
-export type DashboardPage = 'groups' | 'titles' | 'users';
+export type DashboardPage = 'groups' | 'titles' | 'users' | 'statistics';
 export type PermissionType = 'read_group' | 'read_title' | 'write' | 'upload';
 
 export interface Models {

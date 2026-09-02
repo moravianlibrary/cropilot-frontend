@@ -480,6 +480,12 @@ export class DashboardService {
     this.router.navigate(['/users']);
   }
 
+  navigateToStatistics(): void {
+    this.closeDrawer();
+    this.dashboardPage.set('statistics');
+    this.router.navigate(['/statistics']);
+  }
+
 
   // ========== DIALOGS ==========
   // Group
@@ -1770,7 +1776,9 @@ export class DashboardService {
           table = this.displayedUsers;
           selectedItem = this.selectedUser;
           break;
-      }      
+        default:
+          return; // statistics: no table rows to step through
+      }
 
       if (table().length <= 1) return;
 

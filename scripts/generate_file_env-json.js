@@ -21,7 +21,10 @@ const config = {
   environmentCode: process.env.APP_ENV_CODE || '',
 
   serverBaseUrl: process.env.APP_DATA_SERVER_URL || '',
-  authToken: process.env.APP_DATA_SERVER_AUTH_TOKEN || ''
+  authToken: process.env.APP_DATA_SERVER_AUTH_TOKEN || '',
+
+  // Usage telemetry (POST /events); anything but the string 'false' keeps it on.
+  telemetryEnabled: process.env.APP_TELEMETRY_ENABLED !== 'false'
 };
 
 fs.writeFileSync(outputPath, JSON.stringify(config, null, 2));

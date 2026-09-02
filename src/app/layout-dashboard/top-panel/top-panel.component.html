@@ -74,6 +74,19 @@
         </span>
         Správce uživatelů
       </span>
+      <span
+        class="tab"
+        [class.active]="dashboardPage === 'statistics'"
+        (click)="dashboard.navigateToStatistics()"
+        (keydown.space)="dashboard.navigateToStatistics()"
+        (keydown.enter)="dashboard.navigateToStatistics()"
+        [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+      >
+        <span class="icon">
+          <app-icon name="chart" [size]="20" />
+        </span>
+        Statistiky
+      </span>
     </span>
   }
   @if (user?._id !== '69b92fc488cb90543bf1a587') {

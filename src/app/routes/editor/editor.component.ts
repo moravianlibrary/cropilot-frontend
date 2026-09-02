@@ -13,6 +13,7 @@ import { UiService } from '../../services/ui.service';
 import { Title } from '@angular/platform-browser';
 import { scrollToElement, waitForElement } from '../../utils/utils';
 import { LocalStorageService } from '../../services/local-storage.service';
+import { TelemetryService } from '../../services/telemetry.service';
 
 @Component({
   selector: 'app-editor',
@@ -25,6 +26,7 @@ export class EditorComponent {
   auth = inject(AuthService);
   ui = inject(UiService);
   private storage = inject(LocalStorageService);
+  private telemetry = inject(TelemetryService);
   private router = inject(Router);
   private title = inject(Title);
   private activatedRoute = inject(ActivatedRoute);
@@ -124,6 +126,13 @@ export class EditorComponent {
         editor.scanTypeRadio.set(editor.selectedFilter);
         editor.selectedPageNumberFilter.set(this.storage.get('filterPageNumberStart', 'all', true) as PageNumberType);
         editor.pageNumberRadio.set(editor.selectedPageNumberFilter() ?? 'all');
+
+        // Usage telemetry: one session per opened title, settings snapshot included
+        this.telemetry.startSession(res._id, {
+          scans_total: imgItems.length,
+          scans_flagged: editor.flaggedIdsAtLoad().size,
+          can_write: this.auth.canWriteTitle()
+        }, editor.settingsSnapshot());
         
         // Set displayed images and main image
         editor.setDisplayedImages();
@@ -151,6 +160,7 @@ export class EditorComponent {
   }
 
   ngOnDestroy(): void {
+    this.telemetry.endSession('close');
     this.editor.cancelMainImageLoad();
     this.paramsOnBookId.unsubscribe();
   }

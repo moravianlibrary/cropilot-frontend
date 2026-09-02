@@ -35,6 +35,13 @@ export const routes: Routes = [
     canActivate: [ AuthService ]
   },
   {
+    path: 'statistics',
+    pathMatch: 'full',
+    loadComponent: () => import('./routes/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+    title: 'Statistiky | CROPILOT',
+    canActivate: [ AuthService ]
+  },
+  {
     path: 'book/:book_id',
     pathMatch: 'full',
     loadComponent: () => import('./routes/editor/editor.component').then((m) => m.EditorComponent),

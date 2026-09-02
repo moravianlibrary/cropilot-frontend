@@ -9,6 +9,7 @@ import { AuthService } from '../../services/auth.service';
 import { DashboardService } from '../../services/dashboard.service';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { LocalStorageService } from '../../services/local-storage.service';
+import { TelemetryService } from '../../services/telemetry.service';
 import { IconComponent } from "../../components/icon/icon.component";
 
 @Component({
@@ -22,6 +23,7 @@ export class LeftPanelComponent {
   dashboard = inject(DashboardService);
   auth = inject(AuthService);
   private storage = inject(LocalStorageService);
+  private telemetry = inject(TelemetryService);
 
   thumbnailsScroll = viewChild<ElementRef<HTMLDivElement>>('thumbnailsScroll');
   private osInstance?: ReturnType<typeof OverlayScrollbars>;
@@ -122,6 +124,7 @@ export class LeftPanelComponent {
     
     editor.updateImagesByCurrentPages();
     editor.setMainImage(image);
+    this.telemetry.track('mouse_action', { action: 'nav_thumbnail' });
 
     editor.lastSelectedImageId = image._id;
     this.storage.set('lastSelectedImageId', `${image._id}`);

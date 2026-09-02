@@ -8,6 +8,8 @@ import { clamp, defer, degreeToRadian, focusMainWrapper } from '../../utils/util
 import { MenuComponent } from '../../components/menu/menu.component';
 import { flagMessages } from '../../app.config';
 import { AuthService } from '../../services/auth.service';
+import { TelemetryService } from '../../services/telemetry.service';
+import { TelemetryAction } from '../../stats.types';
 import { IconComponent } from '../../components/icon/icon.component';
 import { getHeightResizeOrientation, getWidthResizeOrientation } from '../../utils/editor-geometry';
 import {
@@ -26,6 +28,8 @@ export class RightPanelComponent {
   editor = inject(EditorService);
   auth = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private telemetry = inject(TelemetryService);
+  private inputTrackTimers: Partial<Record<InputType, ReturnType<typeof setTimeout>>> = {};
 
   private firstFocus = { left: true, top: true, width: true, height: true, angle: true };
   private holdInterval: any;
@@ -61,6 +65,22 @@ export class RightPanelComponent {
 
   setOrientation(value: SegmentedControlValue): void {
     this.editor.rotate(value as ImageOrientation);
+    this.telemetry.track('mouse_action', { action: `rotate_scan_${value}` as TelemetryAction });
+  }
+
+  saveClick(): void {
+    this.editor.saveChanges('mouse');
+  }
+
+  // Typing / spinner bursts in the numeric inputs collapse into one action.
+  private trackInput(type: InputType): void {
+    const action: TelemetryAction = type === 'angle' ? 'rotate_page' : (type === 'left' || type === 'top') ? 'move_page' : 'resize_page';
+    const existing = this.inputTrackTimers[type];
+    if (existing) clearTimeout(existing);
+    this.inputTrackTimers[type] = setTimeout(() => {
+      this.telemetry.track('mouse_action', { action });
+      delete this.inputTrackTimers[type];
+    }, 600);
   }
 
 
@@ -76,6 +96,7 @@ export class RightPanelComponent {
     const editor = this.editor;
     const page = editor.selectedPage;
     if (!page) return;
+    this.trackInput(type);
 
     editor.lastLeftInput = page.left;
     editor.lastTopInput = page.top;

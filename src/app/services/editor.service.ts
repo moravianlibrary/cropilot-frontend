@@ -8,6 +8,9 @@ import { dimColorDict, gridColorDict, gridDensityDict, gridLineWidthDict, outlin
 import { AuthService } from './auth.service';
 import { UiService } from './ui.service';
 import { LocalStorageService } from './local-storage.service';
+import { TelemetryService } from './telemetry.service';
+import { EditorSettingsSnapshot, TelemetryVia } from '../stats.types';
+import { shortcutAction } from '../utils/shortcut-actions';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +21,7 @@ export class EditorService {
   private auth = inject(AuthService);
   private ui = inject(UiService);
   private storage = inject(LocalStorageService);
+  private telemetry = inject(TelemetryService);
   
   private get apiUrl(): string { return this.env.get('serverBaseUrl') };
 
@@ -202,7 +206,7 @@ export class EditorService {
 
 
   // ========== API ACTIONS ==========
-  saveChanges(): void {
+  saveChanges(via: TelemetryVia = 'keyboard'): void {
     if (!this.auth.canWriteTitle()) return;
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
     if (this.imgWasEdited()) this.updateImagesByEdited(this.mainImageItem()._id);
@@ -230,6 +234,8 @@ export class EditorService {
       this.sthWasEdited = false;
       this.setDisplayedImages();
       this.ui.showToast('Změny byly úspěšně uloženy!', { type: 'success' });
+      this.telemetry.noteSave();
+      this.telemetry.track('save', { scans_edited: editedImages.length, via });
     });
   }
 
@@ -253,6 +259,7 @@ export class EditorService {
     this.imgWasEdited.set(false);
 
     this.ui.showToast('Změny skenu byly úspěšně resetovány!', { type: 'success' });
+    this.telemetry.track('reset_scan', {});
   }
 
   resetDoc(): void {
@@ -275,6 +282,7 @@ export class EditorService {
       this.setMainImage(this.displayedImagesFinal()[0]);
 
       this.ui.showToast('Změny dokumentu byly úspěšně resetovány!', { type: 'success' });
+      this.telemetry.track('reset_title', {});
     });
   }
 
@@ -312,10 +320,11 @@ export class EditorService {
     }
   }
 
-  switchFilter(filter: ScanType): void {
+  switchFilter(filter: ScanType, via: TelemetryVia = 'mouse'): void {
     this.updateImagesByCurrentPages();
     
     this.selectedFilter = filter;
+    this.telemetry.track('filter_change', { filter: 'scan_type', value: filter, via });
     
     const mainImageItemId = this.mainImageItem()._id;
     if (this.imgWasEdited()) {
@@ -331,11 +340,12 @@ export class EditorService {
     scrollToSelectedImage(newImage._id, 100);
   }
 
-  togglePageNumberFilter(filter: PageNumberType | null): void {
+  togglePageNumberFilter(filter: PageNumberType | null, via: TelemetryVia = 'mouse'): void {
     this.clickedPageNumberFilter = true;
     this.updateImagesByCurrentPages();
     
     this.selectedPageNumberFilter.update(prev => prev === filter ? null : filter);
+    this.telemetry.track('filter_change', { filter: 'page_number', value: this.selectedPageNumberFilter() ?? 'all', via });
     
     const mainImageItemId = this.mainImageItem()._id;
 
@@ -1902,6 +1912,25 @@ export class EditorService {
     this.storage.set('defaultFitMode', defaultFitModeRadio);
     this.applyDefaultZoom();
     this.ui.showToast('Nastavení bylo uloženo.', { type: 'success' });
+    this.telemetry.track('settings_snapshot', this.settingsSnapshot());
+  }
+
+  // Flat copy of every persisted editor setting, sent to telemetry on editor
+  // open and after saving settings (statistics of what users actually use).
+  settingsSnapshot(): EditorSettingsSnapshot {
+    return {
+      dimColor: this.dimColor(),
+      gridMode: this.gridMode(),
+      gridDensityLabel: this.gridDensityLabel(),
+      gridColorLabel: this.gridColorLabel(),
+      gridLineWidthLabel: this.gridLineWidthLabel(),
+      outlineWidthLabel: this.outlineWidthLabel(),
+      outlineDashed: this.outlineDashed,
+      defaultFitMode: this.defaultFitMode(),
+      filterScanTypeStart: this.storage.get<ScanType>('filterScanTypeStart', 'all', true) ?? 'all',
+      filterPageNumberStart: this.storage.get<PageNumberType>('filterPageNumberStart', 'all', true) ?? 'all',
+      showPredictions: this.showPredictions
+    };
   }
 
   openShortcutsDialog(): void {
@@ -2000,6 +2029,8 @@ export class EditorService {
     event.preventDefault();
     event.stopPropagation();
     const dialogOpen = this.ui.dialogOpen();
+    const action = shortcutAction(event, { pageSelected: !!this.selectedPage, dialogOpen });
+    if (action) this.telemetry.track('shortcut', { action, key });
     const canWriteTitle = this.auth.canWriteTitle();
     // Editing shortcuts are available in read mode too; only saving is restricted.
     const canEditTitle = this.auth.canEditTitle();
@@ -2014,7 +2045,7 @@ export class EditorService {
     if ((key === '+' || key === 'ě' || key === 'Ě' || key === '1' || key === '2') && !event.ctrlKey && !dialogOpen) {
       if (event.altKey || event.metaKey) {
         if ((['+', '1'].includes(key) && this.pageImagesNumber(1) === 0) || ['ě', 'Ě', '2'].includes(key) && this.pageImagesNumber(2) === 0) return;
-        this.togglePageNumberFilter(['+', '1'].includes(key) ? 'single' : 'double');
+        this.togglePageNumberFilter(['+', '1'].includes(key) ? 'single' : 'double', 'keyboard');
         return;
       }
       
@@ -2062,6 +2093,8 @@ export class EditorService {
     if (this.auth.isAdmin() && ['j', 'J'].includes(key) && !dialogOpen) {
       this.showPredictions = !this.showPredictions;
       this.storage.set('showPredictions', this.showPredictions);
+      this.telemetry.track('predictions_toggled', { enabled: this.showPredictions });
+      this.telemetry.flush('hidden'); // reload follows; keepalive delivers the batch
       window.location.reload();
     }
 
@@ -2563,7 +2596,7 @@ export class EditorService {
       const filter = filterByKey[key];
       if (filter) {
         this.selectedFilter = filter;
-        this.switchFilter(this.selectedFilter);
+        this.switchFilter(filter, 'keyboard');
       }
     }
 

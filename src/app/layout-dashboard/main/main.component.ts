@@ -17,10 +17,11 @@ import { TagsOverflowComponent } from '../../components/tags-overflow/tags-overf
 import { ThTooltipDirective } from '../../directives/th-tooltip.directive';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { IconComponent } from '../../components/icon/icon.component';
+import { StatisticsComponent } from '../statistics/statistics.component';
 
 @Component({
   selector: 'app-main-dashboard',
-  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent, TagsOverflowComponent, ThTooltipDirective, IconComponent],
+  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent, TagsOverflowComponent, ThTooltipDirective, IconComponent, StatisticsComponent],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
 })
@@ -150,10 +151,18 @@ export class MainComponent {
                 })
               );
 
+            // Statistics (admin) — own component, no table below
+            case 'statistics':
+              this.dashboard.dashboardPage.set('statistics');
+              this.title.setTitle('Statistiky | CROPILOT');
+              return of(null);
+
             default:
               return of(null);
           }
-        })).subscribe(async () => {      
+        })).subscribe(async () => {
+          // The statistics page has no table/search input; waiting for one would never resolve.
+          if (this.dashboard.dashboardPage() === 'statistics') return;
           const someResults = await waitForElement('tbody tr:not(.no-results)');
           const tableScroll = this.bodyScroll()?.nativeElement as HTMLDivElement;
           this.osInstance = OverlayScrollbars(tableScroll, {

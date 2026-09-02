@@ -13,6 +13,7 @@ name: Main workflow
 # - APP_ENV_CODE
 # - APP_DATA_SERVER_URL
 # - APP_DATA_SERVER_AUTH_TOKEN
+# - APP_TELEMETRY_ENABLED (optional, default true)
 
 # this workflow uses actions:
 # https://github.com/marketplace/actions/create-json
@@ -230,6 +231,7 @@ jobs:
           TF_VAR_APP_ENV_CODE: ${{ vars.APP_ENV_CODE }}
           TF_VAR_APP_DATA_SERVER_URL: ${{ vars.APP_DATA_SERVER_URL }}
           TF_VAR_APP_DATA_SERVER_AUTH_TOKEN: ${{ vars.APP_DATA_SERVER_AUTH_TOKEN }}
+          TF_VAR_APP_TELEMETRY_ENABLED: ${{ vars.APP_TELEMETRY_ENABLED || 'true' }}
         with:
           TERRAFORM_DOCKER_IMAGE: ${DOCKER_IMAGE}
           TERRAFORM_DOCKER_CONTAINER_NAME: ${{ matrix.name }}

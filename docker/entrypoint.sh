@@ -9,7 +9,9 @@ cat <<EOF > /usr/share/nginx/html/assets/env.json
   "environmentCode": "${APP_ENV_CODE:-docker}",
 
   "serverBaseUrl": "${APP_DATA_SERVER_URL}",
-  "authToken": "${APP_DATA_SERVER_AUTH_TOKEN}"
+  "authToken": "${APP_DATA_SERVER_AUTH_TOKEN}",
+
+  "telemetryEnabled": ${APP_TELEMETRY_ENABLED:-true}
 }
 EOF
 

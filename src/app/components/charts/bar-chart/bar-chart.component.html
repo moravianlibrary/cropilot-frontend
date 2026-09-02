@@ -1,0 +1,31 @@
+@if (!data().length) {
+  <div class="empty">{{ emptyText() }}</div>
+} @else if (horizontal()) {
+  <div class="rows">
+    @for (d of data(); track d.label) {
+      <div class="row" [title]="d.hint ?? d.label">
+        <span class="row-label">{{ d.label }}</span>
+        <span class="track">
+          <span class="fill" [style.width.%]="percent(d.value)"></span>
+        </span>
+        @if (showValues()) {
+          <span class="row-value">{{ d.value }}</span>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <div class="columns" [style.height.px]="height()">
+    @for (d of data(); track d.label) {
+      <div class="column" [title]="d.hint ?? d.label">
+        @if (showValues()) {
+          <span class="col-value">{{ d.value }}</span>
+        }
+        <span class="col-track">
+          <span class="col-fill" [style.height.%]="percent(d.value)"></span>
+        </span>
+        <span class="col-label">{{ d.label }}</span>
+      </div>
+    }
+  </div>
+}

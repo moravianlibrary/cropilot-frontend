@@ -1,0 +1,356 @@
+@let loading = stats.loading();
+@let hasData = !!stats.overview();
+
+<div class="stats-page">
+  <div class="filters">
+    <div class="filters-left">
+      <app-segmented-control
+        [options]="presetOptions"
+        [value]="stats.preset()"
+        (valueChange)="onPreset($event)"
+        size="small"
+        ariaLabel="Období"
+      />
+      @if (stats.preset() === 'custom') {
+        <label class="date">
+          <span>Od</span>
+          <input type="date" [ngModel]="stats.from()" (ngModelChange)="onDate('from', $event)" [max]="stats.to()" />
+        </label>
+        <label class="date">
+          <span>Do</span>
+          <input type="date" [ngModel]="stats.to()" (ngModelChange)="onDate('to', $event)" [min]="stats.from()" />
+        </label>
+      } @else {
+        <span class="range">{{ rangeLabel() }}</span>
+      }
+    </div>
+    <div class="filters-right">
+      <app-select
+        inputName="stats-group"
+        [width]="220"
+        [options]="stats.groupOptions()"
+        [ngModel]="stats.groupId()"
+        (ngModelChange)="onSelect(stats.groupId, $event)"
+      />
+      <app-select
+        inputName="stats-crop-model"
+        [width]="220"
+        [options]="stats.cropModelOptions()"
+        [ngModel]="stats.cropModel()"
+        (ngModelChange)="onSelect(stats.cropModel, $event)"
+      />
+      <app-select
+        inputName="stats-rotation-model"
+        [width]="220"
+        [options]="stats.rotationModelOptions()"
+        [ngModel]="stats.rotationModel()"
+        (ngModelChange)="onSelect(stats.rotationModel, $event)"
+      />
+    </div>
+  </div>
+
+  <div class="stats-scroll" [class.is-loading]="loading">
+    @if (loading && !hasData) {
+      <div class="loading"><app-loader /></div>
+    } @else if (hasData) {
+
+      <!-- Přehled -->
+      <section class="kpis">
+        @for (k of kpis(); track k.label) {
+          <app-kpi-tile [label]="k.label" [value]="k.value" [hint]="k.hint ?? ''" />
+        }
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2>Stavy titulů</h2>
+        </div>
+        <app-stacked-bar [segments]="stateSegments()" emptyText="V období nejsou žádné tituly" />
+      </section>
+
+      <!-- Kvalita predikcí -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>Kvalita predikcí</h2>
+            <p class="subtitle">Jak moc museli uživatelé opravovat návrhy modelu. Počítá se z titulů, které byly v období uloženy.</p>
+          </div>
+          <div class="card-actions">
+            <app-segmented-control [options]="groupByOptions" [value]="stats.qualityGroupBy()" (valueChange)="onQualityGroupBy($event)" size="small" ariaLabel="Seskupit podle" />
+            <button type="button" class="export" (click)="exportQuality()" [disabled]="!stats.quality().length">Export CSV</button>
+          </div>
+        </div>
+        @if (!stats.quality().length) {
+          <div class="empty">Žádné uložené tituly v období.</div>
+        } @else {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>{{ groupByLabel(stats.qualityGroupBy()) }}</th>
+                  <th class="num">Tituly</th>
+                  <th class="num">Skeny</th>
+                  <th class="bar-col">Upravené skeny</th>
+                  <th class="num" title="Podíl skenů, kde se geometrie výřezu skutečně změnila (ne jen uložení beze změny)">Skutečně změněné</th>
+                  <th class="num" title="Průměrný překryv predikce a výsledného výřezu (1 = shoda)">IoU</th>
+                  <th class="num" title="Průměrný posun středu výřezu v podílu velikosti skenu">Posun</th>
+                  <th class="num">Δ úhel</th>
+                  <th class="num">+ strany</th>
+                  <th class="num">− strany</th>
+                  <th class="num" title="Podíl skenů s otočenou orientací">Orientace</th>
+                  <th class="bar-col" title="Podíl uzavřených titulů odeslaných na přetrénování (více než 10 % upravených skenů)">Přetrénování</th>
+                  <th class="num" title="Medián doby od dokončení predikce do prvního uložení">Doba kontroly</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of stats.quality(); track r.key) {
+                  <tr>
+                    <td class="name">{{ r.key_name }}</td>
+                    <td class="num">{{ fmtNum(r.n_titles) }}</td>
+                    <td class="num">{{ fmtNum(r.scans_total) }}</td>
+                    <td class="bar-col">
+                      <span class="inline-bar"><span class="fill" [style.width.%]="(r.mean_edit_ratio ?? 0) * 100"></span></span>
+                      <span class="inline-value">{{ fmtPct(r.mean_edit_ratio) }}</span>
+                    </td>
+                    <td class="num">{{ fmtPct(r.mean_changed_ratio) }}</td>
+                    <td class="num">{{ fmtNum(r.mean_iou, 3) }}</td>
+                    <td class="num">{{ fmtPct(r.mean_center_shift, 1) }}</td>
+                    <td class="num">{{ fmtNum(r.mean_angle_delta, 2) }}°</td>
+                    <td class="num">{{ fmtNum(r.pages_added) }}</td>
+                    <td class="num">{{ fmtNum(r.pages_removed) }}</td>
+                    <td class="num">{{ fmtPct(r.orientation_change_rate) }}</td>
+                    <td class="bar-col">
+                      <span class="inline-bar warn"><span class="fill" [style.width.%]="(r.retrain_rate ?? 0) * 100"></span></span>
+                      <span class="inline-value">{{ fmtPct(r.retrain_rate) }}</span>
+                    </td>
+                    <td class="num">{{ fmtDuration(r.median_turnaround_s) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <!-- Anomálie -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>Anomálie</h2>
+            <p class="subtitle">Jak dobře příznaky anomálií odpovídají tomu, co uživatelé skutečně opravili.</p>
+          </div>
+          <div class="card-actions">
+            <app-segmented-control [options]="anomaliesGroupByOptions" [value]="stats.anomaliesGroupBy()" (valueChange)="onAnomaliesGroupBy($event)" size="small" ariaLabel="Seskupit podle" />
+            <button type="button" class="export" (click)="exportAnomalies()" [disabled]="!stats.anomalies().length">Export CSV</button>
+          </div>
+        </div>
+        @if (!stats.anomalies().length) {
+          <div class="empty">Žádné zpracované tituly v období.</div>
+        } @else if (anomaliesTotal()) {
+          @let total = anomaliesTotal()!;
+          <div class="mini-kpis">
+            <app-kpi-tile label="Skeny" [value]="fmtNum(total.scans)" />
+            <app-kpi-tile label="Podezřelé skeny" [value]="fmtNum(total.flagged)" [hint]="fmtPct(total.scans ? total.flagged / total.scans : null) + ' ze všech'" />
+            <app-kpi-tile label="Přesnost" [value]="fmtPct(total.precision)" hint="Podíl podezřelých skenů, které uživatel upravil" />
+            <app-kpi-tile label="Záchyt" [value]="fmtPct(total.recall)" hint="Podíl upravených skenů, které byly označeny jako podezřelé" />
+            <app-kpi-tile label="Upravené bez příznaku" [value]="fmtNum(total.unflagged_edited)" hint="Chyby, které anomálie nezachytily" />
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Anomálie</th>
+                  <th class="num">Skeny s příznakem</th>
+                  <th class="num">Z toho upravené</th>
+                  <th class="bar-col">Podíl upravených</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (f of flagRows(); track f.flag) {
+                  <tr>
+                    <td class="name">{{ f.label }}</td>
+                    <td class="num">{{ fmtNum(f.n) }}</td>
+                    <td class="num">{{ fmtNum(f.edited) }}</td>
+                    <td class="bar-col">
+                      <span class="inline-bar"><span class="fill" [style.width.%]="(f.edit_rate ?? 0) * 100"></span></span>
+                      <span class="inline-value">{{ fmtPct(f.edit_rate) }}</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>{{ groupByLabel(stats.anomaliesGroupBy()) }}</th>
+                  <th class="num">Skeny</th>
+                  <th class="num">Podezřelé</th>
+                  <th class="num">Upravené</th>
+                  <th class="bar-col" title="Podíl podezřelých skenů, které uživatel upravil">Přesnost</th>
+                  <th class="num" title="Podíl upravených skenů, které byly označeny jako podezřelé">Záchyt</th>
+                  <th class="num">Upravené bez příznaku</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of stats.anomalies(); track r.key) {
+                  <tr>
+                    <td class="name">{{ r.key_name }}</td>
+                    <td class="num">{{ fmtNum(r.scans) }}</td>
+                    <td class="num">{{ fmtNum(r.flagged) }}</td>
+                    <td class="num">{{ fmtNum(r.edited) }}</td>
+                    <td class="bar-col">
+                      <span class="inline-bar"><span class="fill" [style.width.%]="(r.precision ?? 0) * 100"></span></span>
+                      <span class="inline-value">{{ fmtPct(r.precision) }}</span>
+                    </td>
+                    <td class="num">{{ fmtPct(r.recall) }}</td>
+                    <td class="num">{{ fmtNum(r.unflagged_edited) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <!-- Používání editoru -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>Používání editoru</h2>
+            <p class="subtitle">Z událostí editoru: čas s otevřenou záložkou, uložení, klávesové zkratky vs. myš. Agregováno, bez jednotlivých uživatelů.</p>
+          </div>
+          <div class="card-actions">
+            <app-segmented-control [options]="usageGroupByOptions" [value]="stats.usageGroupBy()" (valueChange)="onUsageGroupBy($event)" size="small" ariaLabel="Seskupit podle" />
+            <button type="button" class="export" (click)="exportUsage()" [disabled]="!stats.usage().length">Export CSV</button>
+          </div>
+        </div>
+        @if (!stats.usage().length) {
+          <div class="empty">V období nebyly zaznamenány žádné události editoru.</div>
+        } @else {
+          @let totals = usageTotals();
+          <div class="mini-kpis">
+            <app-kpi-tile label="Otevření editoru" [value]="fmtNum(totals.sessions)" />
+            <app-kpi-tile label="Průměrný čas na otevření" [value]="fmtDuration(totals.meanDuration)" />
+            <app-kpi-tile label="Uložení na otevření" [value]="fmtNum(totals.savesPerSession, 2)" />
+            <app-kpi-tile label="Podíl klávesnice" [value]="fmtPct(totals.keyboardRatio)" hint="Zkratky vs. akce myší" />
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>{{ groupByLabel(stats.usageGroupBy()) }}</th>
+                  <th class="num">Otevření</th>
+                  <th class="num">Celkový čas</th>
+                  <th class="num">Průměrný čas</th>
+                  <th class="num">Uložení</th>
+                  <th class="num">Uložení / otevření</th>
+                  <th class="num">Zkratky</th>
+                  <th class="num">Akce myší</th>
+                  <th class="bar-col">Podíl klávesnice</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of stats.usage(); track r.key) {
+                  <tr>
+                    <td class="name">{{ usageRowLabel(r) }}</td>
+                    <td class="num">{{ fmtNum(r.sessions) }}</td>
+                    <td class="num">{{ fmtDuration(r.total_duration_s) }}</td>
+                    <td class="num">{{ fmtDuration(r.mean_duration_s) }}</td>
+                    <td class="num">{{ fmtNum(r.saves) }}</td>
+                    <td class="num">{{ fmtNum(r.saves_per_session, 2) }}</td>
+                    <td class="num">{{ fmtNum(r.shortcuts) }}</td>
+                    <td class="num">{{ fmtNum(r.mouse_actions) }}</td>
+                    <td class="bar-col">
+                      <span class="inline-bar"><span class="fill" [style.width.%]="(r.keyboard_ratio ?? 0) * 100"></span></span>
+                      <span class="inline-value">{{ fmtPct(r.keyboard_ratio) }}</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="two-cols">
+            <div>
+              <h3>Nejpoužívanější zkratky</h3>
+              <app-bar-chart [data]="topShortcuts()" [horizontal]="true" emptyText="Žádné zkratky v období" />
+            </div>
+            <div>
+              <h3>Klávesnice vs. myš podle akce</h3>
+              @if (!actionRows().length) {
+                <div class="empty">Žádné akce v období.</div>
+              } @else {
+                <div class="table-wrap compact">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Akce</th>
+                        <th class="num">Klávesnice</th>
+                        <th class="num">Myš</th>
+                        <th class="bar-col">Podíl klávesnice</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (a of actionRows(); track a.action) {
+                        <tr>
+                          <td class="name">{{ a.label }}</td>
+                          <td class="num">{{ fmtNum(a.keyboard) }}</td>
+                          <td class="num">{{ fmtNum(a.mouse) }}</td>
+                          <td class="bar-col">
+                            <span class="inline-bar"><span class="fill" [style.width.%]="(keyboardShare(a) ?? 0) * 100"></span></span>
+                            <span class="inline-value">{{ fmtPct(keyboardShare(a)) }}</span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+
+          @if (filterUsage().length) {
+            <h3>Použití filtrů</h3>
+            <div class="distributions">
+              @for (f of filterUsage(); track f.filter) {
+                <div class="distribution">
+                  <span class="dist-label">{{ f.label }}</span>
+                  <app-stacked-bar [segments]="f.segments" />
+                </div>
+              }
+            </div>
+          }
+        }
+      </section>
+
+      <!-- Nastavení uživatelů -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>Nastavení editoru</h2>
+            <p class="subtitle">Rozložení hodnot podle posledního nastavení každého uživatele{{ stats.settings()?.users_total ? ' (' + fmtNum(stats.settings()?.users_total) + ' uživatelů)' : '' }}. Nezávisí na zvoleném období.</p>
+          </div>
+          <div class="card-actions">
+            <button type="button" class="export" (click)="exportSettings()" [disabled]="!settingRows().length">Export CSV</button>
+          </div>
+        </div>
+        @if (!settingRows().length) {
+          <div class="empty">Zatím žádné snapshoty nastavení. Vzniknou při otevření editoru.</div>
+        } @else {
+          <div class="distributions">
+            @for (s of settingRows(); track s.key) {
+              <div class="distribution">
+                <span class="dist-label">{{ s.label }}</span>
+                <app-stacked-bar [segments]="s.segments" />
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+  </div>
+</div>

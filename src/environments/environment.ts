@@ -9,5 +9,7 @@ export const environment = {
 
     serverBaseUrl: '', // pro produkci ziskej z promenne APP_DATA_SERVER_URL (přes env.json)
     authToken: '', // pro produkci ziskej z promenne APP_DATA_SERVER_AUTH_TOKEN (přes env.json)
+
+    telemetryEnabled: true, // pro produkci ziskej z promenne APP_TELEMETRY_ENABLED (přes env.json); false vypne odesílání událostí do /events
         
 }

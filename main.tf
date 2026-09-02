@@ -29,6 +29,11 @@ variable "APP_DATA_SERVER_AUTH_TOKEN" {
   type = string
 }
 
+variable "APP_TELEMETRY_ENABLED" {
+  type    = string
+  default = "true"
+}
+
 variable "docker_host_uri" {
   type = string
 }
@@ -87,7 +92,8 @@ resource "docker_container" "orezy_frontend" {
     "APP_ENV_NAME=${var.APP_ENV_NAME}",
     "APP_ENV_CODE=${var.APP_ENV_CODE}",
     "APP_DATA_SERVER_URL=${var.APP_DATA_SERVER_URL}",
-    "APP_DATA_SERVER_AUTH_TOKEN=${var.APP_DATA_SERVER_AUTH_TOKEN}"
+    "APP_DATA_SERVER_AUTH_TOKEN=${var.APP_DATA_SERVER_AUTH_TOKEN}",
+    "APP_TELEMETRY_ENABLED=${var.APP_TELEMETRY_ENABLED}"
   ]
 
   labels {

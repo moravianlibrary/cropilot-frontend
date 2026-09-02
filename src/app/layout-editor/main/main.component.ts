@@ -1,4 +1,5 @@
 import { Component, ElementRef, inject, NgZone, viewChild } from '@angular/core';
+import { TelemetryService } from '../../services/telemetry.service';
 import { EditorService } from '../../services/editor.service';
 import { clamp, degreeToRadian, radianToDegree } from '../../utils/utils';
 import { CornerName, EdgeLocalOrientation, EdgeSide, HitInfo, Page } from '../../app.types';
@@ -16,6 +17,7 @@ import { hitTestPageGeometry, localCornerToUserCorner } from '../../utils/editor
 })
 export class MainComponent {
   editor = inject(EditorService);
+  private telemetry = inject(TelemetryService);
   private auth = inject(AuthService);
   private ui = inject(UiService);
 
@@ -167,6 +169,7 @@ export class MainComponent {
       if (ev.ctrlKey || ev.metaKey) {
         const factor = Math.exp(-wev.deltaY * editor.zoomFactor);
         editor.setZoomAt(sx, sy, editor.viewport.scale * factor);
+        this.trackWheelZoom(wev.deltaY);
         if (canWriteTitle) hoveringPage();
       }
 
@@ -264,8 +267,10 @@ export class MainComponent {
         }
 
         if (ev.type === 'mouseup') {
+          const moved = this.mouseMovedSince(editor.dragStartMouse, ev);
           editor.isDragging = false;
           editor.dragStartPage = null;
+          if (moved) this.telemetry.track('mouse_action', { action: 'move_page' });
 
           if (!editor.imgWasEdited()) return;
           if (hitPage) editor.hoveringPage(hitPage._id);
@@ -304,6 +309,7 @@ export class MainComponent {
           editor.startHit = null;
           editor.isRotating = false;
           editor.rotationStartPage = null;
+          this.telemetry.track('mouse_action', { action: 'rotate_page' });
           editor.redrawAllPages();
           editor.mainImageItem.set({ ...editor.mainImageItem(), url: editor.c.toDataURL('image/jpeg') });
           return;
@@ -328,6 +334,7 @@ export class MainComponent {
       }
 
       if (ev.type === 'mouseup' && editor.resizeMode) {
+        if (editor.isResizing) this.telemetry.track('mouse_action', { action: 'resize_page' });
         editor.isResizing = false;
         editor.resizeMode = null;
         editor.resizeStartPage = null;
@@ -2335,9 +2342,33 @@ export class MainComponent {
     editor.redrawAllPages();
   }
 
+  // ========== TELEMETRY HELPERS ==========
+  private wheelZoomTimer: ReturnType<typeof setTimeout> | null = null;
+  private wheelZoomDelta = 0;
+
+  private mouseMovedSince(start: { x: number; y: number } | null, ev: MouseEvent): boolean {
+    const pos = this.getMousePos(ev);
+    return !!start && !!pos && (start.x !== pos.x || start.y !== pos.y);
+  }
+
+  // A wheel gesture fires dozens of events; report one zoom action per burst.
+  private trackWheelZoom(deltaY: number): void {
+    this.wheelZoomDelta += deltaY;
+    if (this.wheelZoomTimer) clearTimeout(this.wheelZoomTimer);
+    this.wheelZoomTimer = setTimeout(() => {
+      this.telemetry.track('mouse_action', { action: this.wheelZoomDelta < 0 ? 'zoom_in' : 'zoom_out' });
+      this.wheelZoomDelta = 0;
+      this.wheelZoomTimer = null;
+    }, 400);
+  }
+
   private stopDragRotateResize(): void {
     const editor = this.editor;
     if (editor.isDragging || editor.isRotating || editor.isResizing) {
+      // Interaction released outside the canvas; count it once here.
+      this.telemetry.track('mouse_action', {
+        action: editor.isDragging ? 'move_page' : editor.isRotating ? 'rotate_page' : 'resize_page'
+      });
       editor.isDragging = false;
       editor.dragStartPage = null;
       editor.dragStartMouse = null;
