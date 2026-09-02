@@ -286,16 +286,16 @@ export class MainComponent {
         return throwError(() => err);
       })
     ).subscribe(titles => {
-      const header = ['Název titulu', 'ID titulu', 'Ořezový model', 'Rotační model', 'Stav', 'Vytvořeno', 'Upraveno', 'Přiřazeno'];
+      const header = ['Název titulu', 'ID titulu', 'Stav', 'Zpracovatel', 'Ořezový model', 'Rotační model', 'Vytvořeno', 'Upraveno'];
       const rows = titles.map(t => [
         t.external_id ?? t._id,
         t._id,
+        titleStateDict[t.state] ?? t.state,
+        t.assigned_to_name ?? '',
         t.settings?.crop_model ?? 'Neznámý',
         t.settings?.rotation_model ?? 'Neznámý',
-        titleStateDict[t.state] ?? t.state,
         getDate(t.created_at).join(' '),
         getDate(t.modified_at).join(' '),
-        t.assigned_to_name ?? '',
       ]);
 
       const groupName = this.dashboard.selectedGroupPage()?.name ?? 'skupina';

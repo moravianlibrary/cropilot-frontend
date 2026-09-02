@@ -378,17 +378,17 @@
           @let canUpload = auth.canUpload();
           @let seeActions = isAdmin || canUpload;
           <colgroup>
-            @if (seeActions) { <col [style]="`width:${isAdmin ? 92 : 52}px`"> }
-            <col style="min-width:230px">
-            <col style="min-width:230px">
-            <col style="min-width:140px">
-            <col style="min-width:96px">
-            <col style="min-width:180px">
-            <col style="min-width:165px">
-            <col style="min-width:175px">
-            <col style="min-width:160px">
-            <col style="width:44px">
-            @if (tableHasScrollbar()) { <col style="width:12px"> }
+            @if (seeActions) { <col [style]="`width:${isAdmin ? 92 : 52}px`"> } <!-- Akce -->
+            <col style="min-width:230px"> <!-- Název titulu -->
+            <col style="min-width:230px"> <!-- ID titulu -->
+            <col style="min-width:180px"> <!-- Stav -->
+            <col style="min-width:160px"> <!-- Zpracovatel -->
+            <col style="min-width:140px"> <!-- Ořezový model -->
+            <col style="min-width:96px"> <!-- Rotační -->
+            <col style="min-width:165px"> <!-- Vytvořeno -->
+            <col style="min-width:175px"> <!-- Upraveno -->
+            <col style="width:44px"> <!-- nav arrow -->
+            @if (tableHasScrollbar()) { <col style="width:12px"> } <!-- scrollbar spacer -->
           </colgroup>
           <thead>
             <tr>
@@ -414,6 +414,67 @@
                 </span>
               </th>
               <th>ID titulu</th>
+              <th class="state-dropdown-wrapper" #stateDropdown cdkOverlayOrigin>
+                <div class="filter-dropdown-title" (click)="toggleStateDropdown()">
+                  Stav
+                  <span class="filter-icon-wrapper">
+                    <span class="icon filter-icon" [class.active]="selectedState !== 'all'">
+                      <app-icon name="filter" [size]="16" />
+                    </span>
+                  </span>
+                </div>
+
+                <ng-template
+                  cdkConnectedOverlay
+                  [cdkConnectedOverlayPanelClass]="'state-dropdown-wrapper'"
+                  [cdkConnectedOverlayOrigin]="stateDropdown"
+                  [cdkConnectedOverlayOpen]="stateDropdownOpen"
+                  [cdkConnectedOverlayPush]="true"
+                  (overlayOutsideClick)="stateDropdownOpen = false"
+                >
+                  <div
+                    class="filter-dropdown radios-wrapper"
+                    [class.show]="stateDropdownOpen"
+                  >
+                    @for (state of stateOptions; track state) {
+                      @let stateValue = titleStateFilterDict[state];
+                      <label
+                        class="radio"
+                        [for]="stateValue"
+                      >
+                        <input
+                          type="radio"
+                          [id]="stateValue"
+                          [name]="stateValue"
+                          [checked]="stateValue === selectedState"
+                          (click)="onStateChange(stateValue)"
+                        />
+                        <span class="radio-value">{{ state }}</span>
+                      </label>
+                    }
+                  </div>
+                </ng-template>
+              </th>
+              <th>
+                <span
+                  class="sort-wrapper"
+                  (click)="sort('assigned_to_name')"
+                  thTooltip
+                  [direction]="sortState.direction"
+                  [activeField]="'assigned_to_name'"
+                >
+                  Zpracovatel
+                  <span class="icon-wrapper">
+                    <span
+                      class="icon"
+                      [class.active]="sortState.field === 'assigned_to_name' && sortState.direction"
+                      [class.oldest]="sortState.field === 'assigned_to_name' && sortState.direction === 'asc'"
+                    >
+                      <app-icon name="arrow-down" [size]="16" />
+                    </span>
+                  </span>
+                </span>
+              </th>
               <th class="crop-model-dropdown-wrapper" #cropModelDropdown cdkOverlayOrigin>
                 <div class="filter-dropdown-title" (click)="toggleCropModelDropdown()">
                   Ořezový model
@@ -494,47 +555,6 @@
                   </div>
                 </ng-template>
               </th>
-              <th class="state-dropdown-wrapper" #stateDropdown cdkOverlayOrigin>
-                <div class="filter-dropdown-title" (click)="toggleStateDropdown()">
-                  Stav
-                  <span class="filter-icon-wrapper">
-                    <span class="icon filter-icon" [class.active]="selectedState !== 'all'">
-                      <app-icon name="filter" [size]="16" />
-                    </span>
-                  </span>
-                </div>
-
-                <ng-template
-                  cdkConnectedOverlay
-                  [cdkConnectedOverlayPanelClass]="'state-dropdown-wrapper'"
-                  [cdkConnectedOverlayOrigin]="stateDropdown"
-                  [cdkConnectedOverlayOpen]="stateDropdownOpen"
-                  [cdkConnectedOverlayPush]="true"
-                  (overlayOutsideClick)="stateDropdownOpen = false"
-                >
-                  <div
-                    class="filter-dropdown radios-wrapper"
-                    [class.show]="stateDropdownOpen"
-                  >
-                    @for (state of stateOptions; track state) {
-                      @let stateValue = titleStateFilterDict[state];
-                      <label
-                        class="radio"
-                        [for]="stateValue"
-                      >
-                        <input
-                          type="radio"
-                          [id]="stateValue"
-                          [name]="stateValue"
-                          [checked]="stateValue === selectedState"
-                          (click)="onStateChange(stateValue)"
-                        />
-                        <span class="radio-value">{{ state }}</span>
-                      </label>
-                    }
-                  </div>
-                </ng-template>
-              </th>
               <th>
                 <span
                   class="sort-wrapper"
@@ -575,7 +595,6 @@
                   </span>
                 </span>
               </th>
-              <th>Přiřazeno</th>
               <th></th>
               @if (tableHasScrollbar()) { <th style="padding:0"></th> }
             </tr>
@@ -585,17 +604,17 @@
         <div class="table-body-y-scroll os-pending" #bodyScroll>
           <table class="table-body">
             <colgroup>
-              @if (seeActions) { <col [style]="`width:${isAdmin ? 92 : 52}px`"> }
-              <col style="min-width:230px">
-              <col style="min-width:230px">
-              <col style="min-width:140px">
-              <col style="min-width:96px">
-              <col style="min-width:180px">
-              <col style="min-width:165px">
-              <col style="min-width:175px">
-              <col style="min-width:160px">
-              <col style="width:44px">
-              @if (tableHasScrollbar()) { <col style="width:12px"> }
+              @if (seeActions) { <col [style]="`width:${isAdmin ? 92 : 52}px`"> } <!-- Akce -->
+              <col style="min-width:230px"> <!-- Název titulu -->
+              <col style="min-width:230px"> <!-- ID titulu -->
+              <col style="min-width:180px"> <!-- Stav -->
+              <col style="min-width:160px"> <!-- Zpracovatel -->
+              <col style="min-width:140px"> <!-- Ořezový model -->
+              <col style="min-width:96px"> <!-- Rotační -->
+              <col style="min-width:165px"> <!-- Vytvořeno -->
+              <col style="min-width:175px"> <!-- Upraveno -->
+              <col style="width:44px"> <!-- nav arrow -->
+              @if (tableHasScrollbar()) { <col style="width:12px"> } <!-- scrollbar spacer -->
             </colgroup>
             <tbody>
               @let titles = dashboard.displayedTitles();
@@ -644,8 +663,6 @@
                         </span>
                       </span>
                     </td>
-                    <td>{{ title.settings?.crop_model ?? 'Neznámý' }}</td>
-                    <td>{{ title.settings?.rotation_model ?? 'Neznámý' }}</td>
                     <td>
                       <span
                         class="tag state"
@@ -656,14 +673,6 @@
                       >
                         {{ titleStateDict[title.state] }}
                       </span>
-                    </td>
-                    <td>
-                      @let created = getDate(title.created_at);
-                      <span class="rel-date" [title]="created[0] + ' ' + created[1]">{{ getRelativeDate(title.created_at) }}</span>
-                    </td>
-                    <td>
-                      @let modified = getDate(title.modified_at);
-                      <span class="rel-date" [title]="modified[0] + ' ' + modified[1]">{{ getRelativeDate(title.modified_at) }}</span>
                     </td>
                     <td class="assign-cell">
                       @if (dashboard.canAssignInCurrentGroup()) {
@@ -719,6 +728,16 @@
                       } @else {
                         <span class="assign-static" [class.assigned]="!!title.assigned_to_name" [title]="title.assigned_to_name || ''">{{ title.assigned_to_name || '—' }}</span>
                       }
+                    </td>
+                    <td>{{ title.settings?.crop_model ?? 'Neznámý' }}</td>
+                    <td>{{ title.settings?.rotation_model ?? 'Neznámý' }}</td>
+                    <td>
+                      @let created = getDate(title.created_at);
+                      <span class="rel-date" [title]="created[0] + ' ' + created[1]">{{ getRelativeDate(title.created_at) }}</span>
+                    </td>
+                    <td>
+                      @let modified = getDate(title.modified_at);
+                      <span class="rel-date" [title]="modified[0] + ' ' + modified[1]">{{ getRelativeDate(title.modified_at) }}</span>
                     </td>
                     <td class="nav-arrow-cell">
                       @if (canOpenTitle(title)) {

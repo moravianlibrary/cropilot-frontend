@@ -296,35 +296,19 @@
         @let title = dashboard.selectedTitle();
 
         <div class="block">
-          <div class="label">STAV</div>
-          <div class="value">
-            <span
-              class="tag state"
-              [class.info]="title?.state === 'ready'"
-              [class.success]="['user_approved', 'retrain', 'completed'].includes(title?.state ?? '')"
-              [class.pending]="['new', 'scheduled', 'in_progress'].includes(title?.state ?? '')"
-              [class.error]="title?.state === 'failed'"
-            >{{ titleStateDict[title?.state ?? 'new'] }}</span>
-          </div>
-        </div>
-
-        <div class="many-blocks dates">
-          <span class="block">
-            <div class="label">VYTVOŘENO</div>
-            <div class="value date-time">
-              @let tCreated = getDate(title?.created_at ?? '');
-              <span class="date">{{ tCreated[0] }}</span>{{ ' ' }}
-              <span class="time">{{ tCreated[1] }}</span>
-            </div>
-          </span>
-          <span class="block">
-            <div class="label">UPRAVENO</div>
-            <div class="value date-time">
-              @let tModified = getDate(title?.modified_at ?? '');
-              <span class="date">{{ tModified[0] }}</span>{{ ' ' }}
-              <span class="time">{{ tModified[1] }}</span>
-            </div>
-          </span>
+          <label class="above-input" for="drawer-title-name">
+            NÁZEV TITULU
+            <input
+              id="drawer-title-name"
+              name="drawer-title-name"
+              type="text"
+              [(ngModel)]="dashboard.titleName"
+              [tabindex]="dialogOpen ? -1 : 0"
+            />
+          </label>
+          @if (dashboard.titleNameError()) {
+            <span class="error">{{ dashboard.titleNameError() }}</span>
+          }
         </div>
 
         <div class="credentials">
@@ -343,25 +327,22 @@
         </div>
 
         <div class="block">
-          <label class="above-input" for="drawer-title-name">
-            NÁZEV TITULU
-            <input
-              id="drawer-title-name"
-              name="drawer-title-name"
-              type="text"
-              [(ngModel)]="dashboard.titleName"
-              [tabindex]="dialogOpen ? -1 : 0"
-            />
-          </label>
-          @if (dashboard.titleNameError()) {
-            <span class="error">{{ dashboard.titleNameError() }}</span>
-          }
+          <div class="label">STAV</div>
+          <div class="value">
+            <span
+              class="tag state"
+              [class.info]="title?.state === 'ready'"
+              [class.success]="['user_approved', 'retrain', 'completed'].includes(title?.state ?? '')"
+              [class.pending]="['new', 'scheduled', 'in_progress'].includes(title?.state ?? '')"
+              [class.error]="title?.state === 'failed'"
+            >{{ titleStateDict[title?.state ?? 'new'] }}</span>
+          </div>
         </div>
 
         @if (dashboard.canAssignInCurrentGroup()) {
           <div class="block">
             <label class="above-input select">
-              PŘIŘAZENO
+              ZPRACOVATEL
               <app-select
                 [(ngModel)]="dashboard.selectedAssigneeId"
                 [inputName]="'drawer-title-assignee'"
@@ -412,6 +393,25 @@
             <span>Změnou modelu se zahodí dosavadní uživatelské úpravy titulu a titul se znovu zařadí do fronty ke zpracování.</span>
           </div>
         }
+
+        <div class="many-blocks dates">
+          <span class="block">
+            <div class="label">VYTVOŘENO</div>
+            <div class="value date-time">
+              @let tCreated = getDate(title?.created_at ?? '');
+              <span class="date">{{ tCreated[0] }}</span>{{ ' ' }}
+              <span class="time">{{ tCreated[1] }}</span>
+            </div>
+          </span>
+          <span class="block">
+            <div class="label">UPRAVENO</div>
+            <div class="value date-time">
+              @let tModified = getDate(title?.modified_at ?? '');
+              <span class="date">{{ tModified[0] }}</span>{{ ' ' }}
+              <span class="time">{{ tModified[1] }}</span>
+            </div>
+          </span>
+        </div>
       }
 
       <!-- Users -->
