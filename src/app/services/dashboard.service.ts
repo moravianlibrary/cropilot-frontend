@@ -4,8 +4,8 @@ import { catchError, EMPTY, expand, forkJoin, from, map, mergeMap, Observable, o
 import { AuthService } from './auth.service';
 import { AssignableUser, ChangedGroupMember, DashboardPage, DrawerButton, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Paginated, PagedQuery, Permission, PermissionType, SelectOption, Title, TitlesQuery, User, UserInGroup } from '../app.types';
 import { Router } from '@angular/router';
-import { checkEmailValidity, defer, focusMainWrapper, scrollToAndFocusElement, scrollToElement } from '../utils/utils';
-import { inlineErrors } from '../app.config';
+import { checkEmailValidity, defer, downloadCsv, focusMainWrapper, getDate, rowsToCsv, scrollToAndFocusElement, scrollToElement } from '../utils/utils';
+import { inlineErrors, titleStateDict } from '../app.config';
 import { UiService } from './ui.service';
 
 @Injectable({
@@ -312,6 +312,41 @@ export class DashboardService {
       ),
       reduce((acc, res) => acc.concat(res.titles), [] as Title[]),
     );
+  }
+
+  // Whether a CSV export is in progress (drives the export button's disabled state).
+  exportingTitles = signal<boolean>(false);
+
+  // Exports the whole group's titles (ignoring active filters) as a CSV download.
+  exportTitlesCsv(groupId: string, groupName: string): void {
+    if (!groupId || this.exportingTitles()) return;
+    this.exportingTitles.set(true);
+
+    this.fetchAllTitles(groupId).pipe(
+      catchError(err => {
+        this.ui.showToast('Export titulů se nezdařil. Zkuste to znovu.', { type: 'error' });
+        console.error('Exporting titles failed:', err);
+        this.exportingTitles.set(false);
+        return throwError(() => err);
+      })
+    ).subscribe(titles => {
+      const header = ['Název titulu', 'ID titulu', 'Stav', 'Zpracovatel', 'Ořezový model', 'Rotační model', 'Vytvořeno', 'Upraveno'];
+      const rows = titles.map(t => [
+        t.external_id ?? t._id,
+        t._id,
+        titleStateDict[t.state] ?? t.state,
+        t.assigned_to_name ?? '',
+        t.settings?.crop_model ?? 'Neznámý',
+        t.settings?.rotation_model ?? 'Neznámý',
+        getDate(t.created_at).join(' '),
+        getDate(t.modified_at).join(' '),
+      ]);
+
+      const date = new Date().toISOString().slice(0, 10);
+      const safeName = (groupName || 'skupina').replace(/[^\p{L}\p{N}_-]+/gu, '_');
+      downloadCsv(`tituly_${safeName}_${date}.csv`, rowsToCsv([header, ...rows]));
+      this.exportingTitles.set(false);
+    });
   }
 
   fetchModels(): Observable<Models> {

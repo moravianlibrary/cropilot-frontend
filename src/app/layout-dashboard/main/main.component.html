@@ -48,27 +48,27 @@
           cellspacing="0" cellpadding="0"
         >
           <colgroup>
-            @if (isAdmin) { <col style="width:52px"> }
-            <col style="min-width:200px">
-            <col style="min-width:124px">
-            <col style="min-width:80px">
-            <col style="min-width:102px">
-            @if (isAdmin) { <col style="min-width:280px"> }
-            <col [style]="`min-width:${isAdmin ? 232 : 120}px`">
-            <col style="min-width:165px">
-            <col style="min-width:175px">
-            <col style="width:44px">
-            @if (tableHasScrollbar()) { <col style="width:12px"> }
+            @if (isAdmin) { <col style="width:52px"> } <!-- Akce -->
+            <col style="min-width:200px"> <!-- Název skupiny -->
+            <col style="min-width:102px"> <!-- Počet titulů -->
+            @if (isAdmin) { <col style="min-width:280px"> } <!-- Uživatelé -->
+            <col [style]="`min-width:${isAdmin ? 232 : 120}px`"> <!-- Práva -->
+            <col style="min-width:124px"> <!-- Ořezový model -->
+            <col style="min-width:80px"> <!-- Rotační -->
+            <col style="min-width:165px"> <!-- Vytvořeno -->
+            <col style="min-width:175px"> <!-- Upraveno -->
+            <col style="width:44px"> <!-- nav arrow -->
+            @if (tableHasScrollbar()) { <col style="width:12px"> } <!-- scrollbar spacer -->
           </colgroup>
           <thead>
             <tr>
               @if (isAdmin) { <th><span class="visually-hidden">Akce</span></th> }
-              <th>Název skupiny</th>
-              <th>Ořezový model</th>
-              <th>Rotační</th>
+              <th class="group-name-cell">Název skupiny</th>
               <th>Počet titulů</th>
               @if (isAdmin) { <th>Uživatelé</th> }
               <th>{{ `Práv${isAdmin ? 'a' : 'o'}` }}</th>
+              <th>Ořezový model</th>
+              <th>Rotační</th>
               <th>
                 <span
                   class="sort-wrapper"
@@ -118,17 +118,17 @@
         <div class="table-body-y-scroll os-pending" #bodyScroll>
           <table class="table-body">
             <colgroup>
-              @if (isAdmin) { <col style="width:52px"> }
-              <col style="min-width:200px">
-              <col style="min-width:124px">
-              <col style="min-width:80px">
-              <col style="min-width:102px">
-              @if (isAdmin) { <col style="min-width:280px"> }
-              <col [style]="`min-width:${isAdmin ? 232 : 120}px`">
-              <col style="min-width:165px">
-              <col style="min-width:175px">
-              <col style="width:44px">
-              @if (tableHasScrollbar()) { <col style="width:12px"> }
+              @if (isAdmin) { <col style="width:52px"> } <!-- Akce -->
+              <col style="min-width:200px"> <!-- Název skupiny -->
+              <col style="min-width:102px"> <!-- Počet titulů -->
+              @if (isAdmin) { <col style="min-width:280px"> } <!-- Uživatelé -->
+              <col [style]="`min-width:${isAdmin ? 232 : 120}px`"> <!-- Práva -->
+              <col style="min-width:124px"> <!-- Ořezový model -->
+              <col style="min-width:80px"> <!-- Rotační -->
+              <col style="min-width:165px"> <!-- Vytvořeno -->
+              <col style="min-width:175px"> <!-- Upraveno -->
+              <col style="width:44px"> <!-- nav arrow -->
+              @if (tableHasScrollbar()) { <col style="width:12px"> } <!-- scrollbar spacer -->
             </colgroup>
             <tbody>
               @let groups = dashboard.displayedGroups();
@@ -160,9 +160,7 @@
                         </div>
                       </td>
                     }
-                    <td>{{ group.name }}</td>
-                    <td>{{ group.default_settings.crop_model }}</td>
-                    <td>{{ group.default_settings.rotation_model }}</td>
+                    <td class="group-name-cell">{{ group.name }}</td>
                     <td><span class="tag title-count">{{ group.title_count }}</span></td>
                     @if (isAdmin) {
                       <td>
@@ -222,6 +220,8 @@
                         </div>
                       }
                     </td>
+                    <td>{{ group.default_settings.crop_model }}</td>
+                    <td>{{ group.default_settings.rotation_model }}</td>
                     <td>
                       @let created = getDate(group.created_at);
                       <span class="rel-date" [title]="created[0] + ' ' + created[1]">{{ getRelativeDate(group.created_at) }}</span>
@@ -323,19 +323,6 @@
               <app-icon name="add-in-rect" [size]="16" />
             </span>
             Vytvořit titul
-          </span>
-          <span
-            class="button real-button with-icon secondary"
-            [class.disabled]="exportingTitles()"
-            (click)="exportTitlesCsv()"
-            (keydown.space)="exportTitlesCsv()"
-            (keydown.enter)="exportTitlesCsv()"
-            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-          >
-            <span class="icon">
-              <app-icon name="arrow-down-in-rect" [size]="16" />
-            </span>
-            Exportovat CSV
           </span>
         }
         <label for="search-title" #searchLabel>

@@ -82,6 +82,24 @@
             <div class="value">{{ group?.title_count }}</div>
           </div>
         </div>
+
+        @if (auth.canUpload()) {
+          <div class="block">
+            <span
+              class="button real-button with-icon secondary"
+              [class.disabled]="dashboard.exportingTitles()"
+              (click)="dashboard.exportTitlesCsv(group?._id ?? '', group?.name ?? '')"
+              (keydown.space)="dashboard.exportTitlesCsv(group?._id ?? '', group?.name ?? '')"
+              (keydown.enter)="dashboard.exportTitlesCsv(group?._id ?? '', group?.name ?? '')"
+              [tabindex]="dialogOpen ? -1 : 0"
+            >
+              <span class="icon">
+                <app-icon name="arrow-down-in-rect" [size]="16" />
+              </span>
+              Exportovat CSV
+            </span>
+          </div>
+        }
         
         <div class="many-blocks dates">
           <span class="block">

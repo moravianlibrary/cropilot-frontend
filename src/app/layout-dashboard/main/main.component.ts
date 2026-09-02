@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { permissionDict, titleStateDict, titleStateFilterDict } from '../../app.config';
 import { AssignableUser, Title, Group, GroupPage, Paginated, PagedQuery, Permission, PermissionType, SortField, SortState, TitlesQuery, User, UserInGroup } from '../../app.types';
-import { downloadCsv, focusElement, getDate, getRelativeDate, rowsToCsv, waitForElement } from '../../utils/utils';
+import { focusElement, getDate, getRelativeDate, waitForElement } from '../../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, of, Subscription, switchMap, tap, throwError } from 'rxjs';
@@ -269,41 +269,6 @@ export class MainComponent {
   get totalTitlesLabel(): string {
     const length = this.dashboard.titlesTotal();
     return `Celkem ${length} titul${length === 1 ? '' : [2, 3, 4].includes(length) ? 'y' : 'ů' }`;
-  }
-
-  exportingTitles = signal<boolean>(false);
-
-  // Exports the whole group's titles (ignoring active filters) as a CSV download.
-  exportTitlesCsv(): void {
-    if (!this.currentGroupId || this.exportingTitles()) return;
-    this.exportingTitles.set(true);
-
-    this.dashboard.fetchAllTitles(this.currentGroupId).pipe(
-      catchError(err => {
-        this.ui.showToast('Export titulů se nezdařil. Zkuste to znovu.', { type: 'error' });
-        console.error('Exporting titles failed:', err);
-        this.exportingTitles.set(false);
-        return throwError(() => err);
-      })
-    ).subscribe(titles => {
-      const header = ['Název titulu', 'ID titulu', 'Stav', 'Zpracovatel', 'Ořezový model', 'Rotační model', 'Vytvořeno', 'Upraveno'];
-      const rows = titles.map(t => [
-        t.external_id ?? t._id,
-        t._id,
-        titleStateDict[t.state] ?? t.state,
-        t.assigned_to_name ?? '',
-        t.settings?.crop_model ?? 'Neznámý',
-        t.settings?.rotation_model ?? 'Neznámý',
-        getDate(t.created_at).join(' '),
-        getDate(t.modified_at).join(' '),
-      ]);
-
-      const groupName = this.dashboard.selectedGroupPage()?.name ?? 'skupina';
-      const date = new Date().toISOString().slice(0, 10);
-      const safeName = groupName.replace(/[^\p{L}\p{N}_-]+/gu, '_');
-      downloadCsv(`tituly_${safeName}_${date}.csv`, rowsToCsv([header, ...rows]));
-      this.exportingTitles.set(false);
-    });
   }
 
   // ========== ASSIGN TITLE (managers only) ==========

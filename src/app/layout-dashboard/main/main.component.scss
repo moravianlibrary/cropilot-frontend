@@ -562,6 +562,13 @@
             padding-inline: var(--spacing-x3-5) var(--spacing-x6);
           }
         }
+
+        // Group name reads as the row's header: heavier weight + a vertical
+        // divider separating the identity column from the rest of the data.
+        .group-name-cell {
+          font-weight: 600;
+          border-right: 1px solid var(--border-color);
+        }
       }
 
       // Action buttons
