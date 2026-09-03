@@ -8,12 +8,12 @@ export interface StackedSegment {
 
 const PALETTE = [
   'var(--primary)',
-  'var(--status-icon-info)',
+  'var(--bg-contrast)',
   'var(--status-icon-success)',
   'var(--status-icon-warning)',
   'var(--status-icon-edited)',
   'var(--status-icon-error)',
-  'var(--bg-contrast)',
+  'var(--status-icon-info)',
   'var(--text-bright)'
 ];
 

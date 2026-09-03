@@ -11,6 +11,9 @@ import { IconComponent } from '../icon/icon.component';
   imports: [IconComponent],
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss'],
+  host: {
+    '[class.select-compact]': "size() === 'compact'"
+  },
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -30,6 +33,7 @@ export class SelectComponent implements ControlValueAccessor {
   placeholder = input<string>('');
   usedIn = input<boolean>(false);
   usedOut = output<boolean>();
+  size = input<'medium' | 'compact'>('medium');
 
   selectWrapper = viewChild<ElementRef<HTMLDivElement>>('selectWrapper');
   comboInput = viewChild<ElementRef<HTMLInputElement>>('comboInput');

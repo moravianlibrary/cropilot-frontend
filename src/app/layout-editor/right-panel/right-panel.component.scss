@@ -1,9 +1,11 @@
 @use '../../../styles' as styles;
 
 :host {
-  min-width: 320px;
-  flex-basis: 320px;
-  flex: 1;
+  // Fixed-width properties panel; the canvas takes the remaining space.
+  --panel-w: 288px;
+  width: var(--panel-w);
+  min-width: var(--panel-w);
+  flex: 0 0 var(--panel-w);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -13,15 +15,15 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-x3);
-  // Same section rhythm as the left panel: 14px vertical / 16px horizontal.
-  padding: var(--spacing-x3-5) var(--spacing-x4) 0;
+  gap: var(--spacing-x4);
+  // Section rhythm: 20px vertical / 16px horizontal.
+  padding: var(--spacing-x5) var(--spacing-x4) 0;
   color: var(--text-base);
   max-width: 100%;
 
   .title-menu-wrapper {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: var(--spacing-x2);
 
@@ -33,30 +35,25 @@
     }
 
     h1 {
-      @include styles.font(500, var(--font-size-x2-5), var(--spacing-x7));
-    }
-
-    .menu {
-      padding: var(--spacing-x2);
-
-      .icon {
-        color: var(--icon-dark);
-      }
+      @include styles.font(600, var(--font-size-x2), var(--spacing-x6));
     }
   }
 
+  // Title in mono, like the model line on the group cards.
   .title-name {
     max-width: 100%;
     @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
+    font-family: 'IBM Plex Mono', monospace;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
+  // Callout: tinted background only (same family as the drawer's model-change warning).
   .flag {
-    padding: var(--spacing-x3) var(--spacing-x3-5);
-    border-radius: var(--spacing-x2);
-    @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5));
+    padding: var(--spacing-x2) var(--spacing-x3);
+    border-radius: var(--radius-control);
+    @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x5));
     color: var(--text-secondary);
     display: flex;
     align-items: center;
@@ -68,26 +65,29 @@
   }
 
   .warning {
-    border: 1px solid var(--status-icon-warning);
     background-color: var(--bg-color-warning);
+    .icon { color: var(--status-icon-warning); }
   }
 
   .error {
-    border: 1px solid var(--status-icon-error);
     background-color: var(--bg-color-error);
+    .icon { color: var(--status-icon-error); }
   }
 
   .edited {
-    border: 1px solid var(--status-icon-edited);
     background-color: var(--bg-color-edited);
+    .icon { color: var(--tag-pending-icon); }
+  }
+
+  // Label + control(s) with a 6px gap — replaces the negative-margin hack.
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-x1-5);
   }
 
   .label {
-    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-bright));
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: var(--spacing-x1);
-    margin-bottom: -6px;
+    @include styles.micro-label;
   }
 
   .rotation-heading {
@@ -95,26 +95,19 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-x2);
-    margin-top: var(--spacing-x1);
-    margin-bottom: -6px;
-
-    .label {
-      margin: 0;
-    }
 
     .scope-switch {
       margin-left: auto;
     }
   }
 
+  // Compact one-liner: 12px text, 14px radios, tight gaps.
   .scope-row {
     display: flex;
     align-items: center;
-    flex-wrap: nowrap;
-    gap: var(--spacing-x3);
-    margin-top: var(--spacing-x1);
-    // 13px — the compact control size shared with chips + segmented controls.
-    @include styles.font(400, 13px, var(--spacing-x5), var(--text-bright));
+    flex-wrap: wrap;
+    gap: var(--spacing-x1) var(--spacing-x2-5);
+    @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
 
     .scope-label {
       white-space: nowrap;
@@ -123,20 +116,48 @@
 
     .scope-radios {
       flex-direction: row;
-      flex-wrap: nowrap;
-      gap: var(--spacing-x4);
+      flex-wrap: wrap;
+      gap: var(--spacing-x1) var(--spacing-x2-5);
+
+      .radio {
+        gap: var(--spacing-x1-5);
+      }
 
       .radio-value {
         white-space: nowrap;
-        @include styles.font(400, 13px, var(--spacing-x5), var(--text-secondary));
+        gap: var(--spacing-x1-5);
+        @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-secondary));
+      }
+
+      .radio > input[type="radio"] + .radio-value::before {
+        width: var(--spacing-x3-5);
+        height: var(--spacing-x3-5);
+        flex: 0 0 var(--spacing-x3-5);
+      }
+
+      .radio > input[type="radio"]:checked + .radio-value::before {
+        background: radial-gradient(circle at center, var(--primary) 0 2.5px, transparent 2.5px);
       }
     }
   }
 }
 
 .border-bottom {
-  padding-bottom: var(--spacing-x3-5);
+  padding-bottom: var(--spacing-x5);
   border-bottom: 1px solid var(--border-color);
+}
+
+// The top header row is a 56px strip with its own divider, so it lines up with
+// the left panel header and the dashboard header.
+.header.top {
+  padding-top: 0;
+
+  > .title-menu-wrapper {
+    height: var(--header-h);
+    margin: 0 calc(-1 * var(--spacing-x4));
+    padding: 0 var(--spacing-x4);
+    border-bottom: 1px solid var(--border-color);
+  }
 }
 
 .top, .middle {
@@ -167,7 +188,7 @@
 
 // Extra breathing room between the rotation block and "Přidat výřez".
 .top .actions {
-  margin-top: var(--spacing-x2);
+  margin-top: var(--spacing-x1);
 }
 
 .middle {
@@ -177,16 +198,19 @@
     display: block;
     padding: var(--spacing-x6) var(--spacing-x4);
     text-align: center;
-    @include styles.font(400, 13px, var(--spacing-x5), var(--text-bright));
+    @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
   }
 
-  // "Výřez" is a section peer of the top "Sken" header — same h1 size
-  // (inherited) and the same 14px offset from its divider.
+  // "Výřez" is a sub-section of the top "Sken" header: one step smaller (14/600).
   .header {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: var(--spacing-x2);
+    padding-bottom: var(--spacing-x1);
+
+    h1 {
+      @include styles.font(600, var(--font-size-x1-5), var(--spacing-x5));
+    }
   }
 }
 
@@ -196,13 +220,15 @@
   gap: var(--spacing-x4);
 }
 
+// Compact 28px actions (= .real-button.compact / --control-sm).
 .action {
-  @include styles.font(500, var(--font-size-x1-5), var(--spacing-x3));
+  @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x4));
   color: var(--text-tertiary);
-  padding: var(--spacing-x2) var(--spacing-x3);
+  height: var(--control-sm);
+  padding: 0 var(--spacing-x3);
   background-color: var(--bg-base);
   border: 1px solid var(--border-tertiary-color);
-  border-radius: var(--spacing-x2);
+  border-radius: var(--radius-control);
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -219,10 +245,11 @@
 }
 
 .action.delete-crop {
+  @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x4), var(--text-destructive));
   border: none;
   background-color: transparent;
-  color: var(--text-destructive);
-  padding: var(--spacing-x2) var(--spacing-x2-5);
+  padding: 0 var(--spacing-x2-5);
+  border-radius: var(--spacing-x1-5);
 
   .icon {
     color: var(--text-destructive);
@@ -250,12 +277,10 @@
   padding-inline: var(--spacing-x4);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-x2);
+  gap: var(--spacing-x1-5);
 
   h2 {
-    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-bright));
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    @include styles.micro-label;
   }
 
   .inputs-wrapper {
@@ -268,21 +293,23 @@
 .input-wrapper {
   position: relative;
 
+  // Inline field label ("X:", "Š:") — 12px/500 uppercase, readable contrast.
   label {
     position: absolute;
-    top: 51%;
-    left: var(--spacing-x2-5);
-    transform: translateY(-52%);
-    color: var(--text-label-bright);
+    top: 50%;
+    left: var(--spacing-x2);
+    transform: translateY(-50%);
+    @include styles.micro-label;
   }
 
+  // 32px numeric inputs: 13px mono value, 11px label, 14px stepper icons.
   input {
+    @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x4), var(--text-base));
     font-family: 'IBM Plex Mono', monospace;
-    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
-    height: 40px;
-    padding: 0 var(--spacing-x7) 0 var(--spacing-x8);
+    height: var(--spacing-x8);
+    padding: 0 var(--spacing-x6) 0 var(--spacing-x7);
     border: 1px solid var(--border-tertiary-color);
-    border-radius: var(--spacing-x2);
+    border-radius: var(--radius-control);
     width: 100%;
 
     &:focus {
@@ -297,42 +324,50 @@
   }
 
   .angle-input {
-    padding-left: var(--spacing-x2-5);
+    padding-left: var(--spacing-x2);
   }
 
+  // Stepper: two 14px hit-areas stacked in the 32px input (2 + 14 + 14 + 2).
   .arrow {
     position: absolute;
     display: inline-flex;
 
     .icon {
       display: inline-flex;
-      color: var(--icon-inactive);
-      transition: color .15s ease;
+      align-items: center;
+      justify-content: center;
+      width: var(--spacing-x3-5);
+      height: var(--spacing-x3-5);
+      border-radius: var(--radius-chip);
+      color: var(--icon-gray);
+      transition: color .15s ease, background-color .15s ease;
 
       &:hover {
         cursor: pointer;
         color: var(--primary);
+        background-color: var(--bg-bright);
       }
     }
 
     .disabled {
-      color: var(--border-tertiary-color);
+      color: var(--icon-disabled);
 
       &:hover {
         cursor: default;
-        color: var(--border-tertiary-color);
+        color: var(--icon-disabled);
+        background-color: transparent;
       }
     }
   }
 
   .up {
-    top: var(--spacing-x1);
-    right: var(--spacing-x2);
+    top: var(--spacing-x0-5);
+    right: var(--spacing-x1-5);
   }
 
   .down {
-    bottom: var(--spacing-x1);
-    right: var(--spacing-x2);
+    bottom: var(--spacing-x0-5);
+    right: var(--spacing-x1-5);
   }
 }
 
@@ -344,13 +379,13 @@
 
 .angle-wrapper {
   flex-shrink: 0;
-  width: 100px;
+  width: 88px;
 }
 
 .angle-slider {
   flex: 1;
   min-width: 0;
-  height: var(--spacing-x8); // comfortable hit area around the 4px track
+  height: var(--spacing-x8); // comfortable hit area around the 4px track, same as the input
   margin: 0;
   appearance: none;
   -webkit-appearance: none;
@@ -375,7 +410,6 @@
     border-radius: 50%;
     background: var(--bg-base);
     border: 2px solid var(--primary);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     transition: box-shadow .15s ease;
   }
 
@@ -396,7 +430,6 @@
     border-radius: 50%;
     background: var(--bg-base);
     border: 2px solid var(--primary);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     transition: box-shadow .15s ease;
   }
 
@@ -424,21 +457,21 @@ input[type=number] {
 // ========== ULOŽIT VŠE ==========
 .footer {
   width: 100%;
-  // 6px vertical + 44px button = 56px, so the footer's top border lines up
+  // 10px vertical + 36px button = 56px, so the footer's top border lines up
   // with the canvas bottom bar (fixed 56px) next to it.
-  padding: var(--spacing-x1-5) var(--spacing-x4);
+  padding: var(--spacing-x2-5) var(--spacing-x4);
   border-top: 1px solid var(--border-color);
 
   .button {
     width: 100%;
-    height: 44px;
+    height: var(--control-md);
   }
 
   .read-mode-note {
-    // Match the save button's 44px footprint (line-height x6 + padding x2-5)
+    // Match the save button's 36px footprint (line-height x5 + padding x2)
     // so the footer keeps the same height in read-only mode.
-    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x6), var(--text-secondary));
-    padding: var(--spacing-x2-5) 0;
+    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
+    padding: var(--spacing-x2) 0;
     text-align: center;
   }
 }

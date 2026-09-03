@@ -17,12 +17,14 @@
   color: var(--text-base);
   max-width: 100%;
 
+  // Header row: same height as the dashboard header and the right panel's header.
   .title-menu-wrapper {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    height: var(--header-h);
     border-bottom: 1px solid var(--border-color);
-    padding: var(--spacing-x3-5) var(--spacing-x4);
+    padding: 0 var(--spacing-x4);
 
     .title {
       display: flex;
@@ -34,9 +36,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: var(--spacing-x8-5);
-        height: var(--spacing-x8-5);
-        border-radius: var(--spacing-x2);
+        width: var(--control-md);
+        height: var(--control-md);
+        border-radius: var(--radius-control);
         color: var(--icon-gray);
         transition: background-color .15s ease;
 
@@ -59,9 +61,7 @@
   }
 
   h2 {
-    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-bright));
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    @include styles.micro-label;
     // 6px label→control gap, same as the right panel's section labels.
     margin-bottom: var(--spacing-x1-5);
   }
@@ -79,12 +79,14 @@
       gap: var(--spacing-x1-5);
       max-width: 100%;
 
+      // 28px filter chips (= dashboard .filter-chip / --control-sm).
       .filter {
         display: inline-flex;
         align-items: center;
         gap: var(--spacing-x1-5);
-        @include styles.font(400, 13px, var(--spacing-x5), var(--text-secondary));
-        padding: var(--spacing-x1-5) var(--spacing-x3);
+        height: var(--control-sm);
+        @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x4), var(--text-secondary));
+        padding: 0 var(--spacing-x3);
         background-color: var(--bg-base);
         border: 1px solid var(--border-tertiary-color);
         border-radius: 999px;
@@ -107,7 +109,7 @@
         }
 
         .filter-number {
-          @include styles.font(400, 13px, var(--spacing-x5), var(--text-light));
+          @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
         }
       }
 
@@ -129,16 +131,16 @@
 
       .disabled-filter {
         pointer-events: none;
-        color: var(--text-label-bright);
+        color: var(--text-disabled);
         border-color: var(--border-color);
-        background-color: #8099B30D;
+        background-color: var(--bg-hover);
 
         .dot {
           background-color: var(--text-disabled) !important;
         }
 
         .filter-number {
-          color: var(--text-label-bright);
+          color: var(--text-disabled);
         }
       }
     }
@@ -170,7 +172,7 @@
   width: 100%;
   background-color: var(--bg-main-bright);
   border: 1px solid var(--border-color);
-  border-radius: var(--spacing-x2-5);
+  border-radius: var(--radius-card);
   position: relative;
   overflow: hidden;
   container-type: inline-size;
@@ -241,7 +243,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s ease, transform 0.2s ease;
-      box-shadow: 0 2px 16px 2px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border-tertiary-color);
       z-index: 10;
     }
     
@@ -259,19 +261,20 @@
 
   .error { background-color: var(--status-icon-error); }
 
+  // Badges: 20px tall, 12px text, 4px radius (chip family).
   .number {
     position: absolute;
     bottom: var(--spacing-x2);
     left: var(--spacing-x2);
-    @include styles.font(500, 13px, var(--spacing-x4), var(--text-base));
+    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-base));
     background-color: var(--bg-base);
-    padding-inline: var(--spacing-x1);
-    height: var(--spacing-x4);
-    border-radius: var(--spacing-x1);
+    padding-inline: var(--spacing-x1-5);
+    height: var(--spacing-x5);
+    border-radius: var(--radius-chip);
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-tertiary-color);
   }
 
   .scan-name-wrapper {
@@ -281,14 +284,18 @@
     position: absolute;
     bottom: var(--spacing-x2);
     right: var(--spacing-x2);
-    height: var(--spacing-x4);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    height: var(--spacing-x5);
+    border-radius: var(--radius-chip);
+    border: 1px solid var(--border-tertiary-color);
+    overflow: hidden;
 
     .scan-name {
-      @include styles.font(400, 13px, var(--spacing-x4), var(--text-base));
+      display: inline-flex;
+      align-items: center;
+      @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-base));
       background-color: var(--bg-base);
-      padding-inline: var(--spacing-x1);
-      border-radius: var(--spacing-x1);
+      padding-inline: var(--spacing-x1-5);
+      border-radius: var(--radius-chip);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -314,7 +321,7 @@
 
 .selected {
   background-color: var(--bg-selected);
-  border-color: var(--primary);
+  border-color: transparent;
   outline: 2px solid var(--primary);
   outline-offset: -2px;
 }

@@ -16,13 +16,13 @@
   transform: translate(-50%, -50%);
 }
 
-.left-part {
+.left-part, .middle-part {
   align-items: center;
 }
 
 .left-part .button, .middle-part .button {
-  width: 38px;
-  height: 38px;
+  width: var(--control-md);
+  height: var(--control-md);
   padding: 0;
 }
 
@@ -39,5 +39,5 @@
 .scan-counter {
   margin-left: var(--spacing-x2);
   white-space: nowrap;
-  @include styles.font(400, 13px, var(--spacing-x5), var(--text-light));
+  @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
 }

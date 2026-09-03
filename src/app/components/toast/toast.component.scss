@@ -18,15 +18,15 @@
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: var(--spacing-x3);
-  padding: var(--spacing-x3-5) var(--spacing-x3);
-  border-radius: var(--spacing-x1);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+  padding: var(--spacing-x3) var(--spacing-x3-5);
+  border-radius: var(--radius-control);
   background: var(--bg-base);
+  border: 1px solid var(--border-tertiary-color);
   border-left: 6px solid;
 }
 
 .toast__msg {
-  @include styles.font(450, var(--font-size-x1-5), var(--spacing-x5));
+  @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5));
   color: var(--text-secondary);
 }
 

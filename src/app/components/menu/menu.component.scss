@@ -5,9 +5,15 @@
   display: inline-block;
 }
 
+// 36px square icon button (= --control-md).
 .menu-icon {
   cursor: pointer;
-  padding: var(--spacing-x2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-md);
+  height: var(--control-md);
+  padding: 0;
 
   .icon {
     color: var(--icon-dark);
@@ -25,9 +31,8 @@
   min-width: 200px;
   padding: var(--spacing-x1-5);
   background-color: var(--bg-base);
-  border: 1px solid var(--border-color);
-  border-radius: var(--spacing-x2-5);
-  box-shadow: 0 8px 24px #0A0D1018;
+  border: 1px solid var(--border-tertiary-color);
+  border-radius: var(--radius-card);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-x0-5);
@@ -82,7 +87,8 @@
 }
 
 .menu-secondary {
-  right: -34px;
+  // Align the bubble's right edge with the (36px) trigger button.
+  right: calc(-1 * var(--control-md));
 }
 
 .clicked {

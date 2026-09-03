@@ -7,8 +7,9 @@
   display: flex;
   justify-content: space-between;
   gap: var(--spacing-x4);
-  height: 100%;
-  padding: var(--spacing-x2) var(--spacing-x4);
+  height: var(--header-h);
+  padding: 0 var(--spacing-x4);
+  align-items: center;
   z-index: 510; // On click don't close drawer
 }
 
@@ -21,7 +22,8 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-x2);
-    @include styles.font(500, var(--font-size-x2), var(--spacing-x6), var(--text-secondary));
+    @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
+    white-space: nowrap;
 
     .icon {
       color: var(--icon-dark);
@@ -34,7 +36,7 @@
   }
 
   .inactive {
-    @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-light));
+    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
 
     &:hover {
       cursor: pointer;
@@ -52,26 +54,31 @@
   gap: var(--spacing-x4);
 }
 
+// Same construction as the segmented control: white pill with a 1px border,
+// 28px tabs + 3px padding + 1px border = 36px (= --control-md, like the logout button).
 .tabs {
   display: flex;
   align-items: center;
   gap: var(--spacing-x0-5);
   padding: var(--spacing-x0-7-5);
-  background-color: var(--bg-bright);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-tertiary-color);
   border-radius: 999px;
 
   .tab {
     display: flex;
     align-items: center;
     gap: var(--spacing-x2);
-    padding: var(--spacing-x1-5) var(--spacing-x3-5);
+    padding: var(--spacing-x1) var(--spacing-x3);
     border-radius: 999px;
-    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+    white-space: nowrap;
+    @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
     transition: background-color .15s ease, color .15s ease;
 
-    &:hover {
+    &:hover:not(.active) {
       cursor: pointer;
       color: var(--primary);
+      background-color: var(--bg-bright);
 
       .icon {
         color: var(--primary);
@@ -89,22 +96,25 @@
     }
   }
 
+  // Shared "selected" state: light-blue fill + 1px primary ring + primary text.
   .active {
-    background-color: var(--bg-base);
-    box-shadow: 0 1px 3px #0A0D1014;
+    background-color: var(--bg-selected);
+    box-shadow: inset 0 0 0 1px var(--primary);
     color: var(--primary);
     font-weight: 500;
+    cursor: default;
 
     .icon {
       color: var(--primary);
     }
   }
 
-  // On the titles page the "Správce skupin" tab stays active (white) but dimmed —
+  // On the titles page the "Správce skupin" tab stays selected but dimmed —
   // the breadcrumb carries the location.
   .active.dimmed {
     color: var(--text-light);
     font-weight: 400;
+    cursor: pointer;
 
     .icon {
       color: var(--icon-gray);
@@ -113,6 +123,7 @@
 }
 
 .logout, .login {
+  height: var(--control-md);
   gap: var(--spacing-x3);
   transition: background-color .15s ease, border-color .15s ease;
 
@@ -135,6 +146,6 @@
   }
 
   .user-name {
-    @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-secondary));
+    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
   }
 }

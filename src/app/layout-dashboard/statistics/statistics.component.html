@@ -9,6 +9,7 @@
         [value]="stats.preset()"
         (valueChange)="onPreset($event)"
         size="small"
+        [fit]="true"
         ariaLabel="Období"
       />
       @if (stats.preset() === 'custom') {
@@ -27,6 +28,7 @@
     <div class="filters-right">
       <app-select
         inputName="stats-group"
+        size="compact"
         [width]="220"
         [options]="stats.groupOptions()"
         [ngModel]="stats.groupId()"
@@ -34,6 +36,7 @@
       />
       <app-select
         inputName="stats-crop-model"
+        size="compact"
         [width]="220"
         [options]="stats.cropModelOptions()"
         [ngModel]="stats.cropModel()"
@@ -41,6 +44,7 @@
       />
       <app-select
         inputName="stats-rotation-model"
+        size="compact"
         [width]="220"
         [options]="stats.rotationModelOptions()"
         [ngModel]="stats.rotationModel()"
@@ -76,8 +80,8 @@
             <p class="subtitle">Jak moc museli uživatelé opravovat návrhy modelu. Počítá se z titulů, které byly v období uloženy.</p>
           </div>
           <div class="card-actions">
-            <app-segmented-control [options]="groupByOptions" [value]="stats.qualityGroupBy()" (valueChange)="onQualityGroupBy($event)" size="small" ariaLabel="Seskupit podle" />
-            <button type="button" class="export" (click)="exportQuality()" [disabled]="!stats.quality().length">Export CSV</button>
+            <app-segmented-control [options]="groupByOptions" [value]="stats.qualityGroupBy()" (valueChange)="onQualityGroupBy($event)" size="small" [fit]="true" ariaLabel="Seskupit podle" />
+            <button type="button" class="button real-button compact secondary" (click)="exportQuality()" [disabled]="!stats.quality().length">Export CSV</button>
           </div>
         </div>
         @if (!stats.quality().length) {
@@ -140,8 +144,8 @@
             <p class="subtitle">Jak dobře příznaky anomálií odpovídají tomu, co uživatelé skutečně opravili.</p>
           </div>
           <div class="card-actions">
-            <app-segmented-control [options]="anomaliesGroupByOptions" [value]="stats.anomaliesGroupBy()" (valueChange)="onAnomaliesGroupBy($event)" size="small" ariaLabel="Seskupit podle" />
-            <button type="button" class="export" (click)="exportAnomalies()" [disabled]="!stats.anomalies().length">Export CSV</button>
+            <app-segmented-control [options]="anomaliesGroupByOptions" [value]="stats.anomaliesGroupBy()" (valueChange)="onAnomaliesGroupBy($event)" size="small" [fit]="true" ariaLabel="Seskupit podle" />
+            <button type="button" class="button real-button compact secondary" (click)="exportAnomalies()" [disabled]="!stats.anomalies().length">Export CSV</button>
           </div>
         </div>
         @if (!stats.anomalies().length) {
@@ -223,8 +227,8 @@
             <p class="subtitle">Z událostí editoru: čas s otevřenou záložkou, uložení, klávesové zkratky vs. myš. Agregováno, bez jednotlivých uživatelů.</p>
           </div>
           <div class="card-actions">
-            <app-segmented-control [options]="usageGroupByOptions" [value]="stats.usageGroupBy()" (valueChange)="onUsageGroupBy($event)" size="small" ariaLabel="Seskupit podle" />
-            <button type="button" class="export" (click)="exportUsage()" [disabled]="!stats.usage().length">Export CSV</button>
+            <app-segmented-control [options]="usageGroupByOptions" [value]="stats.usageGroupBy()" (valueChange)="onUsageGroupBy($event)" size="small" [fit]="true" ariaLabel="Seskupit podle" />
+            <button type="button" class="button real-button compact secondary" (click)="exportUsage()" [disabled]="!stats.usage().length">Export CSV</button>
           </div>
         </div>
         @if (!stats.usage().length) {
@@ -335,7 +339,7 @@
             <p class="subtitle">Rozložení hodnot podle posledního nastavení každého uživatele{{ stats.settings()?.users_total ? ' (' + fmtNum(stats.settings()?.users_total) + ' uživatelů)' : '' }}. Nezávisí na zvoleném období.</p>
           </div>
           <div class="card-actions">
-            <button type="button" class="export" (click)="exportSettings()" [disabled]="!settingRows().length">Export CSV</button>
+            <button type="button" class="button real-button compact secondary" (click)="exportSettings()" [disabled]="!settingRows().length">Export CSV</button>
           </div>
         </div>
         @if (!settingRows().length) {

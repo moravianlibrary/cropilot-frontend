@@ -16,14 +16,14 @@
   left: 50%;
   transform: translate(-50%, -50%);
   background: var(--bg-base);
-  padding-top: var(--spacing-x3);
+  padding-top: 0;
   width: min(90dvw, 680px);
   max-height: 90%;
-  border-radius: var(--spacing-x4);
+  border-radius: var(--spacing-x3);
   z-index: 920;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-x3);
+  gap: 0;
   visibility: hidden;
   opacity: 0;
   transition: opacity .2s ease, visibility .2s ease;
@@ -35,19 +35,21 @@
   transition: opacity .2s ease, visibility .2s ease;
 }
 
+// Header mirrors the drawer header: 18px/600 title, 20px close icon, 12/16 padding.
 .dialog-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-inline: var(--spacing-x4);
+  gap: var(--spacing-x4);
+  padding: var(--spacing-x3) var(--spacing-x4);
 
   h2 {
-    @include styles.font(450, var(--font-size-x3), var(--spacing-x8), var(--text-base));
+    @include styles.font(600, var(--font-size-x2-5), var(--spacing-x6), var(--text-base));
   }
 }
 
 .dialog-body {
-  border-radius: 0 0 var(--spacing-x4) var(--spacing-x4);
+  border-radius: 0 0 var(--spacing-x3) var(--spacing-x3);
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
   height: 100%;
@@ -55,8 +57,9 @@
 }
 
 .dialog-description {
-  margin-bottom: var(--spacing-x2);
-  @include styles.font(350, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+  margin: 0;
+  padding-block: var(--spacing-x1) var(--spacing-x4);
+  @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
 }
 
 .single {
@@ -64,19 +67,27 @@
 }
 
 .dialog-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--icon-gray);
   cursor: pointer;
 
   &:focus-visible {
-    outline: 1px solid var(--primary);
+    outline: 2px solid var(--primary);
     border-radius: var(--spacing-x2);
   }
 }
 
+// Footer mirrors the drawer footer: right-aligned 36px buttons.
 .dialog-footer {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: var(--spacing-x3);
-  padding-bottom: var(--spacing-x3);
+  padding: var(--spacing-x3) var(--spacing-x4);
+
+  .real-button { height: var(--control-md); }
 }
 
 
@@ -94,17 +105,14 @@
     padding: var(--spacing-x4) var(--spacing-x5) var(--spacing-x3);
 
     h2 {
-      @include styles.font(500, var(--font-size-x2), var(--spacing-x5), var(--text-base));
+      @include styles.font(600, var(--font-size-x2), var(--spacing-x5), var(--text-base));
     }
   }
 
   .dialog-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--spacing-x8-5);
-    height: var(--spacing-x8-5);
-    border-radius: 9px;
+    width: var(--control-sm);
+    height: var(--control-sm);
+    border-radius: var(--spacing-x1-5);
     color: var(--icon-gray);
     transition: background-color .15s ease;
 
@@ -168,9 +176,9 @@
     border-top: 1px solid var(--border-color);
 
     .button {
-      min-height: var(--spacing-x7-5);
-      padding: 7px var(--spacing-x4);
-      border-radius: var(--spacing-x2);
+      height: var(--control-md);
+      padding: 0 var(--spacing-x4);
+      border-radius: var(--radius-control);
       @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-tertiary));
 
       &.primary {
@@ -297,7 +305,7 @@
   }
 
   tr {
-    height: 40px;
+    height: var(--control-md);
     width: 100%;
 
     &:not(:last-child) {
@@ -308,7 +316,7 @@
   th {
     text-align: left;
     padding: var(--spacing-x2) var(--spacing-x3);
-    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
+    @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-secondary));
   }
 
   td {
@@ -322,8 +330,8 @@
       border: 1px solid var(--border-color);
       border-radius: var(--spacing-x1-5);
       background-color: var(--bg-main-light);
+      @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-tertiary));
       font-family: 'IBM Plex Mono', monospace;
-      @include styles.font(500, 13px, var(--spacing-x4), var(--text-tertiary));
       white-space: nowrap;
     }
   }
@@ -352,12 +360,13 @@
       padding-bottom: var(--spacing-x4);
     }
 
+    // Field labels: same micro uppercase label as the drawer and the group cards.
     label, .label {
       position: relative;
       display: flex;
       align-items: center;
       gap: var(--spacing-x2);
-      @include styles.font(400, var(--font-size-x1), var(--spacing-x5), var(--text-light));
+      @include styles.micro-label;
 
       .icon {
         color: var(--icon-dark);
@@ -374,25 +383,38 @@
         background-color: var(--bg-base);
         padding: var(--spacing-x2) var(--spacing-x4) var(--spacing-x2) 44px;
         margin-top: var(--spacing-x1);
-        width: 326px;
+        width: 100%;
         border: 1px solid var(--border-tertiary-color);
-        border-radius: var(--spacing-x2);
-        @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+        border-radius: var(--radius-control);
+        text-transform: none;
+        letter-spacing: normal;
+        @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
 
         &:focus {
           border-color: var(--primary);
           outline: none;
+          box-shadow: 0 0 0 3px var(--primary-glow);
         }
 
         &::placeholder {
-          @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-bright));
+          @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-bright));
         }
+      }
+
+      input {
+        height: var(--control-md);
+      }
+
+      // Selects sit inside <label>s — don't let the uppercase label style leak into them.
+      app-select {
+        text-transform: none;
+        letter-spacing: normal;
       }
 
       textarea {
         padding-left: var(--spacing-x4);
-        min-width: 326px;
-        max-width: 561px;
+        min-width: 100%;
+        max-width: 100%;
         min-height: 72px;
         max-height: 144px;
         overflow: auto;
@@ -422,9 +444,9 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: var(--spacing-x2);
+      gap: var(--spacing-x1-5);
 
-      input {
+      input, textarea {
         margin-top: 0;
         padding: var(--spacing-x2) var(--spacing-x4);
       }
@@ -434,12 +456,19 @@
       width: max-content;
     }
 
-    label.upload-wrapper p {
-      @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+    label.upload-wrapper {
+      app-upload {
+        text-transform: none;
+        letter-spacing: normal;
+      }
+
+      p {
+        @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+      }
     }
 
     .error {
-      @include styles.font(400, var(--font-size-x1-5), var(--spacing-x6), var(--text-destructive));
+      @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-destructive));
     }
 
     .reset-password {
@@ -484,11 +513,14 @@
         gap: var(--spacing-x3);
 
         .add-perm {
+          height: var(--control-md);
           padding-right: var(--spacing-x6);
         }
 
         .remove-all {
           padding: 0;
+          text-transform: none;
+          letter-spacing: normal;
 
           .icon {
             position: initial;
@@ -507,89 +539,96 @@
       padding-top: 0;
     }
 
+    // Member rows — identical to the drawer: white card, 14px/600 name, chip toggles.
     .permissions-row {
       width: 100%;
-      border-radius: var(--spacing-x2);
-      background-color: #8099B31A;
+      border-radius: var(--radius-card);
+      background-color: var(--bg-base);
+      border: 1px solid var(--border-light);
 
       .name {
-        @include styles.font(500, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+        @include styles.font(600, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
       }
 
       .permissions {
         display: flex;
-        flex-direction: column;
+        flex-wrap: wrap;
         gap: var(--spacing-x2);
 
         .permission {
-          position: relative;
-          display: flex;
-          justify-content: flex-start;
+          position: static;
+          display: inline-flex;
           align-items: center;
-          width: 100%;
-          @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-secondary));
+          gap: var(--spacing-x1-5);
+          height: var(--control-sm);
+          padding: 0 var(--spacing-x2-5);
+          border: 1px solid var(--border-color);
+          border-radius: var(--spacing-x1-5);
+          background-color: var(--bg-base);
+          user-select: none;
+          text-transform: none;
+          letter-spacing: normal;
+          @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x4), var(--text-bright));
           cursor: pointer;
+          transition: background-color .15s ease, border-color .15s ease, color .15s ease;
 
           &:hover {
-            input {
-              border-color: var(--primary);
-
-              &:checked {
-                background-color: var(--primary-hover);
-              }
-            }
+            border-color: var(--border-tertiary-hover);
           }
 
           input {
-            appearance: none;
-            -webkit-appearance: none;
-            
-            width: initial;
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
             margin: 0;
             padding: 0;
-            width: var(--spacing-x4);
-            height: var(--spacing-x4);
-            border-radius: var(--spacing-x1);
-            cursor: pointer;
-            background-color: var(--bg-base);
-            transition: background-color 0.2s ease;
+            border: 0;
+            pointer-events: none;
+          }
 
-            &:focus {
-              border-color: var(--primary);
-              outline: none;
-            }
-
-            &:checked {
-              background-color: var(--primary);
-              border-color: var(--primary);
-
-              &:focus-visible {
-                background-color: var(--primary-hover);
-              }
-            }
+          // Keyboard focus lands on the hidden checkbox — show it on the chip.
+          &:has(input:focus-visible) {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
           }
 
           .check-mark {
-            color: var(--icon-white);
-            position: absolute;
+            display: none;
+            color: currentColor;
           }
 
           .icon {
-            position: initial;
-            color: var(--icon-gray);
+            display: inline-flex;
+            position: static;
+            color: var(--icon-inactive);
           }
+
+          &:has(input:checked) {
+            border-color: transparent;
+            font-weight: 500;
+
+            .check-mark {
+              display: inline-flex;
+            }
+          }
+
+          &.success:has(input:checked) { background-color: var(--tag-success-bg); color: var(--tag-success-text); .icon, .check-mark { color: var(--tag-success-icon); } }
+          &.info:has(input:checked)    { background-color: var(--tag-info-bg); color: var(--tag-info-text); .icon, .check-mark { color: var(--tag-info-icon); } }
+          &.pending:has(input:checked) { background-color: var(--tag-pending-bg); color: var(--tag-pending-text); .icon, .check-mark { color: var(--tag-pending-icon); } }
+          &.error:has(input:checked)   { background-color: var(--tag-error-bg); color: var(--tag-error-text); .icon, .check-mark { color: var(--tag-error-icon); } }
         }
       }
     }
 
     .permissions-row.edit {
-      padding-inline: var(--spacing-x4);
-      padding-block: var(--spacing-x3) var(--spacing-x5);
+      padding: var(--spacing-x3) var(--card-pad) var(--card-pad);
       position: relative;
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-x4);
+      gap: var(--spacing-x3);
 
+      // 28px square icon button, same as the drawer rows / card "…".
       .remove {
         position: absolute;
         top: var(--spacing-x2);
@@ -597,13 +636,20 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: var(--spacing-x2);
-        border-radius: var(--spacing-x2);
+        width: var(--control-sm);
+        height: var(--control-sm);
+        padding: 0;
+        border-radius: var(--spacing-x1-5);
         background-color: var(--bg-base);
         border: 1px solid var(--border-tertiary-color);
+        transition: border-color .15s ease;
 
         &:hover {
           cursor: pointer;
+          border-color: var(--border-tertiary-hover);
+          outline: 5px solid var(--border-light);
+
+          .icon { color: var(--primary); }
         }
 
         &:focus-visible {
@@ -677,9 +723,9 @@
     .warning {
       display: flex;
       align-items: center;
-      gap: var(--spacing-x1);
+      gap: var(--spacing-x2);
       flex-wrap: wrap;
-      @include styles.font(450, var(--font-size-x2), var(--spacing-x6), var(--text-destructive));
+      @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--text-destructive));
 
       .icon {
         color: var(--icon-destructive);
@@ -695,15 +741,16 @@
       position: relative;
 
       .front {
-        top: var(--spacing-x2-5) !important;
+        top: var(--spacing-x2) !important;
         left: var(--spacing-x4);
         cursor: initial !important;
       }
       
       input {
         margin-top: 0 !important;
-        padding-left: 52px !important;
+        padding-left: 44px !important;
         width: 100% !important;
+        font-family: 'IBM Plex Mono', monospace;
 
         &:focus {
           border-color: var(--border-tertiary-color) !important;
@@ -713,7 +760,7 @@
       
       .copy-wrap {
         position: absolute;
-        top: 13px !important;
+        top: var(--spacing-x2-5) !important;
         right: var(--spacing-x4) !important;
         display: inline-flex;
         align-items: center;
@@ -737,8 +784,8 @@
           border-radius: var(--spacing-x1);
           border: 1px solid var(--border-light);
           background-color: var(--bg-base);
-          box-shadow: 0 2px var(--spacing-x4) 2px #00000014;
           @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-base));
+          text-transform: none;
           white-space: nowrap;
 
           opacity: 0;
@@ -753,8 +800,10 @@
     }
 
     .description {
-      @include styles.font(350, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+      @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
       margin-top: var(--spacing-x1);
+      text-transform: none;
+      letter-spacing: normal;
     }
   }
 }
@@ -770,11 +819,11 @@
 
     .new-edit-content-wrapper {
       &.new-group, &.new-user {
-        height: 620px;
+        height: 560px;
       }
 
       &.edit-group {
-        height: 520px;
+        height: 460px;
 
         // textarea {
         //   resize: vertical;
@@ -782,7 +831,7 @@
       }
 
       &.edit-user, &.user-password {
-        height: 280px;
+        height: 240px;
       }
     }
   }

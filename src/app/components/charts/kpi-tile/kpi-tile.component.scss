@@ -5,28 +5,30 @@
   min-width: 0;
 }
 
+// Same "big number + micro label" pattern as the group card title count.
 .kpi {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-x1);
-  padding: var(--spacing-x3) var(--spacing-x4);
+  height: 100%;
+  padding: var(--spacing-x3) var(--card-pad);
   border: 1px solid var(--border-color);
-  border-radius: var(--spacing-x3);
+  border-radius: var(--radius-card);
   background-color: var(--bg-base);
 
   .label {
-    @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
+    @include styles.micro-label;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .value {
-    @include styles.font(500, var(--font-size-x3), 28px, var(--text-base));
+    @include styles.font(600, var(--font-size-x4), 28px, var(--text-base));
     font-variant-numeric: tabular-nums;
   }
 
   .hint {
-    @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-bright));
+    @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
   }
 }

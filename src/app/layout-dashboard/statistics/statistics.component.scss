@@ -33,7 +33,7 @@
   }
 
   .range {
-    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+    @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
     white-space: nowrap;
   }
 
@@ -44,10 +44,10 @@
     @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
 
     input {
-      height: 36px;
+      height: var(--control-md);
       padding: 0 var(--spacing-x3);
       border: 1px solid var(--border-tertiary-color);
-      border-radius: var(--spacing-x2);
+      border-radius: var(--radius-control);
       background-color: var(--bg-base);
       @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
 
@@ -83,9 +83,10 @@
   padding: var(--spacing-x6);
 }
 
+// 8 overview KPIs → 4 × 2, no orphan tiles.
 .kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--spacing-x3);
 }
 
@@ -93,26 +94,27 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: var(--spacing-x3);
-  margin-bottom: var(--spacing-x4);
 }
 
+// Same surface as the group cards: 10px radius, soft shadow, 16px padding.
 .card {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-x3);
-  padding: var(--spacing-x4);
+  padding: var(--card-pad);
   border: 1px solid var(--border-color);
-  border-radius: var(--spacing-x3);
+  border-radius: var(--radius-card);
   background-color: var(--bg-base);
 
   h2 {
     margin: 0;
-    @include styles.font(500, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+    @include styles.font(600, var(--font-size-x2), var(--spacing-x6), var(--text-base));
   }
 
+  // Section label — same micro uppercase style as the group card sections.
   h3 {
-    margin: var(--spacing-x2) 0 var(--spacing-x2);
-    @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
+    margin: var(--spacing-x2) 0 var(--spacing-x1-5);
+    @include styles.micro-label;
   }
 
   .subtitle {
@@ -137,30 +139,9 @@
   }
 }
 
-.export {
-  height: 32px;
-  padding: 0 var(--spacing-x3);
-  border: 1px solid var(--border-tertiary-color);
-  border-radius: var(--spacing-x2);
-  background-color: var(--bg-base);
-  cursor: pointer;
-  white-space: nowrap;
-  @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-secondary));
-
-  &:hover:not(:disabled) {
-    background-color: var(--bg-hover);
-    border-color: var(--border-tertiary-hover);
-  }
-
-  &:disabled {
-    cursor: default;
-    color: var(--text-disabled);
-  }
-}
-
 .empty {
   padding: var(--spacing-x3) 0;
-  @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-bright));
+  @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
 }
 
 // ========== TABLES ==========
@@ -171,7 +152,7 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+    @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-base));
   }
 
   th,
@@ -183,12 +164,11 @@
     vertical-align: middle;
   }
 
+  // Header matches the titles table: square strip, 12px/500, light text.
   th {
     background-color: var(--bg-table-header);
-    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-secondary));
-
-    &:first-child { border-radius: var(--spacing-x2) 0 0 var(--spacing-x2); }
-    &:last-child { border-radius: 0 var(--spacing-x2) var(--spacing-x2) 0; }
+    border-bottom: 1px solid var(--border-color);
+    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-light));
   }
 
   tbody tr:hover {
@@ -220,7 +200,7 @@
   display: inline-block;
   vertical-align: middle;
   width: 80px;
-  height: 8px;
+  height: var(--bar-h);
   margin-right: var(--spacing-x2);
   border-radius: 999px;
   background-color: var(--bg-bright);
@@ -264,6 +244,6 @@
   gap: var(--spacing-x1-5);
 
   .dist-label {
-    @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
+    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-secondary));
   }
 }

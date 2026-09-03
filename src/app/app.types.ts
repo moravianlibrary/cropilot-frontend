@@ -162,7 +162,7 @@ export interface Position {
 }
 
 // Sort
-export type SortField = 'created_at' | 'modified_at' | 'external_id' | 'assigned_to_name' | null;
+export type SortField = 'created_at' | 'modified_at' | 'external_id' | 'assigned_to_name' | 'name' | null;
 export type SortDirection = 'asc' | 'desc' | null;
 export interface SortState {
   field: SortField;

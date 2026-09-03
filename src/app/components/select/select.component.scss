@@ -10,7 +10,7 @@
 }
 
 .trigger {
-  height: 40px;
+  height: var(--control-lg);
   width: 326px;
   border: 1px solid var(--border-tertiary-color);
   border-radius: var(--spacing-x2);
@@ -55,6 +55,31 @@
 
 .combo-input.used {
   color: var(--text-secondary);
+}
+
+// Compact variant (dashboard toolbars): 36px trigger, 14px text; a selected value
+// reads as a value (secondary), not as a placeholder (bright).
+:host.select-compact {
+  .trigger { height: var(--control-md); }
+
+  .combo-input {
+    font-size: var(--font-size-x1-5);
+    line-height: var(--spacing-x5);
+    color: var(--text-secondary);
+
+    &::placeholder {
+      font-size: var(--font-size-x1-5);
+      line-height: var(--spacing-x5);
+    }
+  }
+
+  .item .label,
+  .empty {
+    font-size: var(--font-size-x1-5);
+    line-height: var(--spacing-x5);
+  }
+
+  .item { padding: var(--spacing-x2) var(--spacing-x4); }
 }
 
 .chevron-btn {

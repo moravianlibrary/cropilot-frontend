@@ -24,7 +24,7 @@
       (keydown.enter)="close()"
       tabindex="0"
     >
-      <app-icon name="close" [size]="dialogContentType === 'settings' ? 20 : 24" />
+      <app-icon name="close" [size]="20" />
     </span>
   </header>
 
@@ -295,7 +295,8 @@
                   [(ngModel)]="dashboard.selectedCropModel"
                   [inputName]="'group-crop-model'"
                   location="dialog"
-                  [width]="264"
+                  size="compact"
+                  [width]="228"
                   [maxDropdownHeight]="192"
                   [options]="dashboard.availableCropModels()"
                   [usedIn]="dashboard.selectedCropModelUsed()"
@@ -310,7 +311,8 @@
                   [(ngModel)]="dashboard.selectedRotationModel"
                   [inputName]="'group-rotation-model'"
                   location="dialog"
-                  [width]="264"
+                  size="compact"
+                  [width]="228"
                   [maxDropdownHeight]="192"
                   [options]="dashboard.availableRotationModels()"
                   [usedIn]="dashboard.selectedRotationModelUsed()"
@@ -331,6 +333,8 @@
                       [(ngModel)]="dashboard.selectedUserId"
                       [inputName]="'add-user-to-group'"
                       location="dialog"
+                      size="compact"
+                      [width]="250"
                       [maxDropdownHeight]="192"
                       [options]="dashboard.availableUsers()"
                       [placeholder]="'Napište jméno'"
@@ -359,7 +363,7 @@
                       tabindex="0"
                     >
                       <span class="icon">
-                        <app-icon name="delete" [size]="16" />
+                        <app-icon name="delete" [size]="14" />
                       </span>
                       Odebrat vše
                     </span>
@@ -379,7 +383,7 @@
                       @let isUploadTitle = user.permission.includes('upload');
                       @let isWriteTitle = user.permission.includes('write');
                       @let isReadTitle = user.permission.includes('read_title');
-                      <label [for]="`${user._id}-upload`" class="permission">
+                      <label [for]="`${user._id}-upload`" class="permission success">
                         <input
                           type="checkbox"
                           [id]="`${user._id}-upload`"
@@ -389,14 +393,14 @@
                           (keydown.enter)="dashboard.toggleUserPermission(user._id, 'upload')"
                         />
                         <span class="check-mark">
-                          <app-icon name="checkmark" [size]="16" />
+                          <app-icon name="checkmark" [size]="14" />
                         </span>
                         Správa
                         <span class="icon">
-                          <app-icon name="settings" [size]="16" />
+                          <app-icon name="settings" [size]="14" />
                         </span>
                       </label>
-                      <label [for]="`${user._id}-write`" class="permission">
+                      <label [for]="`${user._id}-write`" class="permission info">
                         <input
                           type="checkbox"
                           [id]="`${user._id}-write`"
@@ -406,14 +410,14 @@
                           (keydown.enter)="dashboard.toggleUserPermission(user._id, 'write')"
                         />
                         <span class="check-mark">
-                          <app-icon name="checkmark" [size]="16" />
+                          <app-icon name="checkmark" [size]="14" />
                         </span>
                         Úpravy
                         <span class="icon">
-                          <app-icon name="edit" [size]="16" />
+                          <app-icon name="edit" [size]="14" />
                         </span>
                       </label>
-                      <label [for]="`${user._id}-read-title`" class="permission">
+                      <label [for]="`${user._id}-read-title`" class="permission pending">
                         <input
                           type="checkbox"
                           [id]="`${user._id}-read-title`"
@@ -423,14 +427,14 @@
                           (keydown.enter)="dashboard.toggleUserPermission(user._id, 'read_title')"
                         />
                         <span class="check-mark">
-                          <app-icon name="checkmark" [size]="16" />
+                          <app-icon name="checkmark" [size]="14" />
                         </span>
                         Detail titulu
                         <span class="icon">
-                          <app-icon name="book" [size]="16" />
+                          <app-icon name="book" [size]="14" />
                         </span>
                       </label>
-                      <label [for]="`${user._id}-read-group`" class="permission">
+                      <label [for]="`${user._id}-read-group`" class="permission error">
                         <input
                           type="checkbox"
                           [id]="`${user._id}-read-group`"
@@ -440,11 +444,11 @@
                           (keydown.enter)="dashboard.toggleUserPermission(user._id, 'read_group')"
                         />
                         <span class="check-mark">
-                          <app-icon name="checkmark" [size]="16" />
+                          <app-icon name="checkmark" [size]="14" />
                         </span>
                         Zobrazení všech titulů
                         <span class="icon">
-                          <app-icon name="open-folder" [size]="16" />
+                          <app-icon name="open-folder" [size]="14" />
                         </span>
                       </label>
                     </div>
@@ -456,7 +460,7 @@
                       tabindex="0"
                     >
                       <span class="icon">
-                        <app-icon name="delete" [size]="16" />
+                        <app-icon name="delete" [size]="14" />
                       </span>
                     </span>
                   </div>
@@ -498,7 +502,8 @@
                   [(ngModel)]="dashboard.selectedCropModel"
                   [inputName]="'title-crop-model'"
                   location="dialog"
-                  [width]="264"
+                  size="compact"
+                  [width]="228"
                   [maxDropdownHeight]="dialogContentType === 'edit-title' ? 144 : 240"
                   [options]="dashboard.availableCropModels()"
                   [usedIn]="dashboard.selectedCropModelUsed()"
@@ -513,7 +518,8 @@
                   [(ngModel)]="dashboard.selectedRotationModel"
                   [inputName]="'title-rotation-model'"
                   location="dialog"
-                  [width]="264"
+                  size="compact"
+                  [width]="228"
                   [maxDropdownHeight]="dialogContentType === 'edit-title' ? 144 : 240"
                   [options]="dashboard.availableRotationModels()"
                   [usedIn]="dashboard.selectedRotationModelUsed()"
@@ -525,7 +531,7 @@
           @if (dialogContentType === 'edit-title') {
             <div class="warning">
               <span class="icon">
-                <app-icon name="warning-round" [size]="24" />
+                <app-icon name="warning-round" [size]="20" />
               </span>
               <span class="text">Změnou kteréhokoliv modelu ztratíte všechny úpravy.</span>
             </div>
@@ -632,6 +638,8 @@
                         [(ngModel)]="dashboard.selectedGroupId"
                         [inputName]="'assign-group-to-user'"
                         location="dialog"
+                        size="compact"
+                        [width]="250"
                         [maxDropdownHeight]="192"
                         [options]="dashboard.availableGroups()"
                         [placeholder]="'Napište název'"
@@ -660,7 +668,7 @@
                         tabindex="0"
                       >
                         <span class="icon">
-                          <app-icon name="delete" [size]="16" />
+                          <app-icon name="delete" [size]="14" />
                         </span>
                         Odebrat vše
                       </span>
@@ -681,7 +689,7 @@
                       @let isUploadTitle = group.permission.includes('upload');
                       @let isWriteTitle = group.permission.includes('write');
                       @let isReadTitle = group.permission.includes('read_title');
-                      <label [for]="`${group.group_id}-upload`" class="permission">
+                      <label [for]="`${group.group_id}-upload`" class="permission success">
                         <input
                           type="checkbox"
                           [id]="`${group.group_id}-upload`"
@@ -691,14 +699,14 @@
                           (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'upload')"
                         />
                         <span class="check-mark">
-                          <app-icon name="checkmark" [size]="16" />
+                          <app-icon name="checkmark" [size]="14" />
                         </span>
                         Správa
                         <span class="icon">
-                          <app-icon name="settings" [size]="16" />
+                          <app-icon name="settings" [size]="14" />
                         </span>
                       </label>
-                      <label [for]="`${group.group_id}-write`" class="permission">
+                      <label [for]="`${group.group_id}-write`" class="permission info">
                         <input
                           type="checkbox"
                           [id]="`${group.group_id}-write`"
@@ -708,14 +716,14 @@
                           (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'write')"
                         />
                         <span class="check-mark">
-                          <app-icon name="checkmark" [size]="16" />
+                          <app-icon name="checkmark" [size]="14" />
                         </span>
                         Úpravy
                         <span class="icon">
-                          <app-icon name="edit" [size]="16" />
+                          <app-icon name="edit" [size]="14" />
                         </span>
                       </label>
-                      <label [for]="`${group.group_id}-read-title`" class="permission">
+                      <label [for]="`${group.group_id}-read-title`" class="permission pending">
                         <input
                           type="checkbox"
                           [id]="`${group.group_id}-read-title`"
@@ -725,14 +733,14 @@
                           (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'read_title')"
                         />
                         <span class="check-mark">
-                          <app-icon name="checkmark" [size]="16" />
+                          <app-icon name="checkmark" [size]="14" />
                         </span>
                         Detail titulu
                         <span class="icon">
-                          <app-icon name="book" [size]="16" />
+                          <app-icon name="book" [size]="14" />
                         </span>
                       </label>
-                      <label [for]="`${group.group_id}-read-group`" class="permission">
+                      <label [for]="`${group.group_id}-read-group`" class="permission error">
                         <input
                           type="checkbox"
                           [id]="`${group.group_id}-read-group`"
@@ -742,11 +750,11 @@
                           (keydown.enter)="dashboard.toggleGroupPermission(group.group_id, 'read_group')"
                         />
                         <span class="check-mark">
-                          <app-icon name="checkmark" [size]="16" />
+                          <app-icon name="checkmark" [size]="14" />
                         </span>
                         Zobrazení všech titulů
                         <span class="icon">
-                          <app-icon name="open-folder" [size]="16" />
+                          <app-icon name="open-folder" [size]="14" />
                         </span>
                       </label>
                     </div>
@@ -758,7 +766,7 @@
                       tabindex="0"
                     >
                       <span class="icon">
-                        <app-icon name="delete" [size]="16" />
+                        <app-icon name="delete" [size]="14" />
                       </span>
                     </span>
                   </div>
@@ -778,13 +786,13 @@
           <div class="block">
             <div class="warning">
               <span class="icon">
-                <app-icon name="warning-round" [size]="24" />
+                <app-icon name="warning-round" [size]="20" />
               </span>
               <span class="text">Zkopírujte jednorázové heslo a pošlete uživateli. Podruhé se nezobrazí.</span>
             </div>
             <div class="label">
               <span class="icon front">
-                <app-icon name="new-password" [size]="24" />
+                <app-icon name="new-password" [size]="20" />
               </span>
               <input
                 id="new-user-password"
@@ -798,7 +806,7 @@
                   class="icon copy-password"
                   (click)="copy()"
                 >
-                  <app-icon name="copy" [size]="16" />
+                  <app-icon name="copy" [size]="14" />
                 </span>
                 <span class="tooltip" [class.show]="copied">Zkopírováno!</span>
               </span>

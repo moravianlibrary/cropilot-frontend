@@ -9,6 +9,13 @@
   color: $color;
 }
 
+// Section / field micro label: 11px, 500, uppercase, tracked. Shared by cards,
+// drawers, dialogs, statistics and the editor panels.
+@mixin micro-label($color: var(--text-light)) {
+  text-transform: uppercase;
+  @include font(500, var(--font-size-x0-7-5), var(--spacing-x4), $color, 0.06em);
+}
+
 :root {
   --primary: #0080A8;
   --primary-hover: #1E657B;
@@ -71,12 +78,28 @@
   --tag-error-bg: #D5372C1A;
   --tag-error-text: #390400;
   --tag-error-icon: #853D38;
+  // Type scale: 10 · 11 · 12 · 13 · 14 · 16 · 18 · 20 · 24
   --font-size-x0-5: 10px;
-  --font-size-x1: 12px;
-  --font-size-x1-5: 14px;
-  --font-size-x2: 16px;
-  --font-size-x2-5: 18px;
+  --font-size-x0-7-5: 11px;   // micro labels (uppercase section labels)
+  --font-size-x1: 12px;       // meta, chips, table headers, legends
+  --font-size-x1-2-5: 13px;   // table cells, tabs, compact controls
+  --font-size-x1-5: 14px;     // inputs, buttons, body
+  --font-size-x2: 16px;       // card titles
+  --font-size-x2-5: 18px;     // drawer / dialog headings
   --font-size-x3: 20px;
+  --font-size-x4: 24px;       // display numbers (KPI, title counts)
+  // Control + surface tokens shared by the dashboard
+  --header-h: 56px;
+  --control-lg: 40px;
+  --control-md: 36px;
+  --control-sm: 28px;
+  --chip-h: 24px;
+  --radius-card: 10px;
+  --radius-control: 8px;
+  --radius-chip: 4px;
+  --card-pad: 16px;
+  --bar-h: 8px;
+  --bar-h-lg: 10px;
   --spacing-x0-5: 2px;
   --spacing-x0-7-5: 3px;
   --spacing-x1: 4px;
@@ -148,7 +171,7 @@ html, body {
 }
 
 .button {
-  @include font(400, var(font-size-x1-5), var(--spacing-x4), var(--text-base));
+  @include font(400, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -163,10 +186,17 @@ html, body {
 }
 
 .real-button {
-  height: 40px;
+  height: var(--control-lg);
   padding: var(--spacing-x2) var(--spacing-x4);
   font-size: var(--font-size-x1-5);
   line-height: var(--spacing-x4);
+}
+
+// Compact variant for toolbars inside cards (sits next to small segmented controls).
+.real-button.compact {
+  height: var(--control-sm);
+  padding: 0 var(--spacing-x3);
+  font-size: var(--font-size-x1-2-5);
 }
 
 .with-icon {
@@ -176,7 +206,7 @@ html, body {
 
 .primary {
   background-color: var(--primary);
-  @include font(400, var(--font-size-x2), var(--spacing-x6), var(--text-white));
+  @include font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-white));
   transition: background-color .2s ease;
 
   .icon {
@@ -201,7 +231,7 @@ html, body {
 
   // Unified hover for square icon buttons (matches the table "…" action):
   // slightly darker border, soft halo, primary icon.
-  &:not(.disabled):hover {
+  &:not(.disabled):not(:disabled):hover {
     border-color: var(--border-tertiary-hover);
     outline: 5px solid var(--border-light);
 
@@ -214,7 +244,7 @@ html, body {
 .tertiary {
   background-color: var(--bg-base);
   border: 1px solid var(--border-tertiary-color);
-  font-size: var(--font-size-x2);
+  font-size: var(--font-size-x1-5);
   color: var(--text-tertiary);
 
   .icon {
@@ -272,7 +302,7 @@ html, body {
 }
 
 .primary.soft {
-  @include font(450, var(--font-size-x2), var(--spacing-x6), var(--primary));
+  @include font(500, var(--font-size-x1-5), var(--spacing-x4), var(--primary));
   background-color: var(--bg-selected);
 
   .icon {
@@ -302,7 +332,8 @@ html, body {
   }
 }
 
-.secondary.disabled {
+.secondary.disabled,
+.secondary:disabled {
   color: var(--text-disabled);
   border-color: var(--border-color);
 
@@ -512,7 +543,6 @@ a:focus-visible {
   z-index: 512;
   background: var(--bg-base);
   @include font(400, var(--font-size-x1), var(--spacing-x4), var(--text-base));
-  font-family: 'Karla', sans-serif;
   padding: var(--spacing-x2) var(--spacing-x3);
   border-radius: var(--spacing-x1);
   display: inline-block;
@@ -520,7 +550,7 @@ a:focus-visible {
   white-space: normal;
   overflow-wrap: break-word;
   pointer-events: none;
-  box-shadow: 0 2px 16px 2px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-tertiary-color);
 
   &::before {
     content: "";

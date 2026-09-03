@@ -1,16 +1,16 @@
 @use '../../../styles' as styles;
 
 :host {
+  --panel-w: 520px;
   display: flex;
   flex-direction: column;
   position: absolute;
-  right: -593px;
+  right: calc(-1 * var(--panel-w));
   height: 100%;
-  width: 593px;
+  width: var(--panel-w);
   z-index: 520;
   background-color: var(--bg-base);
-  border-right: 1px solid var(--border-color);
-  box-shadow: 1px 0 24px 0 #0000001A;  
+  border-left: 1px solid var(--border-color);
   visibility: hidden;
   transition: right .3s ease-out, visibility .3s ease-out;
 }
@@ -26,14 +26,47 @@
   align-items: center;
   padding: var(--spacing-x3) var(--spacing-x4);
 
+  .drawer-heading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-x0-5);
+    min-width: 0;
+  }
+
   h2 {
-    @include styles.font(450, var(--font-size-x3), var(--spacing-x8), var(--text-base));
+    @include styles.font(600, var(--font-size-x2-5), var(--spacing-x6), var(--text-base));
+  }
+
+  .drawer-subtitle {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-x2);
+    min-width: 0;
+    @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
+
+    .subtitle-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tag.role {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      height: var(--chip-h);
+      padding: 0 var(--spacing-x2);
+      border-radius: var(--radius-chip);
+      background-color: var(--tag-info-bg);
+      @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--tag-info-text));
+    }
   }
 
   .drawer-actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-x4);
+    gap: var(--spacing-x3);
+    flex-shrink: 0;
 
     .action {
       display: flex;
@@ -52,18 +85,33 @@
       }
     }
 
+    // Close: same 28px square as the other header actions, borderless.
+    .drawer-close {
+      width: var(--control-sm);
+      height: var(--control-sm);
+      border-radius: var(--spacing-x1-5);
+      transition: background-color .15s ease;
+
+      &:hover {
+        background-color: var(--bg-bright);
+
+        .icon { color: var(--primary); }
+      }
+    }
+
     .icon-button-actions {
       display: flex;
       justify-content: center;
       align-items: center;
       gap: var(--spacing-x3);
 
+      // Same 28px square as the group-card "…" action.
       .icon-button {
-        width: var(--spacing-x8);
-        height: var(--spacing-x8);
+        width: var(--control-sm);
+        height: var(--control-sm);
         background-color: var(--bg-base);
-        padding: var(--spacing-x2);
-        border-radius: var(--spacing-x2);
+        padding: var(--spacing-x1-5);
+        border-radius: var(--spacing-x1-5);
         border: 1px solid var(--border-tertiary-color);
         transition: border-color .15s ease;
 
@@ -126,11 +174,12 @@
       gap: var(--spacing-x1);
       padding-inline: var(--spacing-x4);
 
+      // Metadata / field labels: same micro uppercase label as the group-card sections.
       label, .label {
         display: flex;
         align-items: center;
         gap: var(--spacing-x2);
-        @include styles.font(400, var(--font-size-x1), var(--spacing-x5), var(--text-light));
+        @include styles.micro-label;
 
         .icon {
           color: var(--primary);
@@ -139,13 +188,6 @@
             cursor: pointer;
           }
         }
-      }
-
-      // Metadata labels: 11px uppercase, muted.
-      .label {
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        @include styles.font(500, 11px, var(--spacing-x4), var(--text-label-bright));
       }
 
       label {
@@ -163,17 +205,21 @@
           padding: var(--spacing-x2) var(--spacing-x4) var(--spacing-x2) 44px;
           margin-top: var(--spacing-x1);
           width: 100%;
+          height: var(--control-md);
           border: 1px solid var(--border-tertiary-color);
-          border-radius: var(--spacing-x1);
-          @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+          border-radius: var(--radius-control);
+          text-transform: none;
+          letter-spacing: normal;
+          @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
 
           &:focus {
             border-color: var(--primary);
             outline: none;
+            box-shadow: 0 0 0 3px var(--primary-glow);
           }
 
           &::placeholder {
-            @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-bright));
+            @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-bright));
           }
         }
 
@@ -186,7 +232,7 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--spacing-x2);
+        gap: var(--spacing-x1-5);
 
         input {
           margin-top: 0;
@@ -202,8 +248,21 @@
         width: max-content;
       }
 
+      // Selects sit inside <label>s — don't let the uppercase label style leak into them.
+      label app-select {
+        text-transform: none;
+        letter-spacing: normal;
+      }
+
       .error {
-        @include styles.font(400, var(--font-size-x1-5), var(--spacing-x6), var(--text-destructive));
+        @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-destructive));
+      }
+
+      // Standalone action inside a block (e.g. "Exportovat CSV") — don't stretch to full width.
+      > .button {
+        width: fit-content;
+        align-self: flex-start;
+        height: var(--control-md);
       }
 
       .copy-wrap {
@@ -228,8 +287,8 @@
           border-radius: var(--spacing-x1);
           border: 1px solid var(--border-light);
           background-color: var(--bg-base);
-          box-shadow: 0 2px var(--spacing-x4) 2px #00000014;
           @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-base));
+          text-transform: none;
           white-space: nowrap;
 
           opacity: 0;
@@ -243,18 +302,18 @@
       }
 
       .value {
-        @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+        @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
         display: flex;
         flex-direction: column;
         gap: var(--spacing-x2);
         overflow-wrap: break-word;
 
         .date {
-          @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+          @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
         }
 
         .time {
-          @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-light));
+          @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
         }
 
         .button {
@@ -269,8 +328,8 @@
       }
 
       .value.mono {
+        @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-secondary));
         font-family: 'IBM Plex Mono', monospace;
-        @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
         word-break: break-all;
       }
 
@@ -280,19 +339,23 @@
         gap: var(--spacing-x2-5);
 
         .api-key {
+          @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-secondary));
           font-family: 'IBM Plex Mono', monospace;
-          @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
           word-break: break-all;
         }
 
+        // Chip-sized toggle (24px), same as the card chips.
         .api-key-toggle {
+          display: inline-flex;
+          align-items: center;
           flex-shrink: 0;
-          padding: var(--spacing-x0-7-5) var(--spacing-x2);
+          height: var(--chip-h);
+          padding: 0 var(--spacing-x2);
           border: 1px solid var(--border-color);
-          border-radius: var(--spacing-x1-5);
+          border-radius: var(--radius-chip);
           background-color: var(--bg-base);
           user-select: none;
-          @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--primary));
+          @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--primary));
 
           &:hover, &:focus-visible {
             cursor: pointer;
@@ -313,7 +376,7 @@
         }
 
         .user-fullname {
-          @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
+          @include styles.font(600, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
         }
       }
     }
@@ -326,7 +389,7 @@
       padding: var(--spacing-x4);
       background-color: var(--bg-main-light);
       border: 1px solid var(--border-light);
-      border-radius: var(--spacing-x2-5);
+      border-radius: var(--radius-card);
 
       .block {
         padding-inline: 0;
@@ -341,8 +404,8 @@
       position: relative;
 
       .no-results {
-        @include styles.font(400, var(--font-size-x2), var(--spacing-x4), var(--text-base));
-        font-style: italic;
+        padding: 0 var(--spacing-x4) var(--spacing-x2);
+        @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
       }
 
       .header {
@@ -368,11 +431,13 @@
           gap: var(--spacing-x3);
 
           .add-perm {
+            height: var(--control-md);
             padding-right: var(--spacing-x6);
           }
 
           .remove-all {
             padding: 0;
+            min-height: var(--control-sm);
           }
         }
       }
@@ -387,12 +452,12 @@
 
       .permissions-row {
         width: 100%;
-        border-radius: var(--spacing-x2-5);
+        border-radius: var(--radius-card);
         background-color: var(--bg-base);
         border: 1px solid var(--border-light);
 
         .name {
-          @include styles.font(500, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+          @include styles.font(600, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
         }
 
         .permissions {
@@ -400,16 +465,21 @@
           flex-wrap: wrap;
           gap: var(--spacing-x2);
 
+          // Toggle chip: 28px (clickable), 13px text — one step above the 24px display chips.
           .permission {
             display: inline-flex;
             align-items: center;
             gap: var(--spacing-x1-5);
-            padding: var(--spacing-x1-5) var(--spacing-x2-5);
+            height: var(--control-sm);
+            padding: 0 var(--spacing-x2-5);
             border: 1px solid var(--border-color);
             border-radius: var(--spacing-x1-5);
             background-color: var(--bg-base);
             user-select: none;
-            @include styles.font(400, var(--font-size-x1-5), var(--spacing-x4), var(--text-bright));
+            // It's a <label>, so undo the uppercase micro-label style.
+            text-transform: none;
+            letter-spacing: normal;
+            @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x4), var(--text-bright));
             cursor: pointer;
             transition: background-color .15s ease, border-color .15s ease, color .15s ease;
 
@@ -423,7 +493,15 @@
               width: 0;
               height: 0;
               margin: 0;
+              padding: 0;
+              border: 0;
               pointer-events: none;
+            }
+
+            // Keyboard focus lands on the hidden checkbox — show it on the chip.
+            &:has(input:focus-visible) {
+              outline: 2px solid var(--primary);
+              outline-offset: 2px;
             }
 
             .check-mark {
@@ -476,15 +554,13 @@
       }
 
       .permissions-row.edit {
-        padding-inline: var(--spacing-x4);
-        padding-block: var(--spacing-x3) var(--spacing-x5);
+        padding: var(--spacing-x3) var(--card-pad) var(--card-pad);
         position: relative;
         display: flex;
         flex-direction: column;
-        gap: var(--spacing-x4);
+        gap: var(--spacing-x3);
 
-
-
+        // Same 28px square icon button as the header actions / card "…".
         .remove {
           position: absolute;
           top: var(--spacing-x2);
@@ -492,13 +568,20 @@
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: var(--spacing-x2);
-          border-radius: var(--spacing-x2);
+          width: var(--control-sm);
+          height: var(--control-sm);
+          padding: 0;
+          border-radius: var(--spacing-x1-5);
           background-color: var(--bg-base);
           border: 1px solid var(--border-tertiary-color);
+          transition: border-color .15s ease;
 
           &:hover {
             cursor: pointer;
+            border-color: var(--border-tertiary-hover);
+            outline: 5px solid var(--border-light);
+
+            .icon { color: var(--primary); }
           }
 
           &:focus-visible {
@@ -524,9 +607,10 @@
   display: inline-flex;
   align-items: center;
   width: fit-content;
-  padding: var(--spacing-x1) var(--spacing-x2);
-  border-radius: var(--spacing-x1-5);
-  @include styles.font(500, 13px, var(--spacing-x4), var(--text-base));
+  height: var(--chip-h);
+  padding: 0 var(--spacing-x2);
+  border-radius: var(--radius-chip);
+  @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-base));
 
   &.info    { color: var(--tag-info-text); background-color: var(--tag-info-bg); }
   &.success { color: var(--tag-success-text); background-color: var(--tag-success-bg); }
@@ -539,17 +623,19 @@
   align-items: center;
   justify-content: flex-end;
   gap: var(--spacing-x3);
-  padding: var(--spacing-x3) var(--spacing-x6);
+  padding: var(--spacing-x3) var(--spacing-x4);
   border-top: 1px solid var(--border-color);
 
   .dirty-note {
     margin-right: auto;
-    @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--status-icon-warning));
+    @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x5), var(--status-icon-warning));
   }
 
   .footer-buttons {
     display: flex;
     gap: var(--spacing-x3);
+
+    .real-button { height: var(--control-md); }
   }
 }
 
@@ -563,7 +649,7 @@
   padding: var(--spacing-x3) var(--spacing-x3-5);
   border-radius: var(--spacing-x2);
   background-color: var(--tag-pending-bg);
-  @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--tag-pending-text));
+  @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--tag-pending-text));
 
   .icon {
     color: var(--tag-pending-icon);

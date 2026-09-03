@@ -32,16 +32,17 @@
       </span>
     }
   }
-  <div class="rotation-heading">
-    <div class="label">Otočení</div>
-  </div>
-  <app-segmented-control
-    class="view-switch"
-    ariaLabel="Orientace skenu"
-    [options]="orientationOptions"
-    [value]="activeOrientation"
-    (valueChange)="setOrientation($event)"
-  />
+  <div class="field">
+    <div class="rotation-heading">
+      <div class="label">Otočení</div>
+    </div>
+    <app-segmented-control
+      class="view-switch"
+      ariaLabel="Orientace skenu"
+      [options]="orientationOptions"
+      [value]="activeOrientation"
+      (valueChange)="setOrientation($event)"
+    />
   <div class="scope-row">
     <span class="scope-label">Použít na:</span>
     <div class="radios-wrapper scope-radios">
@@ -61,9 +62,10 @@
           [checked]="editor.rotationScope() === 'all'"
           (change)="setRotationScope('all')"
         />
-        <span class="radio-value">Všechny skeny</span>
+        <span class="radio-value">Všechny</span>
       </label>
     </div>
+  </div>
   </div>
   <div class="actions">
     <span
@@ -340,6 +342,8 @@
     </span>
   } @else if (editor.currentPages.length) {
     <span class="no-crop-hint">Vyberte výřez kliknutím na obdélník ve skenu</span>
+  } @else if (editor.displayedImagesFinal().length) {
+    <span class="no-crop-hint">Sken nemá žádný výřez. Přidejte ho tlačítkem „Přidat výřez“.</span>
   }
 </div>
 

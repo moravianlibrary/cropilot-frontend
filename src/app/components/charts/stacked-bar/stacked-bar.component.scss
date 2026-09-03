@@ -6,13 +6,13 @@
 }
 
 .empty {
-  @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-bright));
+  @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
 }
 
 .bar {
   display: flex;
   width: 100%;
-  height: 12px;
+  height: var(--bar-h-lg);
   border-radius: 999px;
   background-color: var(--bg-bright);
   overflow: hidden;

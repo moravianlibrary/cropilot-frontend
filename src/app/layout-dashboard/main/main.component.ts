@@ -3,7 +3,7 @@ import { DashboardService } from '../../services/dashboard.service';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { permissionDict, titleStateDict, titleStateFilterDict } from '../../app.config';
-import { AssignableUser, Title, Group, GroupPage, Paginated, PagedQuery, Permission, PermissionType, SortField, SortState, TitlesQuery, User, UserInGroup } from '../../app.types';
+import { AssignableUser, Title, Group, GroupPage, Paginated, PagedQuery, Permission, PermissionType, SortDirection, SortField, SortState, TitlesQuery, User, UserInGroup } from '../../app.types';
 import { focusElement, getDate, getRelativeDate, waitForElement } from '../../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,15 +13,15 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { Title as titleBrowser } from '@angular/platform-browser';
 import { ToastComponent } from '../../components/toast/toast.component';
 import { UiService } from '../../services/ui.service';
-import { TagsOverflowComponent } from '../../components/tags-overflow/tags-overflow.component';
 import { ThTooltipDirective } from '../../directives/th-tooltip.directive';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { IconComponent } from '../../components/icon/icon.component';
 import { StatisticsComponent } from '../statistics/statistics.component';
+import { OnVisibleDirective } from '../../directives/on-visible.directive';
 
 @Component({
   selector: 'app-main-dashboard',
-  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent, TagsOverflowComponent, ThTooltipDirective, IconComponent, StatisticsComponent],
+  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent, ThTooltipDirective, IconComponent, StatisticsComponent, OnVisibleDirective],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
 })
@@ -38,6 +38,13 @@ export class MainComponent {
   getDate = getDate;
   getRelativeDate = getRelativeDate;
   tableHasScrollbar = signal<boolean>(false);
+
+  // ========== LAZY TITLE THUMBNAILS ==========
+  // Rows ask for their first-scan thumbnail when they scroll into view (see the
+  // appOnVisible directive in the template). Only users who may read titles fetch.
+  loadTitleThumbnail(title: Title): void {
+    if (this.auth.canReadTitle()) this.dashboard.loadTitleThumbnail(title._id, title.state);
+  }
 
   // Legend of permission tags shown under the groups/users tables.
   permLegend: { label: string; icon: string; klass: string }[] = [
@@ -93,7 +100,9 @@ export class MainComponent {
             // Groups
             case 'groups':
               this.resetListQueryState();
-              return this.dashboard.fetchGroupsPage({ page: 1 }).pipe(
+              // Groups default to sorting by name (A→Z).
+              this.sortState = { field: 'name', direction: 'asc' };
+              return this.dashboard.fetchGroupsPage({ page: 1, sort_field: 'name', sort_direction: 'asc' }).pipe(
                 tap((res: Paginated<Group>) => {
                   this.dashboard.dashboardPage.set('groups');
                   this.applyGroupsResponse(res);
@@ -109,6 +118,7 @@ export class MainComponent {
             case 'group':
               this.currentGroupId = group_id;
               this.resetTitlesQueryState();
+              this.dashboard.clearTitleThumbnails();
               return this.dashboard.fetchTitles(group_id, { page: 1 }).pipe(
                 tap((res: GroupPage) => {
                   this.dashboard.dashboardPage.set('titles');
@@ -161,26 +171,34 @@ export class MainComponent {
               return of(null);
           }
         })).subscribe(async () => {
-          // The statistics page has no table/search input; waiting for one would never resolve.
-          if (this.dashboard.dashboardPage() === 'statistics') return;
-          const someResults = await waitForElement('tbody tr:not(.no-results)');
-          const tableScroll = this.bodyScroll()?.nativeElement as HTMLDivElement;
-          this.osInstance = OverlayScrollbars(tableScroll, {
-            overflow: { x: 'hidden', y: 'scroll' },
-            scrollbars: {
-              theme: 'os-theme-orezy',
-              autoHide: 'leave',
-              autoHideDelay: 250,
-              dragScroll: true,
-              clickScroll: true,
-            },
-          });
-          tableScroll.classList.remove('os-pending');
-          this.tableHasScrollbar.set(this.osInstance.state().hasOverflow.y);
+          const page = this.dashboard.dashboardPage();
+          // Statistics has no table/search input; the groups page renders as a
+          // card grid (no <table>/#bodyScroll) — skip the table scrollbar setup
+          // for both, otherwise waitForElement/OverlayScrollbars would hang/throw.
+          if (page === 'statistics') return;
 
-          // Focus input
+          if (page !== 'groups') {
+            const someResults = await waitForElement('tbody tr:not(.no-results)');
+            const tableScroll = this.bodyScroll()?.nativeElement as HTMLDivElement;
+            this.osInstance = OverlayScrollbars(tableScroll, {
+              overflow: { x: 'hidden', y: 'scroll' },
+              scrollbars: {
+                theme: 'os-theme-orezy',
+                autoHide: 'leave',
+                autoHideDelay: 250,
+                dragScroll: true,
+                clickScroll: true,
+              },
+            });
+            tableScroll.classList.remove('os-pending');
+            this.tableHasScrollbar.set(this.osInstance.state().hasOverflow.y);
+          }
+
+          // Focus input. preventScroll: the search input is always in view, and
+          // the off-canvas drawer makes .main-wrapper horizontally scrollable —
+          // a scrolling focus would nudge the whole page sideways (esp. the card grid).
           const searchInput = await waitForElement('input', this.searchLabel()?.nativeElement);
-          focusElement(searchInput);
+          focusElement(searchInput, 0, true);
         });
   }
 
@@ -269,6 +287,35 @@ export class MainComponent {
 
   getPermissionsTypes(aggregations: Partial<Record<PermissionType, number>>): PermissionType[] {
     return Object.keys(aggregations) as PermissionType[];
+  }
+
+  // ---------- Groups card grid (the redesigned groups homepage) ----------
+  // Sort options rendered as text buttons in the groups toolbar (Název first).
+  groupSortOptions: { field: Exclude<SortField, null>; label: string }[] = [
+    { field: 'name', label: 'Název' },
+    { field: 'created_at', label: 'Vytvořeno' },
+    { field: 'modified_at', label: 'Upraveno' },
+  ];
+
+  // Effective sort field/direction used to highlight the toolbar buttons.
+  // Groups default to name (A→Z).
+  effectiveSortField(): SortField {
+    return this.sortState.field ?? 'name';
+  }
+  effectiveSortDir(): SortDirection {
+    return this.sortState.direction ?? 'asc';
+  }
+
+  // Czech plural for the per-card title count (titul / tituly / titulů).
+  titleCountLabel(count: number): string {
+    return count === 1 ? 'titul' : [2, 3, 4].includes(count) ? 'tituly' : 'titulů';
+  }
+
+  // The card ⋯ button opens the group detail drawer (edit/delete live there),
+  // mirroring the previous table behaviour.
+  openGroupDetail(group: Group, event: Event): void {
+    event.stopPropagation();
+    this.dashboard.openGroupDetail(group);
   }
 
 

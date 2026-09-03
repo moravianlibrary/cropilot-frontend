@@ -7,7 +7,7 @@
 
 .empty {
   padding: var(--spacing-x3) 0;
-  @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-bright));
+  @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
 }
 
 // Horizontal bars
@@ -24,7 +24,7 @@
   gap: var(--spacing-x2);
 
   .row-label {
-    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
+    @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-secondary));
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -32,7 +32,7 @@
 
   .track {
     display: block;
-    height: 10px;
+    height: var(--bar-h-lg);
     border-radius: 999px;
     background-color: var(--bg-bright);
     overflow: hidden;
@@ -49,7 +49,7 @@
   .row-value {
     text-align: right;
     font-variant-numeric: tabular-nums;
-    @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+    @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-base));
   }
 }
 

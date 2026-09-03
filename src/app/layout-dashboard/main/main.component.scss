@@ -3,7 +3,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 58px);
+  height: calc(100% - var(--header-h));
   width: 100%;
   background-color: var(--bg-bright);
 }
@@ -14,7 +14,6 @@
   background-color: var(--bg-base);
   border: 1px solid var(--primary);
   border-radius: var(--spacing-x2);
-  box-shadow: 0 2px var(--spacing-x4) 2px #00000014;
 
   label {
     display: flex;
@@ -38,9 +37,10 @@
     align-items: center;
     gap: var(--spacing-x1);
     max-width: 100%;
-    border-radius: var(--spacing-x1);
-    padding: var(--spacing-x0-5) var(--spacing-x2);
-    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+    height: var(--chip-h);
+    border-radius: var(--radius-chip);
+    padding: 0 var(--spacing-x2);
+    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-light));
 
     .assign-name {
       overflow: hidden;
@@ -51,12 +51,19 @@
     // Assigned: render as the member-style pill.
     &.assigned {
       background-color: var(--bg-bright);
-      color: var(--text-base);
+      color: var(--text-secondary);
     }
   }
 
   .assign-trigger {
     cursor: pointer;
+
+    // Unassigned "+" gets a visible, chip-sized dashed hit-area.
+    &:not(.assigned) {
+      justify-content: center;
+      min-width: var(--control-sm);
+      border: 1px dashed var(--border-tertiary-color);
+    }
 
     &:hover {
       background-color: var(--bg-selected-hover);
@@ -82,7 +89,6 @@
   background-color: var(--bg-base);
   border: 1px solid var(--primary);
   border-radius: var(--spacing-x2);
-  box-shadow: 0 2px var(--spacing-x4) 2px #00000014;
   z-index: 510; // On click don't close drawer
 
   .assign-option {
@@ -129,9 +135,14 @@
   .top-part {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     width: 100%;
     height: min-content;
+
+    // Dashboard toolbars use the 36px control size (header logout, create, search, select).
+    .real-button {
+      height: var(--control-md);
+    }
 
     .left-part {
       display: flex;
@@ -143,12 +154,13 @@
         display: inline-flex;
         align-items: center;
         gap: var(--spacing-x1-5);
-        padding: var(--spacing-x1-5) var(--spacing-x3);
+        height: var(--control-sm);
+        padding: 0 var(--spacing-x3);
         border-radius: 999px;
         border: 1px solid var(--primary);
         background-color: var(--bg-selected);
         user-select: none;
-        @include styles.font(400, 13px, var(--spacing-x4), var(--primary));
+        @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x4), var(--primary));
 
         .icon {
           display: inline-flex;
@@ -168,7 +180,7 @@
       .icon {
         color: var(--icon-dark);
         position: absolute;
-        top: var(--spacing-x3);
+        top: var(--spacing-x2-5);
         left: var(--spacing-x4);
 
         &:hover {
@@ -180,10 +192,10 @@
         background-color: var(--bg-base);
         padding: var(--spacing-x2) var(--spacing-x4) var(--spacing-x2) 44px;
         width: 340px;
-        height: 40px;
+        height: var(--control-md);
         border: 1px solid var(--border-tertiary-color);
-        border-radius: var(--spacing-x2);
-        @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+        border-radius: var(--radius-control);
+        @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
 
         &:focus {
           border-color: var(--primary);
@@ -192,15 +204,18 @@
         }
 
         &::placeholder {
-          @include styles.font(400, var(--font-size-x2), var(--spacing-x6), var(--text-bright));
+          @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-bright));
         }
       }
     }
 
     // Pill per the redesign mockup: white bg, light border, fully rounded.
     .total {
-      @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
-      padding: var(--spacing-x1-5) var(--spacing-x3-5);
+      @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
+      display: inline-flex;
+      align-items: center;
+      height: var(--control-sm);
+      padding: 0 var(--spacing-x3);
       background-color: var(--bg-base);
       border: 1px solid var(--border-color);
       border-radius: 999px;
@@ -214,10 +229,9 @@
     min-height: 0;
     z-index: 510; // On click don't close drawer
     border: 1px solid var(--border-color);
-    border-radius: var(--spacing-x2-5);
+    border-radius: var(--radius-card);
     overflow: hidden;
     background-color: var(--bg-base);
-    box-shadow: 0 1px 2px #0A0D1008;
 
     .table-x-scroll {
       display: flex;
@@ -247,7 +261,7 @@
           background-color: var(--bg-table-header);
 
           th {
-            @include styles.font(500, 13px, var(--spacing-x4), var(--text-light));
+            @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-light));
             text-align: left;
             padding-block: var(--spacing-x2-5);
             background-color: var(--bg-table-header);
@@ -255,7 +269,7 @@
           }
 
           .filter-dropdown-title {
-            @include styles.font(500, 13px, var(--spacing-x4), var(--text-light));
+            @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-light));
             display: inline-flex;
             align-items: center;
             gap: var(--spacing-x1);
@@ -295,7 +309,7 @@
             display: flex;
             align-items: center;
             gap: var(--spacing-x1);
-            @include styles.font(500, 13px, var(--spacing-x4), var(--text-light));
+            @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-light));
             transition: color .15s ease;
 
             &:hover {
@@ -354,7 +368,7 @@
             flex-direction: column;
             align-items: center;
             gap: var(--spacing-x2-5);
-            @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-bright));
+            @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
 
             .empty-action {
               @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--primary));
@@ -369,15 +383,15 @@
 
         tr {
           background-color: var(--bg-base);
-          height: 52px;
+          height: 44px;
 
           &:last-child {
             td:first-child {
-              border-radius: 0 0 0 var(--spacing-x2);
+              border-radius: 0 0 0 var(--radius-card);
             }
 
             td:last-child {
-              border-radius: 0 0 var(--spacing-x2) 0;
+              border-radius: 0 0 var(--radius-card) 0;
             }
           }
 
@@ -395,21 +409,17 @@
             &:last-child {
               border-radius: var(--spacing-x2);
             }
-            
-            &:first-child, &:nth-child(2) {
-              font-weight: 500;
-            }
           }
 
           td {
-            @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+            @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-base));
             padding-block: var(--spacing-x2);
 
             .user-name {
               display: flex;
               align-items: center;
               gap: var(--spacing-x2);
-              @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+              @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-base));
 
               .icon {
                 color: var(--primary);
@@ -423,30 +433,29 @@
               width: fit-content;
             }
 
+            // All table chips: 24px, 12px/500, 4px radius (same as cards + legend).
             .tag {
               display: flex;
               justify-content: center;
               align-items: center;
               gap: var(--spacing-x1);
               width: fit-content;
-              border-radius: var(--spacing-x1);
+              height: var(--chip-h);
+              border-radius: var(--radius-chip);
               padding-inline: var(--spacing-x2);
             }
 
             .title-count {
-              padding-block: var(--spacing-x1);
               background-color: var(--bg-bright);
-              @include styles.font(400, var(--font-size-x2), var(--spacing-x4), var(--text-base));
+              @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-base));
             }
 
             .permission {
-              padding-block: var(--spacing-x1);
-              @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
+              @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-base));
             }
 
             .state {
-              @include styles.font(500, var(--font-size-x1-5), var(--spacing-x4), var(--text-base));
-              padding: var(--spacing-x1) var(--spacing-x2);
+              @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-base));
             }
 
             .info {
@@ -486,15 +495,15 @@
             }
 
             .date {
-              @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+              @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-base));
             }
 
             .time {
-              @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+              @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
             }
 
             .rel-date {
-              @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+              @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
               cursor: help;
             }
 
@@ -508,8 +517,8 @@
               gap: var(--spacing-x1-5);
 
               .mono {
+                @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
                 font-family: 'IBM Plex Mono', monospace;
-                @include styles.font(400, 13px, var(--spacing-x5), var(--text-light));
               }
 
               .copy-id {
@@ -577,15 +586,45 @@
           padding: 0 var(--spacing-x1) 0 var(--spacing-x4) !important;
         }
 
+        // First-scan thumbnail: 32px tile in the 44px row.
+        .thumb-cell {
+          padding: var(--spacing-x1-5) var(--spacing-x2) var(--spacing-x1-5) var(--spacing-x1) !important;
+        }
+
+        .title-thumb {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: var(--spacing-x8);
+          height: var(--spacing-x8);
+          border-radius: var(--radius-chip);
+          border: 1px solid var(--border-light);
+          background-color: var(--bg-bright);
+          color: var(--icon-inactive);
+          overflow: hidden;
+
+          img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          &.empty {
+            color: var(--icon-disabled);
+          }
+        }
+
         .actions {
           display: flex;
           align-items: center;
 
           // Hover comes from the global .secondary icon-button style.
           .action {
-            width: var(--spacing-x8);
-            height: var(--spacing-x8);
-            padding: var(--spacing-x2);
+            width: var(--control-sm);
+            height: var(--control-sm);
+            padding: var(--spacing-x1-5);
+            border-radius: var(--spacing-x1-5);
           }
         }
       }
@@ -652,7 +691,7 @@
     gap: var(--spacing-x1);
     padding: var(--spacing-x1) var(--spacing-x2);
     border-radius: var(--spacing-x2);
-    @include styles.font(450, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+    @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
 
     app-icon {
       display: inline-flex;
@@ -692,21 +731,22 @@
     justify-content: center;
     padding: 0 var(--spacing-x2);
     border-radius: 999px;
-    @include styles.font(450, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+    @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
 
     &:hover {
       color: var(--text-secondary);
       background-color: var(--bg-bright);
     }
 
+    // Active page = the shared "selected" state (header tabs, segmented control).
     &.active {
-      color: var(--text-secondary);
-      background-color: var(--bg-main-bright);
-      font-weight: 600;
+      color: var(--primary);
+      background-color: var(--bg-selected);
+      box-shadow: inset 0 0 0 1px var(--primary);
       pointer-events: none;
 
       &:hover {
-        background-color: var(--bg-main-bright);
+        background-color: var(--bg-selected);
         cursor: default;
       }
     }
@@ -727,18 +767,19 @@
   padding: var(--spacing-x2) var(--spacing-x6);
   background-color: var(--bg-table-header);
   border-top: 1px solid var(--border-light);
-  border-radius: 0 0 var(--spacing-x2) var(--spacing-x2);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
 
   .legend-label {
-    @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-bright));
+    @include styles.micro-label;
   }
 
   .tag {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-x1);
-    padding: var(--spacing-x0-7-5) var(--spacing-x2);
-    border-radius: var(--spacing-x1);
+    height: var(--chip-h);
+    padding: 0 var(--spacing-x2);
+    border-radius: var(--radius-chip);
     @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-base));
   }
 
@@ -746,4 +787,330 @@
   .success { color: var(--tag-success-text); background-color: var(--tag-success-bg); .icon { color: var(--tag-success-icon); } }
   .pending { color: var(--tag-pending-text); background-color: var(--tag-pending-bg); .icon { color: var(--tag-pending-icon); } }
   .error   { color: var(--tag-error-text); background-color: var(--tag-error-bg); .icon { color: var(--tag-error-icon); } }
+}
+
+// ============================================================
+// Groups homepage redesign — card grid (replaces the table).
+// ============================================================
+
+// Toolbar right side: sort buttons + total pill.
+.top-part .top-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-x4);
+
+  .sort-toolbar {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-x1);
+
+    .sort-toolbar-label {
+      @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
+      margin-right: var(--spacing-x0-5);
+    }
+
+    .sort-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-x1);
+      padding: var(--spacing-x1) var(--spacing-x1-5);
+      border-radius: var(--spacing-x1-5);
+      user-select: none;
+      @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
+      transition: color .15s ease, background-color .15s ease;
+
+      &:hover {
+        cursor: pointer;
+        color: var(--primary);
+        background-color: var(--bg-bright);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+
+      &.active {
+        color: var(--primary);
+        font-weight: 500;
+      }
+
+      .sort-btn-arrow {
+        display: inline-flex;
+        color: currentColor;
+        transition: transform .2s ease;
+
+        &.asc { transform: rotate(180deg); }
+      }
+    }
+  }
+}
+
+.cards-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-x4);
+}
+
+// The groups page scrolls as a whole — the toolbar (create/search/sort) scrolls
+// away with the grid, rather than staying pinned while only the grid scrolls.
+.content-wrapper--scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--spacing-x4);
+}
+
+.group-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+
+  // Flat hover: stronger border only, no lift.
+  &:hover {
+    border-color: var(--border-tertiary-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  &.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-x2);
+    padding: var(--card-pad) var(--card-pad) 0;
+
+    .card-head-main {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .card-name {
+      display: block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      @include styles.font(600, var(--font-size-x2), var(--spacing-x6), var(--text-base));
+      transition: color .15s ease;
+
+      &:hover { cursor: pointer; color: var(--primary); }
+
+      &:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+        border-radius: var(--spacing-x1);
+      }
+    }
+
+    .card-sub {
+      margin-top: var(--spacing-x0-5);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: 'IBM Plex Mono', monospace;
+      @include styles.font(400, var(--font-size-x1), 18px, var(--text-light));
+    }
+  }
+
+  .card-action {
+    flex-shrink: 0;
+    width: var(--control-sm);
+    height: var(--control-sm);
+    padding: var(--spacing-x1-5);
+    border-radius: var(--spacing-x1-5);
+  }
+
+  // Same "big number + label" pattern as the statistics KPI tiles.
+  .card-count {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-x2);
+    padding: var(--spacing-x3) var(--card-pad) var(--spacing-x1);
+
+    .card-count-num { @include styles.font(600, var(--font-size-x4), 28px, var(--text-base)); font-variant-numeric: tabular-nums; }
+    .card-count-label { @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light)); }
+  }
+
+  .card-section {
+    padding: var(--spacing-x2) var(--card-pad) 0;
+
+    // The permissions section is the last one before the footer divider.
+    // (Can't use :last-of-type — .card-foot is also a <div>, so it wins.)
+    &.card-section--last { padding-bottom: var(--card-pad); }
+
+    .card-section-label {
+      margin-bottom: var(--spacing-x1-5);
+      @include styles.micro-label;
+    }
+  }
+
+  .card-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-x1-5);
+  }
+
+  // All chips in a card share one size: 24px tall, 12px/500, 4px radius.
+  .member-chip {
+    display: inline-flex;
+    align-items: center;
+    height: var(--chip-h);
+    padding: 0 var(--spacing-x2);
+    border-radius: var(--radius-chip);
+    background-color: var(--bg-bright);
+    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-secondary));
+
+    &.overflow {
+      background-color: transparent;
+      border: 1px solid var(--border-tertiary-color);
+      color: var(--text-light);
+    }
+  }
+
+  // Members reserve one chip row so a card with no members doesn't collapse.
+  .card-members-body {
+    min-height: var(--chip-h);
+  }
+
+  .card-empty-note {
+    display: inline-flex;
+    align-items: center;
+    height: var(--chip-h);
+    @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
+  }
+
+  // Permission chips — same palette as the table tags.
+  .tag.permission {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-x1);
+    width: fit-content;
+    height: var(--chip-h);
+    padding: 0 var(--spacing-x2);
+    border-radius: var(--radius-chip);
+    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-base));
+
+    .icon { display: inline-flex; }
+
+    &.success { color: var(--tag-success-text); background-color: var(--tag-success-bg); .icon { color: var(--tag-success-icon); } }
+    &.info    { color: var(--tag-info-text);    background-color: var(--tag-info-bg);    .icon { color: var(--tag-info-icon); } }
+    &.pending { color: var(--tag-pending-text); background-color: var(--tag-pending-bg); .icon { color: var(--tag-pending-icon); } }
+    &.error   { color: var(--tag-error-text);   background-color: var(--tag-error-bg);   .icon { color: var(--tag-error-icon); } }
+  }
+
+  .card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-x3);
+    margin-top: auto;
+    padding: var(--spacing-x2) var(--spacing-x3) var(--spacing-x2) var(--card-pad);
+    background-color: var(--bg-hover);
+    border-top: 1px solid var(--border-light);
+    border-radius: 0 0 var(--radius-card) var(--radius-card);
+    transition: background-color .15s ease;
+
+    &:hover {
+      cursor: pointer;
+      background-color: var(--bg-bright);
+
+      .card-foot-link { background-color: var(--bg-selected); }
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
+      border-radius: 0 0 var(--radius-card) var(--radius-card);
+    }
+
+    .card-foot-meta {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
+      cursor: help;
+    }
+
+    // The arrow gets a real hit-area (28px) that lights up with the footer hover.
+    .card-foot-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: var(--control-sm);
+      height: var(--control-sm);
+      border-radius: var(--spacing-x1-5);
+      color: var(--primary);
+      transition: background-color .15s ease;
+      .icon { display: inline-flex; }
+    }
+  }
+}
+
+// Legend under the card grid — mirrors the table legend strip.
+.cards-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-x2);
+  flex-wrap: wrap;
+  padding: var(--spacing-x2) var(--spacing-x6);
+  background-color: var(--bg-table-header);
+  border: 1px solid var(--border-color);
+  border-radius: var(--spacing-x2);
+
+  .legend-label {
+    @include styles.micro-label;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-x1);
+    height: var(--chip-h);
+    padding: 0 var(--spacing-x2);
+    border-radius: var(--radius-chip);
+    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-base));
+  }
+
+  .info    { color: var(--tag-info-text); background-color: var(--tag-info-bg); .icon { color: var(--tag-info-icon); } }
+  .success { color: var(--tag-success-text); background-color: var(--tag-success-bg); .icon { color: var(--tag-success-icon); } }
+  .pending { color: var(--tag-pending-text); background-color: var(--tag-pending-bg); .icon { color: var(--tag-pending-icon); } }
+  .error   { color: var(--tag-error-text); background-color: var(--tag-error-bg); .icon { color: var(--tag-error-icon); } }
+}
+
+.cards-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-x2-5);
+  padding: var(--spacing-x8) var(--spacing-x6);
+  background-color: var(--bg-base);
+  border: 1px dashed var(--border-tertiary-color);
+  border-radius: var(--spacing-x2-5);
+  text-align: center;
+  @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-light));
+
+  .empty-action {
+    @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--primary));
+    &:hover { cursor: pointer; color: var(--primary-hover); }
+  }
 }

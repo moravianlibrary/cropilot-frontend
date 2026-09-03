@@ -103,6 +103,56 @@ export class DashboardService {
   // Titles
   titles = signal<Title[]>([]);
   displayedTitles = signal<Title[]>([]);
+
+  // First-scan thumbnail per title (object URL), `null` once a title is known to
+  // have no usable thumbnail (no scans, older backend without the endpoint, error).
+  // Loaded lazily for rows that scroll into view; cached while the group is open
+  // (see clearTitleThumbnails) so a failure is retried on the next visit.
+  titleThumbnails = signal<Record<string, string | null>>({});
+  private thumbnailRequests = new Set<string>();
+
+  // Titles still being uploaded/processed have no thumbnail yet — don't ask and
+  // don't cache, so the row retries once its state changes.
+  private static readonly thumbnailPendingStates = new Set(['new', 'scheduled', 'in_progress']);
+
+  loadTitleThumbnail(titleId: string, state = ''): void {
+    if (!titleId || titleId in this.titleThumbnails() || this.thumbnailRequests.has(titleId)) return;
+    if (DashboardService.thumbnailPendingStates.has(state)) return;
+    this.thumbnailRequests.add(titleId);
+
+    const api = this.auth.apiUrl;
+    this.http.get<{ scans?: { _id: string }[] }>(`${api}/${titleId}/scans`, { headers: this.auth.authHeaders('json', true) }).pipe(
+      switchMap(res => {
+        const scan = res?.scans?.[0];
+        if (!scan) return of<string | null>(null);
+        return this.http.get(`${api}/${titleId}/thumbnails?scan_id=${scan._id}`, {
+          responseType: 'blob',
+          headers: this.auth.authHeaders('*/*')
+        }).pipe(map(blob => URL.createObjectURL(blob)));
+      }),
+      catchError(() => of<string | null>(null))
+    ).subscribe(url => {
+      this.thumbnailRequests.delete(titleId);
+      this.titleThumbnails.update(prev => ({ ...prev, [titleId]: url }));
+    });
+  }
+
+  // Forget one title's thumbnail (e.g. after its scans were uploaded) so it is fetched again.
+  forgetTitleThumbnail(titleId: string): void {
+    this.titleThumbnails.update(prev => {
+      if (!(titleId in prev)) return prev;
+      const { [titleId]: url, ...rest } = prev;
+      if (url) URL.revokeObjectURL(url);
+      return rest;
+    });
+  }
+
+  // Release all thumbnail blobs; called when leaving/switching a group.
+  clearTitleThumbnails(): void {
+    Object.values(this.titleThumbnails()).forEach(url => { if (url) URL.revokeObjectURL(url); });
+    this.titleThumbnails.set({});
+    this.thumbnailRequests.clear();
+  }
   searchTitles = signal<string>('');
   // Server-side pagination + filter options for the titles table
   titlesTotal = signal<number>(0);
@@ -492,7 +542,7 @@ export class DashboardService {
   createGroupDialog(): void {
     const ui = this.ui;
     
-    ui.dialogWidth.set(593);
+    ui.dialogWidth.set(520);
     ui.dialogTitle.set('Nová skupina');
     ui.dialogContent.set(true);
     ui.dialogContentType.set('new-group');
@@ -621,7 +671,7 @@ export class DashboardService {
     const group = this.selectedGroupDetail();
     if (!group) return;
     
-    ui.dialogWidth.set(593);
+    ui.dialogWidth.set(520);
     ui.dialogTitle.set('Úprava skupiny');
     ui.dialogContent.set(true);
     ui.dialogContentType.set('edit-group');
@@ -699,7 +749,7 @@ export class DashboardService {
     const ui = this.ui;
     const group = this.selectedGroupDetail();
     
-    ui.dialogWidth.set(593);
+    ui.dialogWidth.set(520);
     ui.dialogTitle.set('Smazat skupinu');
     ui.dialogDescription.set(`Opravdu chcete smazat skupinu${' ' + group?.name}?`);
     ui.dialogContent.set(false);
@@ -734,7 +784,7 @@ export class DashboardService {
     const ui = this.ui;
     this.files.set([]);
     
-    ui.dialogWidth.set(593);
+    ui.dialogWidth.set(520);
     ui.dialogTitle.set('Nový titul');
     ui.dialogContent.set(true);
     ui.dialogContentType.set('new-title');
@@ -792,6 +842,7 @@ export class DashboardService {
               })
             )),
             switchMap(id => this.processTitle(id).pipe(
+              tap(() => this.forgetTitleThumbnail(id)),
               catchError(err => {
                 this.ui.showToast(`Při zpracovávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.`, { type: 'error' });
                 console.error(err);
@@ -844,7 +895,7 @@ export class DashboardService {
   editTitleDialog(title: Title): void {
     const ui = this.ui;
     
-    ui.dialogWidth.set(593);
+    ui.dialogWidth.set(520);
     ui.dialogTitle.set('Úprava titulu');
     ui.dialogContent.set(true);
     ui.dialogContentType.set('edit-title');
@@ -925,7 +976,7 @@ export class DashboardService {
   deleteTitleDialog(title: Title): void {
     const ui = this.ui;
     
-    ui.dialogWidth.set(593);
+    ui.dialogWidth.set(520);
     ui.dialogTitle.set('Smazat titul');
     ui.dialogDescription.set(`Opravdu chcete smazat titul${' ' + title?.external_id}?`);
     ui.dialogContent.set(false);
@@ -1081,7 +1132,7 @@ export class DashboardService {
   createUserDialog(): void {
     const ui = this.ui;
     
-    ui.dialogWidth.set(593);
+    ui.dialogWidth.set(520);
     ui.dialogTitle.set('Nový uživatel');
     ui.dialogContent.set(true);
     ui.dialogContentType.set('new-user');
@@ -1157,7 +1208,7 @@ export class DashboardService {
               ui.confirmBtnDisabledTimer = 0;
               ui.confirmBtnDisabled.set(true);
               ui.confirmBtnDisabledTimer = window.setTimeout(() => ui.confirmBtnDisabled.set(false), 3000);
-              ui.dialogWidth.set(593);
+              ui.dialogWidth.set(520);
               ui.dialogTitle.set('Nový uživatel');
               ui.dialogContent.set(true);
               ui.dialogContentType.set('new-password');
@@ -1282,7 +1333,7 @@ export class DashboardService {
     const ui = this.ui;
     const user = this.selectedUser();
     
-    ui.dialogWidth.set(593);
+    ui.dialogWidth.set(520);
     ui.dialogTitle.set('Smazat uživatele');
     ui.dialogDescription.set(`Opravdu chcete smazat uživatele${' ' + user?.full_name}?`);
     ui.dialogContent.set(false);
@@ -1327,7 +1378,7 @@ export class DashboardService {
       ui.confirmBtnDisabledTimer = 0;
       ui.confirmBtnDisabled.set(true);
       ui.confirmBtnDisabledTimer = window.setTimeout(() => ui.confirmBtnDisabled.set(false), 3000);
-      ui.dialogWidth.set(593);
+      ui.dialogWidth.set(520);
       ui.dialogTitle.set('Nové heslo');
       ui.dialogContent.set(true);
       ui.dialogContentType.set('edit-password');

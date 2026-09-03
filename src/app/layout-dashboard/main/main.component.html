@@ -5,7 +5,7 @@
 @if (dashboardPage === 'groups') {
 
   <!-- Groups -->
-  <div class="content-wrapper">
+  <div class="content-wrapper content-wrapper--scroll">
     <div class="top-part">
       <span class="left-part">
         @if (isAdmin) {
@@ -38,222 +38,152 @@
         </label>
       </span>
 
-      <span class="total">{{ totalGroupsLabel }}</span>
+      <div class="top-right">
+        <span class="sort-toolbar">
+          <span class="sort-toolbar-label">Řadit:</span>
+          @for (opt of groupSortOptions; track opt.field) {
+            <span
+              class="sort-btn"
+              [class.active]="effectiveSortField() === opt.field"
+              (click)="sort(opt.field)"
+              (keydown.enter)="sort(opt.field)"
+              (keydown.space)="$event.preventDefault(); sort(opt.field)"
+              [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+            >
+              {{ opt.label }}
+              @if (effectiveSortField() === opt.field) {
+                <span class="sort-btn-arrow" [class.asc]="effectiveSortDir() === 'asc'">
+                  <app-icon name="arrow-down" [size]="14" />
+                </span>
+              }
+            </span>
+          }
+        </span>
+        <span class="total">{{ totalGroupsLabel }}</span>
+      </div>
     </div>
 
-    <div class="table-wrapper">
-      <div class="table-x-scroll">
-        <table
-          class="table-header"
-          cellspacing="0" cellpadding="0"
-        >
-          <colgroup>
-            @if (isAdmin) { <col style="width:52px"> } <!-- Akce -->
-            <col style="min-width:200px"> <!-- Název skupiny -->
-            <col style="min-width:102px"> <!-- Počet titulů -->
-            @if (isAdmin) { <col style="min-width:280px"> } <!-- Uživatelé -->
-            <col [style]="`min-width:${isAdmin ? 232 : 120}px`"> <!-- Práva -->
-            <col style="min-width:124px"> <!-- Ořezový model -->
-            <col style="min-width:80px"> <!-- Rotační -->
-            <col style="min-width:165px"> <!-- Vytvořeno -->
-            <col style="min-width:175px"> <!-- Upraveno -->
-            <col style="width:44px"> <!-- nav arrow -->
-            @if (tableHasScrollbar()) { <col style="width:12px"> } <!-- scrollbar spacer -->
-          </colgroup>
-          <thead>
-            <tr>
-              @if (isAdmin) { <th><span class="visually-hidden">Akce</span></th> }
-              <th class="group-name-cell">Název skupiny</th>
-              <th>Počet titulů</th>
-              @if (isAdmin) { <th>Uživatelé</th> }
-              <th>{{ `Práv${isAdmin ? 'a' : 'o'}` }}</th>
-              <th>Ořezový model</th>
-              <th>Rotační</th>
-              <th>
-                <span
-                  class="sort-wrapper"
-                  (click)="sort('created_at')"
-                  thTooltip
-                  [direction]="sortState.direction"
-                  [activeField]="'created_at'"
-                >
-                  Vytvořeno
-                  <span class="icon-wrapper">
-                    <span
-                      class="icon"
-                      [class.active]="sortState.field === 'created_at' && sortState.direction"
-                      [class.oldest]="sortState.field === 'created_at' && sortState.direction === 'asc'"
-                    >
-                      <app-icon name="arrow-down" [size]="16" />
-                    </span>
-                  </span>
-                </span>
-              </th>
-              <th>
-                <span
-                  class="sort-wrapper"
-                  (click)="sort('modified_at')"
-                  thTooltip
-                  [direction]="sortState.direction"
-                  [activeField]="'modified_at'"
-                >
-                  Upraveno
-                  <span class="icon-wrapper">
-                    <span
-                      class="icon"
-                      [class.active]="sortState.field === 'modified_at' && sortState.direction"
-                      [class.oldest]="sortState.field === 'modified_at' && sortState.direction === 'asc'"
-                    >
-                      <app-icon name="arrow-down" [size]="16" />
-                    </span>
-                  </span>
-                </span>
-              </th>
-              <th></th>
-              @if (tableHasScrollbar()) { <th style="padding:0"></th> }
-            </tr>
-          </thead>
-        </table>
+    @let groups = dashboard.displayedGroups();
+    @if (groups.length) {
+      <div class="cards-wrapper">
+        <div class="cards-grid">
+          @for (group of groups; track group._id) {
+            <div
+              class="group-card"
+              [class.active]="dashboard.selectedGroupDetail() === group"
+              [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+              (click)="dashboard.openGroupsTitles(group._id)"
+              (keydown.enter)="dashboard.openGroupsTitles(group._id)"
+              (keydown.space)="$event.preventDefault(); dashboard.openGroupsTitles(group._id)"
+            >
+              <!-- Header: name + mono model·rotation + ⋯ (→ detail drawer) -->
+              <div class="card-head">
+                <div class="card-head-main">
+                  <span class="card-name" [title]="group.name">{{ group.name }}</span>
+                  <div class="card-sub">{{ group.default_settings.crop_model }} · {{ group.default_settings.rotation_model }}</div>
+                </div>
 
-        <div class="table-body-y-scroll os-pending" #bodyScroll>
-          <table class="table-body">
-            <colgroup>
-              @if (isAdmin) { <col style="width:52px"> } <!-- Akce -->
-              <col style="min-width:200px"> <!-- Název skupiny -->
-              <col style="min-width:102px"> <!-- Počet titulů -->
-              @if (isAdmin) { <col style="min-width:280px"> } <!-- Uživatelé -->
-              <col [style]="`min-width:${isAdmin ? 232 : 120}px`"> <!-- Práva -->
-              <col style="min-width:124px"> <!-- Ořezový model -->
-              <col style="min-width:80px"> <!-- Rotační -->
-              <col style="min-width:165px"> <!-- Vytvořeno -->
-              <col style="min-width:175px"> <!-- Upraveno -->
-              <col style="width:44px"> <!-- nav arrow -->
-              @if (tableHasScrollbar()) { <col style="width:12px"> } <!-- scrollbar spacer -->
-            </colgroup>
-            <tbody>
-              @let groups = dashboard.displayedGroups();
-              @if (groups.length) {
-                @for (group of groups; track group._id) {
-                  <tr
+                @if (isAdmin) {
+                  <span
+                    class="button secondary action card-action"
+                    title="Detail skupiny"
+                    (click)="openGroupDetail(group, $event)"
+                    (keydown.enter)="openGroupDetail(group, $event)"
+                    (keydown.space)="$event.preventDefault(); openGroupDetail(group, $event)"
                     [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-                    class="clickable"
-                    [class.active]="dashboard.selectedGroupDetail() === group"
-                    (click)="dashboard.openGroupsTitles(group._id)"
-                    (keydown.space)="dashboard.openGroupsTitles(group._id)"
-                    (keydown.enter)="dashboard.openGroupsTitles(group._id)"
                   >
-                    @if (isAdmin) {
-                      <td class="actions-cell">
-                        <div class="actions">
-                          <span
-                            class="button secondary action"
-                            title="Detail skupiny"
-                            (click)="$event.stopPropagation(); dashboard.openGroupDetail(group)"
-                            (keydown.space)="$event.stopPropagation(); dashboard.openGroupDetail(group)"
-                            (keydown.enter)="$event.stopPropagation(); dashboard.openGroupDetail(group)"
-                            [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-                          >
-                            <span class="icon">
-                              <app-icon name="more-horizontal" [size]="14" />
-                            </span>
-                          </span>
-                        </div>
-                      </td>
-                    }
-                    <td class="group-name-cell">{{ group.name }}</td>
-                    <td><span class="tag title-count">{{ group.title_count }}</span></td>
-                    @if (isAdmin) {
-                      <td>
-                        @if (getTags(group).length) {
-                          <app-tags-overflow [tags]="getTags(group)" />
-                        } @else {
-                          <span class="empty-cell">—</span>
-                        }
-                      </td>
-                    }
-                    <td>
-                      @let permCounts = isAdmin ? getGroupPermissionsCounts(group.users) : {};
-                      @let permTypes = isAdmin ? getPermissionsTypes(permCounts) : group.permissions;
-                      @let anyGroupPerm = isAdmin ? (permCounts['upload'] || permCounts['write'] || permCounts['read_title'] || permCounts['read_group']) : group.permissions.length;
-                      @if (!anyGroupPerm) {
-                        <span class="empty-cell">—</span>
-                      } @else {
-                        <div class="tags">
-                          @for (permType of permTypes; track permType) {
-                            @let isUploadTitle = permType === 'upload';
-                            @let isWriteTitle = permType === 'write';
-                            @let isReadTitle = permType === 'read_title';
-                            @let isReadGroup = permType === 'read_group';
-                            @if (isUploadTitle && (isAdmin ? permCounts['upload'] : true)) {
-                              <span class="tag permission success" title="Správa">
-                                <span class="icon">
-                                  <app-icon name="settings" [size]="16" />
-                                </span>
-                                {{ isAdmin ? permCounts['upload'] : '' }}
-                              </span>
-                            }
-                            @if (isWriteTitle && (isAdmin ? permCounts['write'] : true)) {
-                              <span class="tag permission info" title="Úpravy">
-                                <span class="icon">
-                                  <app-icon name="edit" [size]="16" />
-                                </span>
-                                {{ isAdmin ? permCounts['write'] : '' }}
-                              </span>
-                            }
-                            @if (isReadTitle && (isAdmin ? permCounts['read_title'] : true)) {
-                              <span class="tag permission pending" title="Detail titulu">
-                                <span class="icon">
-                                  <app-icon name="book" [size]="16" />
-                                </span>
-                                {{ isAdmin ? permCounts['read_title'] : '' }}
-                              </span>
-                            }
-                            @if (isReadGroup && (isAdmin ? permCounts['read_group'] : true)) {
-                              <span class="tag permission error" title="Zobrazení všech titulů">
-                                <span class="icon">
-                                  <app-icon name="open-folder" [size]="16" />
-                                </span>
-                                {{ isAdmin ? permCounts['read_group'] : '' }}
-                              </span>
-                            }
-                          }
-                        </div>
-                      }
-                    </td>
-                    <td>{{ group.default_settings.crop_model }}</td>
-                    <td>{{ group.default_settings.rotation_model }}</td>
-                    <td>
-                      @let created = getDate(group.created_at);
-                      <span class="rel-date" [title]="created[0] + ' ' + created[1]">{{ getRelativeDate(group.created_at) }}</span>
-                    </td>
-                    <td>
-                      @let modified = getDate(group.modified_at);
-                      <span class="rel-date" [title]="modified[0] + ' ' + modified[1]">{{ getRelativeDate(group.modified_at) }}</span>
-                    </td>
-                    <td class="nav-arrow-cell">
-                      <span class="nav-arrow"><app-icon name="arrow-right" [size]="16" /></span>
-                    </td>
-                    @if (tableHasScrollbar()) { <td style="padding:0"></td> }
-                  </tr>
+                    <span class="icon"><app-icon name="more-horizontal" [size]="14" /></span>
+                  </span>
                 }
-              } @else {
-                <tr class="no-results">
-                  <td>
-                    <div class="empty-state">
-                      <span>Nenalezeny žádné skupiny</span>
-                      @if (dashboard.searchGroups()) {
-                        <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Zrušit hledání</span>
-                      } @else if (isAdmin) {
-                        <span class="empty-action" (click)="dashboard.createGroupDialog()" (keydown.enter)="dashboard.createGroupDialog()" (keydown.space)="dashboard.createGroupDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Vytvořit skupinu</span>
-                      }
-                    </div>
-                  </td>
-                </tr>
+              </div>
+
+              <!-- Title count -->
+              <div class="card-count">
+                <span class="card-count-num">{{ group.title_count }}</span>
+                <span class="card-count-label">{{ titleCountLabel(group.title_count) }}</span>
+              </div>
+
+              <!-- Members (admin-scoped data) -->
+              @if (isAdmin) {
+                <div class="card-section">
+                  <div class="card-section-label">Uživatelé</div>
+                  @let members = getTags(group);
+                  <div class="card-members-body">
+                    @if (members.length) {
+                      <div class="card-chips">
+                        @for (member of members.slice(0, 3); track $index) {
+                          <span class="member-chip">{{ member }}</span>
+                        }
+                        @if (members.length > 3) {
+                          <span class="member-chip overflow">+{{ members.length - 3 }}</span>
+                        }
+                      </div>
+                    } @else {
+                      <span class="card-empty-note">Bez členů</span>
+                    }
+                  </div>
+                </div>
               }
-            </tbody>
-          </table>
+
+              <!-- Permissions -->
+              <div class="card-section card-section--last">
+                <div class="card-section-label">{{ `Práv${isAdmin ? 'a' : 'o'}` }}</div>
+                @let permCounts = isAdmin ? getGroupPermissionsCounts(group.users) : {};
+                @let permTypes = isAdmin ? getPermissionsTypes(permCounts) : group.permissions;
+                @let anyGroupPerm = isAdmin ? (permCounts['upload'] || permCounts['write'] || permCounts['read_title'] || permCounts['read_group']) : group.permissions.length;
+                @if (!anyGroupPerm) {
+                  <span class="card-empty-note">Žádná práva</span>
+                } @else {
+                  <div class="card-chips">
+                    @for (permType of permTypes; track permType) {
+                      @if (permType === 'upload' && (isAdmin ? permCounts['upload'] : true)) {
+                        <span class="tag permission success" title="Správa">
+                          <span class="icon"><app-icon name="settings" [size]="14" /></span>
+                          {{ isAdmin ? permCounts['upload'] : '' }}
+                        </span>
+                      }
+                      @if (permType === 'write' && (isAdmin ? permCounts['write'] : true)) {
+                        <span class="tag permission info" title="Úpravy">
+                          <span class="icon"><app-icon name="edit" [size]="14" /></span>
+                          {{ isAdmin ? permCounts['write'] : '' }}
+                        </span>
+                      }
+                      @if (permType === 'read_title' && (isAdmin ? permCounts['read_title'] : true)) {
+                        <span class="tag permission pending" title="Detail titulu">
+                          <span class="icon"><app-icon name="book" [size]="14" /></span>
+                          {{ isAdmin ? permCounts['read_title'] : '' }}
+                        </span>
+                      }
+                      @if (permType === 'read_group' && (isAdmin ? permCounts['read_group'] : true)) {
+                        <span class="tag permission error" title="Zobrazení všech titulů">
+                          <span class="icon"><app-icon name="open-folder" [size]="14" /></span>
+                          {{ isAdmin ? permCounts['read_group'] : '' }}
+                        </span>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Footer: relative dates (title = full) + Tituly → -->
+              @let created = getDate(group.created_at);
+              @let modified = getDate(group.modified_at);
+              <div class="card-foot">
+                <span
+                  class="card-foot-meta"
+                  [title]="'Vytvořeno: ' + created[0] + ' ' + created[1] + '   Upraveno: ' + modified[0] + ' ' + modified[1]"
+                >
+                  Upraveno {{ getRelativeDate(group.modified_at) }}
+                </span>
+                <span class="card-foot-link" title="Zobrazit tituly">
+                  <span class="icon"><app-icon name="arrow-right" [size]="16" /></span>
+                </span>
+              </div>
+            </div>
+          }
         </div>
-        <div class="table-legend">
+
+        <div class="cards-legend">
           <span class="legend-label">{{ `Práv${isAdmin ? 'a' : 'o'}` }}:</span>
           @for (item of permLegend; track item.label) {
             <span class="tag permission {{ item.klass }}">
@@ -263,7 +193,16 @@
           }
         </div>
       </div>
-    </div>
+    } @else {
+      <div class="cards-empty-state">
+        <span>Nenalezeny žádné skupiny</span>
+        @if (dashboard.searchGroups()) {
+          <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Zrušit hledání</span>
+        } @else if (isAdmin) {
+          <span class="empty-action" (click)="dashboard.createGroupDialog()" (keydown.enter)="dashboard.createGroupDialog()" (keydown.space)="dashboard.createGroupDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Vytvořit skupinu</span>
+        }
+      </div>
+    }
 
     @if (currentListTotalPages() > 1) {
       <div class="pagination">
@@ -365,21 +304,23 @@
           @let canUpload = auth.canUpload();
           @let seeActions = isAdmin || canUpload;
           <colgroup>
-            @if (seeActions) { <col [style]="`width:${isAdmin ? 92 : 52}px`"> } <!-- Akce -->
+            @if (seeActions) { <col style="width:52px"> } <!-- Akce -->
+            <col style="width:48px"> <!-- Náhled -->
             <col style="min-width:230px"> <!-- Název titulu -->
-            <col style="min-width:230px"> <!-- ID titulu -->
-            <col style="min-width:180px"> <!-- Stav -->
-            <col style="min-width:160px"> <!-- Zpracovatel -->
-            <col style="min-width:140px"> <!-- Ořezový model -->
+            <col style="min-width:170px"> <!-- ID titulu -->
+            <col style="min-width:130px"> <!-- Stav -->
+            <col style="min-width:150px"> <!-- Zpracovatel -->
+            <col style="min-width:130px"> <!-- Ořezový model -->
             <col style="min-width:96px"> <!-- Rotační -->
-            <col style="min-width:165px"> <!-- Vytvořeno -->
-            <col style="min-width:175px"> <!-- Upraveno -->
+            <col style="min-width:120px"> <!-- Vytvořeno -->
+            <col style="min-width:120px"> <!-- Upraveno -->
             <col style="width:44px"> <!-- nav arrow -->
             @if (tableHasScrollbar()) { <col style="width:12px"> } <!-- scrollbar spacer -->
           </colgroup>
           <thead>
             <tr>
               @if (seeActions) { <th><span class="visually-hidden">Akce</span></th> }
+              <th><span class="visually-hidden">Náhled</span></th>
               <th>
                 <span
                   class="sort-wrapper"
@@ -395,7 +336,7 @@
                       [class.active]="sortState.field === 'external_id' && sortState.direction"
                       [class.oldest]="sortState.field === 'external_id' && sortState.direction === 'asc'"
                     >
-                      <app-icon name="arrow-down" [size]="16" />
+                      <app-icon name="arrow-down" [size]="14" />
                     </span>
                   </span>
                 </span>
@@ -406,7 +347,7 @@
                   Stav
                   <span class="filter-icon-wrapper">
                     <span class="icon filter-icon" [class.active]="selectedState !== 'all'">
-                      <app-icon name="filter" [size]="16" />
+                      <app-icon name="filter" [size]="14" />
                     </span>
                   </span>
                 </div>
@@ -457,7 +398,7 @@
                       [class.active]="sortState.field === 'assigned_to_name' && sortState.direction"
                       [class.oldest]="sortState.field === 'assigned_to_name' && sortState.direction === 'asc'"
                     >
-                      <app-icon name="arrow-down" [size]="16" />
+                      <app-icon name="arrow-down" [size]="14" />
                     </span>
                   </span>
                 </span>
@@ -467,7 +408,7 @@
                   Ořezový model
                   <span class="filter-icon-wrapper">
                     <span class="icon filter-icon" [class.active]="selectedCropModel !== 'all'">
-                      <app-icon name="filter" [size]="16" />
+                      <app-icon name="filter" [size]="14" />
                     </span>
                   </span>
                 </div>
@@ -507,7 +448,7 @@
                   Rotační
                   <span class="filter-icon-wrapper">
                     <span class="icon filter-icon" [class.active]="selectedRotationModel !== 'all'">
-                      <app-icon name="filter" [size]="16" />
+                      <app-icon name="filter" [size]="14" />
                     </span>
                   </span>
                 </div>
@@ -557,7 +498,7 @@
                       [class.active]="sortState.field === 'created_at' && sortState.direction"
                       [class.oldest]="sortState.field === 'created_at' && sortState.direction === 'asc'"
                     >
-                      <app-icon name="arrow-down" [size]="16" />
+                      <app-icon name="arrow-down" [size]="14" />
                     </span>
                   </span>
                 </span>
@@ -577,7 +518,7 @@
                       [class.active]="sortState.field === 'modified_at' && sortState.direction"
                       [class.oldest]="sortState.field === 'modified_at' && sortState.direction === 'asc'"
                     >
-                      <app-icon name="arrow-down" [size]="16" />
+                      <app-icon name="arrow-down" [size]="14" />
                     </span>
                   </span>
                 </span>
@@ -591,15 +532,16 @@
         <div class="table-body-y-scroll os-pending" #bodyScroll>
           <table class="table-body">
             <colgroup>
-              @if (seeActions) { <col [style]="`width:${isAdmin ? 92 : 52}px`"> } <!-- Akce -->
+              @if (seeActions) { <col style="width:52px"> } <!-- Akce -->
+              <col style="width:48px"> <!-- Náhled -->
               <col style="min-width:230px"> <!-- Název titulu -->
-              <col style="min-width:230px"> <!-- ID titulu -->
-              <col style="min-width:180px"> <!-- Stav -->
-              <col style="min-width:160px"> <!-- Zpracovatel -->
-              <col style="min-width:140px"> <!-- Ořezový model -->
+              <col style="min-width:170px"> <!-- ID titulu -->
+              <col style="min-width:130px"> <!-- Stav -->
+              <col style="min-width:150px"> <!-- Zpracovatel -->
+              <col style="min-width:130px"> <!-- Ořezový model -->
               <col style="min-width:96px"> <!-- Rotační -->
-              <col style="min-width:165px"> <!-- Vytvořeno -->
-              <col style="min-width:175px"> <!-- Upraveno -->
+              <col style="min-width:120px"> <!-- Vytvořeno -->
+              <col style="min-width:120px"> <!-- Upraveno -->
               <col style="width:44px"> <!-- nav arrow -->
               @if (tableHasScrollbar()) { <col style="width:12px"> } <!-- scrollbar spacer -->
             </colgroup>
@@ -634,6 +576,21 @@
                         </div>
                       </td>
                     }
+                    <td class="thumb-cell">
+                      @let thumb = dashboard.titleThumbnails()[title._id];
+                      <span
+                        class="title-thumb"
+                        [class.empty]="thumb === null"
+                        [appOnVisibleKey]="title.state + '|' + thumb"
+                        (appOnVisible)="loadTitleThumbnail(title)"
+                      >
+                        @if (thumb) {
+                          <img [src]="thumb" alt="" decoding="async" />
+                        } @else {
+                          <app-icon name="book" [size]="14" />
+                        }
+                      </span>
+                    </td>
                     <td>{{ title.external_id ?? title._id }}</td>
                     <td>
                       <span class="id-cell">
@@ -867,7 +824,7 @@
                       [class.active]="sortState.field === 'modified_at' && sortState.direction"
                       [class.oldest]="sortState.field === 'modified_at' && sortState.direction === 'asc'"
                     >
-                      <app-icon name="arrow-down" [size]="16" />
+                      <app-icon name="arrow-down" [size]="14" />
                     </span>
                   </span>
                 </span>
