@@ -43,7 +43,7 @@ export class MainComponent {
   // Rows ask for their first-scan thumbnail when they scroll into view (see the
   // appOnVisible directive in the template). Only users who may read titles fetch.
   loadTitleThumbnail(title: Title): void {
-    if (this.auth.canReadTitle()) this.dashboard.loadTitleThumbnail(title._id, title.state);
+    if (this.auth.canReadTitle()) this.dashboard.loadTitleThumbnail(title);
   }
 
   // Legend of permission tags shown under the groups/users tables.

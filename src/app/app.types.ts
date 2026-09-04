@@ -98,6 +98,9 @@ export interface Title {
   // on older backend instances / unassigned titles (backward compatible).
   assigned_to?: string | null;
   assigned_to_name?: string | null;
+  // ID of the first scan (by filename) for the list thumbnail. Absent on older
+  // backend instances and null while a title has no scans (backward compatible).
+  first_scan_id?: string | null;
   state: TitleState;
 }
 

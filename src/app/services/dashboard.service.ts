@@ -105,7 +105,8 @@ export class DashboardService {
   displayedTitles = signal<Title[]>([]);
 
   // First-scan thumbnail per title (object URL), `null` once a title is known to
-  // have no usable thumbnail (no scans, older backend without the endpoint, error).
+  // have no usable thumbnail (no `first_scan_id` in the list payload — older
+  // backend instances or a title without scans — or the thumbnail request failed).
   // Loaded lazily for rows that scroll into view; cached while the group is open
   // (see clearTitleThumbnails) so a failure is retried on the next visit.
   titleThumbnails = signal<Record<string, string | null>>({});
@@ -115,21 +116,23 @@ export class DashboardService {
   // don't cache, so the row retries once its state changes.
   private static readonly thumbnailPendingStates = new Set(['new', 'scheduled', 'in_progress']);
 
-  loadTitleThumbnail(titleId: string, state = ''): void {
+  loadTitleThumbnail(title: Title): void {
+    const titleId = title._id;
     if (!titleId || titleId in this.titleThumbnails() || this.thumbnailRequests.has(titleId)) return;
-    if (DashboardService.thumbnailPendingStates.has(state)) return;
-    this.thumbnailRequests.add(titleId);
+    if (DashboardService.thumbnailPendingStates.has(title.state)) return;
 
-    const api = this.auth.apiUrl;
-    this.http.get<{ scans?: { _id: string }[] }>(`${api}/${titleId}/scans`, { headers: this.auth.authHeaders('json', true) }).pipe(
-      switchMap(res => {
-        const scan = res?.scans?.[0];
-        if (!scan) return of<string | null>(null);
-        return this.http.get(`${api}/${titleId}/thumbnails?scan_id=${scan._id}`, {
-          responseType: 'blob',
-          headers: this.auth.authHeaders('*/*')
-        }).pipe(map(blob => URL.createObjectURL(blob)));
-      }),
+    // No first scan id → nothing to fetch, the row keeps its placeholder.
+    if (!title.first_scan_id) {
+      this.titleThumbnails.update(prev => ({ ...prev, [titleId]: null }));
+      return;
+    }
+
+    this.thumbnailRequests.add(titleId);
+    this.http.get(`${this.auth.apiUrl}/${titleId}/thumbnails?scan_id=${title.first_scan_id}`, {
+      responseType: 'blob',
+      headers: this.auth.authHeaders('*/*')
+    }).pipe(
+      map(blob => URL.createObjectURL(blob) as string | null),
       catchError(() => of<string | null>(null))
     ).subscribe(url => {
       this.thumbnailRequests.delete(titleId);

@@ -581,7 +581,7 @@
                       <span
                         class="title-thumb"
                         [class.empty]="thumb === null"
-                        [appOnVisibleKey]="title.state + '|' + thumb"
+                        [appOnVisibleKey]="title.state + '|' + (title.first_scan_id ?? '') + '|' + thumb"
                         (appOnVisible)="loadTitleThumbnail(title)"
                       >
                         @if (thumb) {
