@@ -1,7 +1,7 @@
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { DefaultFitMode, DialogButton, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
 import { EditorService } from '../../services/editor.service';
-import { defaultFitModeDict, dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridColorDict, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict } from '../../app.config';
+import { DIM_OPACITY_DEFAULT, defaultFitModeDict, dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridColorDict, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict } from '../../app.config';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../services/dashboard.service';
 import { AuthService } from '../../services/auth.service';
@@ -170,6 +170,19 @@ export class DialogComponent {
 
   setDimColor(value: SegmentedControlValue): void {
     this.editor.dimRadio.set(value as DimColor);
+  }
+
+  dimOpacityDefault = DIM_OPACITY_DEFAULT;
+
+  // 0 % = dim invisible, 100 % = the color's strongest dim.
+  dimOpacityLabel = computed(() => {
+    if (this.editor.dimRadio() === 'Žádná') return '—';
+    return `${this.editor.dimOpacityRadio()} %`;
+  });
+
+  setDimOpacity(value: string | number): void {
+    const n = Math.round(Number(value));
+    this.editor.dimOpacityRadio.set(Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : DIM_OPACITY_DEFAULT);
   }
 
   setScanType(value: SegmentedControlValue): void {

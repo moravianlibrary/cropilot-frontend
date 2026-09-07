@@ -62,6 +62,20 @@ export const dimColorDict: Record<DimColor, string> = {
   'Žádná': '0,0,0,0',
 };
 
+// Dim opacity slider: 0 = dim invisible, 100 = the color's built-in alpha
+// above (the strongest dim available). 'Žádná' is always invisible.
+export const DIM_OPACITY_DEFAULT = 100;
+
+export function dimAlpha(color: DimColor, opacity: number): number {
+  const base = Number(dimColorDict[color].split(',')[3]);
+  return base * Math.min(100, Math.max(0, opacity)) / 100;
+}
+
+export function dimColorRgba(color: DimColor, opacity: number): string {
+  const [r, g, b] = dimColorDict[color].split(',');
+  return `rgba(${r},${g},${b},${dimAlpha(color, opacity)})`;
+}
+
 export const filterScanTypeStartDict: Record<ScanType, string> = {
   'all': 'Vše',
   'flagged': 'Podezřelé',

@@ -126,7 +126,7 @@
                 <label class="toggle-switch">
                   <input
                     type="checkbox"
-                    [checked]="editor.outlineDashed"
+                    [checked]="editor.outlineDashedRadio()"
                     (change)="editor.toggleOutlineDashed()"
                   />
                   <span class="slider"></span>
@@ -146,6 +146,27 @@
                     [value]="editor.dimRadio()"
                     (valueChange)="setDimColor($event)"
                   />
+                </div>
+
+                <div class="settings-row">
+                  <div class="sublabel">Viditelnost clony</div>
+                  <div class="range-row">
+                    <input
+                      #dimOpacitySlider
+                      class="range-slider"
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      aria-label="Viditelnost clony"
+                      title="Dvojklikem vrátíte na výchozí hodnotu"
+                      [disabled]="editor.dimRadio() === 'Žádná'"
+                      [value]="editor.dimOpacityRadio()"
+                      (input)="setDimOpacity(dimOpacitySlider.value)"
+                      (dblclick)="setDimOpacity(dimOpacityDefault)"
+                    />
+                    <span class="range-value">{{ dimOpacityLabel() }}</span>
+                  </div>
                 </div>
               </section>
             </div>

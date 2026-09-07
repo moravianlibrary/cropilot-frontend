@@ -6,6 +6,7 @@ import { LeftPanelComponent } from '../../layout-editor/left-panel/left-panel.co
 import { RightPanelComponent } from '../../layout-editor/right-panel/right-panel.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, forkJoin, map, Observable, of, Subscription, switchMap, tap, throwError } from 'rxjs';
+import { DIM_OPACITY_DEFAULT } from '../../app.config';
 import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, ImageItem, OutlineWidthLabel, PageNumberType, ScanType, TitleDetail } from '../../app.types';
 import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
@@ -104,6 +105,11 @@ export class EditorComponent {
         // Set settings stuff
         editor.dimColor.set(this.storage.get('dimColor', 'Černá', true) as DimColor);
         editor.dimRadio.set(editor.dimColor());
+        const storedDimOpacity = Number(this.storage.get('dimOpacity', DIM_OPACITY_DEFAULT, true));
+        editor.dimOpacity.set(Number.isFinite(storedDimOpacity)
+          ? Math.min(100, Math.max(0, Math.round(storedDimOpacity)))
+          : DIM_OPACITY_DEFAULT);
+        editor.dimOpacityRadio.set(editor.dimOpacity());
         editor.gridMode.set(this.storage.get('gridMode', 'when-rotating', true) as GridMode);
         editor.gridRadio.set(editor.gridMode());
         editor.gridDensityLabel.set(this.storage.get('gridDensityLabel', 'Hustá', true) as GridDensityLabel);
@@ -115,6 +121,7 @@ export class EditorComponent {
         editor.outlineWidthLabel.set(this.storage.get('outlineWidthLabel', 'Silný', true) as OutlineWidthLabel);
         editor.outlineRadio.set(editor.outlineWidthLabel());
         editor.outlineDashed = !!this.storage.get('outlineDashed', false, true);
+        editor.outlineDashedRadio.set(editor.outlineDashed);
         const storedDefaultFitMode = this.storage.get<DefaultFitMode>('defaultFitMode', 'page', true) ?? 'page';
         const defaultFitMode = ['page', 'selection'].includes(storedDefaultFitMode)
           ? storedDefaultFitMode

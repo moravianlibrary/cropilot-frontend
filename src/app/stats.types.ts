@@ -29,6 +29,7 @@ export type TelemetryVia = 'keyboard' | 'mouse';
 // Flat snapshot of all editor settings (values as stored in localStorage).
 export interface EditorSettingsSnapshot {
   dimColor: DimColor;
+  dimOpacity: number;
   gridMode: GridMode;
   gridDensityLabel: GridDensityLabel;
   gridColorLabel: GridColorLabel;

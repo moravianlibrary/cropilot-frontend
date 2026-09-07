@@ -45,6 +45,7 @@ const SETTING_LABELS: Record<string, string> = {
   outlineWidthLabel: 'Obrys výřezu',
   outlineDashed: 'Čárkovaný obrys',
   dimColor: 'Clona',
+  dimOpacity: 'Viditelnost clony',
   defaultFitMode: 'Výchozí přiblížení',
   filterScanTypeStart: 'Filtr skenů při otevření',
   filterPageNumberStart: 'Filtr stran při otevření',
@@ -307,6 +308,7 @@ export class StatisticsComponent {
       case 'defaultFitMode': return defaultFitModeDict[value as keyof typeof defaultFitModeDict] ?? value;
       case 'filterScanTypeStart': return filterScanTypeStartDict[value as keyof typeof filterScanTypeStartDict] ?? value;
       case 'filterPageNumberStart': return filterPageNumberStartDict[value as keyof typeof filterPageNumberStartDict] ?? value;
+      case 'dimOpacity': return `${value} %`;
       default: return value;
     }
   }

@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation, RotationScope } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
 import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
-import { dimColorDict, gridColorDict, gridDensityDict, gridLineWidthDict, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
+import { DIM_OPACITY_DEFAULT, dimColorRgba, gridColorDict, gridDensityDict, gridLineWidthDict, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
 import { AuthService } from './auth.service';
 import { UiService } from './ui.service';
 import { LocalStorageService } from './local-storage.service';
@@ -118,6 +118,7 @@ export class EditorService {
 
   // Draw page parameters
   dimColor = signal<DimColor>('Černá');
+  dimOpacity = signal<number>(DIM_OPACITY_DEFAULT);
   gridDensityLabel = signal<GridDensityLabel>('Hustá');
   gridColorLabel = signal<GridColorLabel>('Modrá');
   gridLineWidthLabel = signal<GridLineWidthLabel>('Tenká');
@@ -682,10 +683,10 @@ export class EditorService {
 
     // Outline — nothing is selected here (initial paint), so 'Žádný' still
     // shows a thin outline to keep crops visible.
-    const outlineWidth = this.outlineWidthLabel() === 'Žádný'
+    const outlineWidth = this.effOutlineWidthLabel() === 'Žádný'
       ? this.pageOutlineWidthSecondary
-      : outlineWidthDict[this.outlineWidthLabel()];
-    if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
+      : outlineWidthDict[this.effOutlineWidthLabel()];
+    if (this.effOutlineDashed()) ctx.setLineDash([this.dashLength, this.dashGapLength]);
     ctx.strokeStyle = getColor(p) + 'B2';
     ctx.lineWidth = outlineWidth;
     ctx.strokeRect(
@@ -1048,7 +1049,7 @@ export class EditorService {
   }
 
   applyDefaultZoom(): void {
-    if (this.defaultFitMode() === 'selection' && this.currentPages.length) {
+    if (this.effDefaultFitMode() === 'selection' && this.currentPages.length) {
       this.fitZoomToPages();
       return;
     }
@@ -1535,7 +1536,7 @@ export class EditorService {
     const { centerX, centerY, width, height } = this.getPageRectPx(p);
     const color = getColor(p);
     const isPageNotSelectedWhileOtherIs = this.currentPages.length > 1 && this.selectedPage && p !== this.selectedPage;
-    const outlineWidthLabel = this.outlineWidthLabel();
+    const outlineWidthLabel = this.effOutlineWidthLabel();
     const isSelectedPage = this.selectedPage?._id === p._id;
     // 'Žádný' hides the outline only on the focused (selected) crop; when nothing
     // is selected, fall back to a thin outline so crops stay visible in the overview.
@@ -1551,7 +1552,7 @@ export class EditorService {
 
     // Outline
     {
-      if (this.outlineDashed) ctx.setLineDash([this.dashLength, this.dashGapLength]);
+      if (this.effOutlineDashed()) ctx.setLineDash([this.dashLength, this.dashGapLength]);
 
       ctx.strokeStyle = hideOutline
         ? transparentColor
@@ -1575,10 +1576,10 @@ export class EditorService {
 
     // Grid
     if (this.selectedPage?._id === p._id && (
-      (this.gridMode() === 'when-rotating' && this.isRotating)
-      || this.gridMode() === 'always'
+      (this.effGridMode() === 'when-rotating' && this.isRotating)
+      || this.effGridMode() === 'always'
     )) {
-      const gridSpacing = gridDensityDict[this.gridDensityLabel()];
+      const gridSpacing = gridDensityDict[this.effGridDensityLabel()];
       const hw = width / 2;
       const hh = height / 2;
       const left = -hw;
@@ -1591,9 +1592,9 @@ export class EditorService {
 
       // Keep the configured visual line width stable while the canvas is scaled.
       const sx = Math.hypot(ctx.getTransform().a, ctx.getTransform().b) || 1;
-      ctx.lineWidth = gridLineWidthDict[this.gridLineWidthLabel()] / sx;
+      ctx.lineWidth = gridLineWidthDict[this.effGridLineWidthLabel()] / sx;
 
-      ctx.strokeStyle = gridColorDict[this.gridColorLabel()];
+      ctx.strokeStyle = gridColorDict[this.effGridColorLabel()];
 
       // Align to half-pixel in local space so thin canvas lines stay crisp.
       // Also ensure the first line starts exactly at the top-left corner.
@@ -1717,7 +1718,7 @@ export class EditorService {
 
     ctx.clip('evenodd');
 
-    ctx.fillStyle = `rgba(${dimColorDict[this.dimColor()]})`;
+    ctx.fillStyle = dimColorRgba(this.effDimColor(), this.effDimOpacity());
     ctx.fillRect(0, 0, c.width, c.height);
 
     ctx.restore();
@@ -1795,9 +1796,59 @@ export class EditorService {
   gridLineWidthRadio = signal<GridLineWidthLabel>('Tenká');
   outlineRadio = signal<OutlineWidthLabel>('Silný');
   dimRadio = signal<DimColor>('Černá');
+  dimOpacityRadio = signal<number>(DIM_OPACITY_DEFAULT);
+  outlineDashedRadio = signal<boolean>(false);
   scanTypeRadio = signal<ScanType>('all');
   pageNumberRadio = signal<PageNumberType>('all');
   defaultFitModeRadio = signal<DefaultFitMode>('page');
+
+  // ========== LIVE SETTINGS PREVIEW ==========
+  // While the settings dialog is open, the canvas draws the drafted (unsaved)
+  // values so every change shows up immediately behind the dialog. Closing the
+  // dialog without saving redraws with the persisted values again.
+  private previewingSettings(): boolean {
+    return this.ui.dialogOpen() && this.ui.dialogContentType() === 'settings';
+  }
+
+  effGridMode(): GridMode { return this.previewingSettings() ? this.gridRadio() : this.gridMode(); }
+  effGridDensityLabel(): GridDensityLabel { return this.previewingSettings() ? this.gridDensityRadio() : this.gridDensityLabel(); }
+  effGridColorLabel(): GridColorLabel { return this.previewingSettings() ? this.gridColorRadio() : this.gridColorLabel(); }
+  effGridLineWidthLabel(): GridLineWidthLabel { return this.previewingSettings() ? this.gridLineWidthRadio() : this.gridLineWidthLabel(); }
+  effOutlineWidthLabel(): OutlineWidthLabel { return this.previewingSettings() ? this.outlineRadio() : this.outlineWidthLabel(); }
+  effOutlineDashed(): boolean { return this.previewingSettings() ? this.outlineDashedRadio() : this.outlineDashed; }
+  effDimColor(): DimColor { return this.previewingSettings() ? this.dimRadio() : this.dimColor(); }
+  effDimOpacity(): number { return this.previewingSettings() ? this.dimOpacityRadio() : this.dimOpacity(); }
+  effDefaultFitMode(): DefaultFitMode { return this.previewingSettings() ? this.defaultFitModeRadio() : this.defaultFitMode(); }
+
+  private wasPreviewingSettings: boolean = false;
+  private settingsPreviewRedraw = effect(() => {
+    const previewing = this.previewingSettings();
+    // Read every drafted value so any change while previewing schedules a redraw.
+    this.gridRadio(); this.gridDensityRadio(); this.gridColorRadio(); this.gridLineWidthRadio();
+    this.outlineRadio(); this.outlineDashedRadio(); this.dimRadio(); this.dimOpacityRadio();
+    untracked(() => {
+      if ((previewing || this.wasPreviewingSettings) && this.c && this.mainImage) this.redrawAllPages();
+      this.wasPreviewingSettings = previewing;
+    });
+  });
+
+  // Default zoom preview: re-fit only when the drafted mode actually changes,
+  // and restore the persisted mode if the dialog is dismissed without saving.
+  private previewedFitMode: DefaultFitMode | null = null;
+  private settingsPreviewZoom = effect(() => {
+    const previewing = this.previewingSettings();
+    const draft = this.defaultFitModeRadio();
+    untracked(() => {
+      if (!this.c || !this.mainImage) return;
+      if (previewing) {
+        if (this.previewedFitMode !== null && this.previewedFitMode !== draft) this.applyDefaultZoom();
+        this.previewedFitMode = draft;
+      } else {
+        if (this.previewedFitMode !== null && this.previewedFitMode !== this.defaultFitMode()) this.applyDefaultZoom();
+        this.previewedFitMode = null;
+      }
+    });
+  });
 
   openSettingsDialog(): void {
     const ui = this.ui;
@@ -1830,11 +1881,15 @@ export class EditorService {
           this.outlineWidthLabel.set('Silný');
           this.storage.set('outlineWidthLabel', 'Silný');
           this.outlineDashed = false;
+          this.outlineDashedRadio.set(false);
           this.storage.set('outlineDashed', false);
           this.storage.remove('outlineTransparent');
           this.dimColor.set('Černá');
           this.dimRadio.set('Černá');
           this.storage.set('dimColor', 'Černá');
+          this.dimOpacity.set(DIM_OPACITY_DEFAULT);
+          this.dimOpacityRadio.set(DIM_OPACITY_DEFAULT);
+          this.storage.set('dimOpacity', DIM_OPACITY_DEFAULT);
           this.scanTypeRadio.set('all');
           this.storage.set('filterScanTypeStart', 'all');
           this.pageNumberRadio.set('all');
@@ -1866,7 +1921,9 @@ export class EditorService {
     this.gridColorRadio.set(this.gridColorLabel());
     this.gridLineWidthRadio.set(this.gridLineWidthLabel());
     this.outlineRadio.set(this.outlineWidthLabel());
+    this.outlineDashedRadio.set(this.outlineDashed);
     this.dimRadio.set(this.dimColor());
+    this.dimOpacityRadio.set(this.dimOpacity());
     this.scanTypeRadio.set(this.selectedFilter ?? 'all');
     this.pageNumberRadio.set(this.selectedPageNumberFilter() ?? 'all');
     this.defaultFitModeRadio.set(this.defaultFitMode());
@@ -1877,7 +1934,7 @@ export class EditorService {
   }
 
   toggleOutlineDashed(): void {
-    this.outlineDashed = !this.outlineDashed;
+    this.outlineDashedRadio.update(v => !v);
   }
 
   saveSettings(): void {
@@ -1897,10 +1954,14 @@ export class EditorService {
     const outlineRadio = this.outlineRadio();
     this.outlineWidthLabel.set(outlineRadio);
     this.storage.set('outlineWidthLabel', outlineRadio);
+    this.outlineDashed = this.outlineDashedRadio();
     this.storage.set('outlineDashed', this.outlineDashed);
     const dimRadio = this.dimRadio();
     this.dimColor.set(dimRadio);
     this.storage.set('dimColor', dimRadio);
+    const dimOpacityRadio = this.dimOpacityRadio();
+    this.dimOpacity.set(dimOpacityRadio);
+    this.storage.set('dimOpacity', dimOpacityRadio);
     
     this.lastSelectedImageId = this.mainImageItem()._id;
     this.storage.set('lastSelectedImageId', `${this.lastSelectedImageId}`);
@@ -1920,6 +1981,7 @@ export class EditorService {
   settingsSnapshot(): EditorSettingsSnapshot {
     return {
       dimColor: this.dimColor(),
+      dimOpacity: this.dimOpacity(),
       gridMode: this.gridMode(),
       gridDensityLabel: this.gridDensityLabel(),
       gridColorLabel: this.gridColorLabel(),
