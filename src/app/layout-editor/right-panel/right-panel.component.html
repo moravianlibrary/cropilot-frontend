@@ -9,7 +9,9 @@
       }
       <h1>Sken {{ currentIndexImage }}/{{ editor.displayedImagesFinal().length }}</h1>
     </div>
-    <app-menu [type]="'menu-secondary'" />
+    @if (canWriteTitle) {
+      <app-menu [type]="'menu-secondary'" />
+    }
   </div>
   @for (flag of editor.mainImageItem().flags; track flag) {
     @if (!(editor.mainImageItem().flags.length > 1 && flag === 'low_confidence')) {

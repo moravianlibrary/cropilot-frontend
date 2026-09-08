@@ -42,21 +42,21 @@
           </span>
           Klávesové zkratky
         </div>
-        <div
-          class="menu-item last red"
-          [class.disabled]="!canWriteTitle"
-          (click)="onResetDocClick()"
-        >
-          <span class="icon">
-            <app-icon name="reset" [size]="16" />
-          </span>
-          Reset změn v dokumentu
-        </div>
+        @if (canWriteTitle) {
+          <div
+            class="menu-item last red"
+            (click)="onResetDocClick()"
+          >
+            <span class="icon">
+              <app-icon name="reset" [size]="16" />
+            </span>
+            Reset změn v dokumentu
+          </div>
+        }
       }
-      @if (type() === 'menu-secondary') {
+      @if (type() === 'menu-secondary' && canWriteTitle) {
         <div
           class="menu-item only-item red"
-          [class.disabled]="!canWriteTitle"
           (click)="onResetScanClick()"
         >
           <span class="icon">

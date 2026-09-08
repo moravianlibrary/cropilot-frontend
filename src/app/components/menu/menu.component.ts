@@ -37,11 +37,11 @@ export class MenuComponent {
 
   onResetDocClick(): void {
     this.editor.openResetDocDialog();
-    this.show = !this.auth.canWriteTitle();
+    this.show = false;
   }
 
   onResetScanClick(): void {
     this.editor.openResetScanDialog();
-    this.show = !this.auth.canWriteTitle();
+    this.show = false;
   }
 }

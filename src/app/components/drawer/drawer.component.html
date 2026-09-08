@@ -3,7 +3,7 @@
 
 <header class="drawer-header">
   @let isTitlesDrawer = ui.drawerContentType() === 'titles';
-  @let canActOnTitle = isTitlesDrawer && auth.canUpload();
+  @let canActOnTitle = isTitlesDrawer && dashboard.canUploadInCurrentGroup();
   <div class="drawer-heading">
     <h2>{{ ui.drawerTitle() }}</h2>
     @if (ui.drawerContentType() === 'users') {
@@ -96,7 +96,7 @@
           </div>
         </div>
 
-        @if (auth.canUpload()) {
+        @if (dashboard.canUploadInGroup(group?._id)) {
           <div class="block">
             <span
               class="button real-button with-icon secondary"

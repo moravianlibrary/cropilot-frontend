@@ -250,7 +250,7 @@
   <div class="content-wrapper">
     <div class="top-part">
       <span class="left-part">
-        @if (auth.canUpload()) {
+        @if (dashboard.canUploadInCurrentGroup()) {
           <span
             class="button real-button with-icon primary"
             (click)="dashboard.createTitleDialog()"
@@ -301,8 +301,8 @@
           class="table-header"
           cellspacing="0" cellpadding="0"
         >
-          @let canUpload = auth.canUpload();
-          @let seeActions = isAdmin || canUpload;
+          <!-- Title actions (detail drawer: rename, model, assignee, delete) need `upload` in THIS group -->
+          @let seeActions = dashboard.canUploadInCurrentGroup();
           <colgroup>
             @if (seeActions) { <col style="width:52px"> } <!-- Akce -->
             <col style="width:48px"> <!-- Náhled -->
@@ -698,7 +698,7 @@
                       <span>Nenalezeny žádné tituly</span>
                       @if (dashboard.searchTitles() || activeStateFilterLabel) {
                         <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Zrušit hledání a filtry</span>
-                      } @else if (auth.canUpload()) {
+                      } @else if (dashboard.canUploadInCurrentGroup()) {
                         <span class="empty-action" (click)="dashboard.createTitleDialog()" (keydown.enter)="dashboard.createTitleDialog()" (keydown.space)="dashboard.createTitleDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Vytvořit titul</span>
                       }
                     </div>

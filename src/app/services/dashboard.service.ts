@@ -201,16 +201,20 @@ export class DashboardService {
     return !!base && (base.crop !== this.selectedCropModel() || base.rotation !== this.selectedRotationModel());
   });
 
-  // Who can assign titles here: an admin (anywhere), or a manager (upload) in THIS
-  // group. Read straight from the signed-in user's own per-group permissions, which
-  // are always available from the token — no dependency on the titles/list payload.
-  canAssignInCurrentGroup = computed<boolean>(() => {
+  // Who can manage titles (create, edit settings/model, delete, assign, export) in a
+  // given group: an admin (anywhere), or a user with `upload` in THAT group. Mirrors
+  // the backend guards on the title endpoints. Read straight from the signed-in
+  // user's own per-group permissions, which are always available from the token —
+  // never from the global `auth.canUpload()`, which is true for upload in ANY group.
+  canUploadInGroup(groupId: string | undefined | null): boolean {
     if (this.auth.isAdmin()) return true;
-    const groupId = this.selectedGroupPage()?._id;
     if (!groupId) return false;
     const perms = this.auth.user()?.permissions?.find(p => p.group_id === groupId)?.permission;
     return perms?.includes('upload') ?? false;
-  });
+  }
+  canUploadInCurrentGroup = computed<boolean>(() => this.canUploadInGroup(this.selectedGroupPage()?._id));
+  // Assignment follows the same rule as the other title-management actions.
+  canAssignInCurrentGroup = this.canUploadInCurrentGroup;
   // Title assignment (drawer): available group members + current selection ('' = unassigned).
   availableAssignees = signal<SelectOption[]>([]);
   selectedAssigneeId = signal<string>('');
@@ -784,6 +788,7 @@ export class DashboardService {
 
   // Title
   createTitleDialog(): void {
+    if (!this.canUploadInCurrentGroup()) return;
     const ui = this.ui;
     this.files.set([]);
     
@@ -1797,17 +1802,17 @@ export class DashboardService {
       }
     }
 
-    // Add group, title or user
+    // Add group, title or user — only where the corresponding button is visible
     if (['p', 'P'].includes(key) && !dialogOpen) {
       switch (dashboardPage) {
         case 'groups':
-          this.createGroupDialog();
+          if (this.auth.isAdmin()) this.createGroupDialog();
           break;
         case 'titles':
-          this.createTitleDialog();
+          if (this.canUploadInCurrentGroup()) this.createTitleDialog();
           break;
         case 'users':
-          this.createUserDialog();
+          if (this.auth.isAdmin()) this.createUserDialog();
           break;
       }
     }
