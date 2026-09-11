@@ -328,6 +328,17 @@
               }
             </div>
           }
+
+          @if (placementSegments().length) {
+            <h3>Umístění nových výřezů</h3>
+            <p class="subtitle">Jak editor umístil výřez po kliknutí na „Přidat výřez“.</p>
+            <div class="distributions">
+              <div class="distribution">
+                <span class="dist-label">Strategie</span>
+                <app-stacked-bar [segments]="placementSegments()" />
+              </div>
+            </div>
+          }
         }
       </section>
 

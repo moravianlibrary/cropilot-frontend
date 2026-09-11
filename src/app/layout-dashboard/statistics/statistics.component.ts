@@ -37,6 +37,11 @@ const ACTION_LABELS: Record<string, string> = {
   toggle_predictions: 'Zobrazení predikcí', shortcuts_dialog: 'Nápověda zkratek', copy: 'Kopírování'
 };
 
+// Placement heuristics of "Přidat výřez" (frontend utils/page-placement.ts).
+const PLACEMENT_LABELS: Record<string, string> = {
+  prediction: 'Podle predikce', mirror: 'Zrcadlení výřezu', neighbor: 'Podle sousedního skenu', default: 'Výchozí obdélník'
+};
+
 const SETTING_LABELS: Record<string, string> = {
   gridMode: 'Mřížka',
   gridDensityLabel: 'Hustota mřížky',
@@ -274,6 +279,17 @@ export class StatisticsComponent {
       label: FILTER_LABELS[filter] ?? filter,
       segments: Object.entries(values).map(([value, n]) => ({ label: this.filterValueLabel(filter, value), value: n }))
     }));
+  });
+
+  // How "Přidat výřez" positioned new crops, summed over all rows of the current grouping.
+  placementSegments = computed<StackedSegment[]>(() => {
+    const merged: Record<string, number> = {};
+    for (const row of this.stats.usage()) {
+      for (const [strategy, n] of Object.entries(row.page_placements ?? {})) merged[strategy] = (merged[strategy] ?? 0) + n;
+    }
+    return Object.keys(PLACEMENT_LABELS)
+      .filter(strategy => merged[strategy])
+      .map(strategy => ({ label: PLACEMENT_LABELS[strategy], value: merged[strategy] }));
   });
 
   settingRows = computed(() => {

@@ -73,7 +73,7 @@
     <span
       class="action add-crop"
       [class.disabled]="!canEditTitle || editor.currentPages.length >= editor.maxPages || !editor.displayedImagesFinal().length"
-      (click)="editor.addPage()"
+      (click)="editor.addPage('mouse')"
     >
       Přidat výřez
       <span class="icon">

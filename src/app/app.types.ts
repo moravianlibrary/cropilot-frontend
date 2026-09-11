@@ -226,6 +226,8 @@ export type RotationScope = 'current' | 'all';
 export type DefaultFitMode = 'page' | 'selection';
 export type ScanType = 'all' | 'flagged' | 'edited' | 'ok';
 export type PageNumberType = 'all' | 'single' | 'double';
+// How the editor picked the position of a newly added crop (see utils/page-placement.ts).
+export type PagePlacementStrategy = 'prediction' | 'mirror' | 'neighbor' | 'default';
 export type InputType = 'left' | 'top' | 'width' | 'height' | 'angle';
 export type Role = 'admin' | 'user';
 export type GridMode = 'always' | 'never' | 'when-rotating';

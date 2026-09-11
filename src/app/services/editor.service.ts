@@ -11,6 +11,7 @@ import { LocalStorageService } from './local-storage.service';
 import { TelemetryService } from './telemetry.service';
 import { EditorSettingsSnapshot, TelemetryVia } from '../stats.types';
 import { shortcutAction } from '../utils/shortcut-actions';
+import { proposeNewPage } from '../utils/page-placement';
 
 @Injectable({
   providedIn: 'root'
@@ -1656,32 +1657,66 @@ export class EditorService {
     ctx.restore();
   }
   
-  addPage(): void {
+  addPage(via: TelemetryVia = 'mouse'): void {
     if (!this.auth.canEditTitle() || this.currentPages.length >= this.maxPages || !this.displayedImagesFinal().length) return;
 
     if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
 
-    const addedPage: Page = {
-      _id: `${this.mainImageItem()._id}-${this.currentPages.length + 1}`,
-      xc: .5,
-      yc: .5,
-      left: .5 - .2,
-      right: .5 + .2,
-      top: .5 - .425,
-      bottom: .5 + .425,
-      width: .4,
-      height: .85,
-      angle: 0,
+    const mainId = this.mainImageItem()._id;
+    const { page, strategy } = proposeNewPage({
+      currentPages: this.currentPages,
+      predictedPages: this.predictedOrientedImages().find(img => img._id === mainId)?.pages ?? [],
+      neighborPages: this.neighborPagesForPlacement(),
+      aspect: this.imageRect.height > 0 ? this.imageRect.width / this.imageRect.height : 1,
+    });
+
+    const addedPage: Page = this.correctPageBounds({
+      _id: this.nextPageId(),
+      ...page,
       edited: true,
       flags: []
-    };
-    
-    this.currentPages.push(addedPage);
-    this.selectedPage = this.currentPages[this.currentPages.length - 1];
+    });
+
+    // Keep crops ordered left → right so the left page is always page 1.
+    this.currentPages = [...this.currentPages, addedPage].sort((a, b) => a.xc - b.xc);
+    this.selectedPage = addedPage;
     this.imgWasEdited.set(true);
     this.redrawAllPages();
 
     this.applyDefaultZoom();
+
+    // Keyboard adds are already counted by the generic `shortcut` event.
+    if (via === 'mouse') this.telemetry.track('mouse_action', { action: 'add_page' });
+    this.telemetry.track('page_added', { strategy, via });
+  }
+
+  /**
+   * Crops of the scans around the current one, used to seed a new crop when
+   * the scan has neither crops nor predictions. Same orientation only (the
+   * relative coordinates would not transfer otherwise); user-edited scans
+   * first because their geometry is confirmed.
+   */
+  private neighborPagesForPlacement(): Page[][] {
+    const list = this.images();
+    const idx = list.findIndex(img => img._id === this.mainImageItem()._id);
+    if (idx < 0) return [];
+
+    const orientation = this.orientation();
+    const candidates = [idx - 1, idx + 1, idx - 2, idx + 2]
+      .map(i => list[i])
+      .filter((img): img is ImageItem =>
+        !!img && img.pages.length > 0 && this.normalizeOrientation(img.orientation) === orientation
+      );
+
+    return [...candidates.filter(img => img.edited), ...candidates.filter(img => !img.edited)].map(img => img.pages);
+  }
+
+  private nextPageId(): string {
+    const base = this.mainImageItem()._id;
+    const used = new Set(this.currentPages.map(p => p._id));
+    let n = 1;
+    while (used.has(`${base}-${n}`)) n++;
+    return `${base}-${n}`;
   }
 
   removePage(): void {
@@ -2149,7 +2184,7 @@ export class EditorService {
     if (canEditTitle && ['Backspace', 'Delete'].includes(key) && !dialogOpen && this.selectedPage) this.removePage();
 
     // Add page
-    if (canEditTitle && ['p', 'P'].includes(key) && !dialogOpen && this.currentPages.length < this.maxPages) this.addPage();
+    if (canEditTitle && ['p', 'P'].includes(key) && !dialogOpen && this.currentPages.length < this.maxPages) this.addPage('keyboard');
 
     // Show predictions
     if (this.auth.isAdmin() && ['j', 'J'].includes(key) && !dialogOpen) {

@@ -69,10 +69,11 @@ export class EditorComponent {
           editor.showPredictions = !!this.storage.get('showPredictions', null, true);
           const book = editor.book();
           
+          // Predictions are fetched even when their overlay is hidden: the
+          // "add crop" placement uses them. They are optional — a failure
+          // (missing predictions, no permission) must not block the editor.
           const requests: [Observable<TitleDetail | null>, Observable<TitleDetail>] = [
-            editor.showPredictions
-              ? editor.fetchPredictedScans(book)
-              : of(null),
+            editor.fetchPredictedScans(book).pipe(catchError(() => of(null))),
             editor.fetchScans(book)];
 
           return forkJoin(requests);

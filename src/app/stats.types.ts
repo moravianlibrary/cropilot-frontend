@@ -3,7 +3,7 @@
 // no user identity; the backend derives the user from the JWT and only ever
 // exposes aggregates per group / model / month.
 
-import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from './app.types';
+import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, PagePlacementStrategy, ScanType } from './app.types';
 
 // Frontend sends one heartbeat every HEARTBEAT_SECONDS while the editor tab is
 // visible; the backend computes session duration as heartbeats * HEARTBEAT_SECONDS.
@@ -54,6 +54,8 @@ export type TelemetryEventMap = {
   reset_scan: Record<string, never>;
   reset_title: Record<string, never>;
   predictions_toggled: { enabled: boolean };
+  // Every added crop, with the placement heuristic that positioned it (utils/page-placement.ts).
+  page_added: { strategy: PagePlacementStrategy; via: TelemetryVia };
 };
 export type TelemetryEventType = keyof TelemetryEventMap;
 
@@ -156,6 +158,8 @@ export interface EditorUsageRow extends StatsKeyed {
   actions: ActionUsage[];
   top_shortcuts: { action: TelemetryAction | string; n: number }[];
   filters: Record<string, Record<string, number>>;
+  // Added crops per placement strategy; missing on backends older than the `page_added` event.
+  page_placements?: Record<string, number>;
 }
 
 export interface StatsSettings {
