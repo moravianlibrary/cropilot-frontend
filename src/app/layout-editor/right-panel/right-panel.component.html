@@ -31,11 +31,11 @@
         @for (flag of scanFlags; track flag; let last = $last) {
           <span
             class="flag-item tip tip-wrap"
-            [class.linked]="!reviewed && isFlagLinked(flag)"
-            [class.dimmed]="!reviewed && isFlagDimmed(flag)"
+            [class.linked]="isFlagLinked(flag)"
+            [class.dimmed]="isFlagDimmed(flag)"
             [attr.data-tooltip]="getFlagHint(flag)"
-            [attr.role]="!reviewed && isFlagLinked(flag) ? 'button' : null"
-            [attr.tabindex]="!reviewed && isFlagLinked(flag) ? 0 : null"
+            [attr.role]="isFlagLinked(flag) ? 'button' : null"
+            [attr.tabindex]="isFlagLinked(flag) ? 0 : null"
             (mouseenter)="hoverFlag(flag)"
             (mouseleave)="hoverFlag(null)"
             (click)="selectFlagPage(flag)"

@@ -452,8 +452,7 @@ export class MainComponent {
     const page = editor.selectedPage;
 
     // A click with a hair of mouse jitter is a selection, not a move.
-    const scale = editor.viewport.scale || 1;
-    if (Math.hypot(mousePos.x - editor.dragStartMouse.x, mousePos.y - editor.dragStartMouse.y) * scale < this.dragThresholdPx) return;
+    if (!this.mouseMovedSince(editor.dragStartMouse, e)) return;
 
     const dx = (mousePos.x - editor.dragStartMouse.x) / width;
     const dy = (mousePos.y - editor.dragStartMouse.y) / height;
@@ -2352,9 +2351,12 @@ export class MainComponent {
   private wheelZoomTimer: ReturnType<typeof setTimeout> | null = null;
   private wheelZoomDelta = 0;
 
+  // True once the mouse travelled at least dragThresholdPx screen pixels from `start`.
   private mouseMovedSince(start: { x: number; y: number } | null, ev: MouseEvent): boolean {
     const pos = this.getMousePos(ev);
-    return !!start && !!pos && (start.x !== pos.x || start.y !== pos.y);
+    if (!start || !pos) return false;
+    const scale = this.editor.viewport.scale || 1;
+    return Math.hypot(pos.x - start.x, pos.y - start.y) * scale >= this.dragThresholdPx;
   }
 
   // A wheel gesture fires dozens of events; report one zoom action per burst.

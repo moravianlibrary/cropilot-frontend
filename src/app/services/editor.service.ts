@@ -229,42 +229,42 @@ export class EditorService {
     // carry `edited` without a change (rotate all 90° and back, a click with a
     // tiny mouse jitter, ...); those are unflagged again unless the server
     // already holds user edits for them.
-    const toPayload = ({ pages, ...i }: ImageItem): UpdateImagePayload => ({
-      ...i,
-      orientation: this.normalizeOrientation(i.orientation),
-      pages: pages.map(page => {
-        const { xc, yc, width, height } = this.pageToOriginalOrientation(page, i.orientation);
-        return { xc, yc, width, height, angle: roundToDecimals(page.angle, 2) };
-      })
-    });
-    const unchangedIds = new Set(
-      this.images()
-        .filter(i => i.edited && !this.differsFromOriginal(i, toPayload))
-        .map(i => i._id)
-    );
-    if (unchangedIds.size) {
-      this.images.update(prev => prev.map(i => {
-        if (!unchangedIds.has(i._id)) return i;
-        const original = this.originalImages().find(o => o._id === i._id);
-        return { ...i, edited: original?.edited ?? false };
-      }));
-      this.mainImageItem.update(img => unchangedIds.has(img._id)
-        ? { ...img, edited: this.originalImages().find(o => o._id === img._id)?.edited ?? false }
-        : img);
-      this.setDisplayedImages();
+    const originalsById = new Map(this.originalImages().map(o => [o._id, o]));
+    const changed: ImageItem[] = [];
+    const payloads: UpdateImagePayload[] = [];
+    const unchangedIds = new Set<string>();
+    for (const image of this.images()) {
+      if (!image.edited) continue;
+      const original = originalsById.get(image._id);
+      const payload = this.toUpdatePayload(image);
+      if (!original || this.payloadsDiffer(payload, this.toUpdatePayload(original))) {
+        changed.push(image);
+        payloads.push(payload);
+      } else {
+        unchangedIds.add(image._id);
+      }
     }
 
-    const editedImages: UpdateImagePayload[] = this.images()
-      .filter(i => i.edited && !unchangedIds.has(i._id))
-      .map(toPayload);
+    if (unchangedIds.size) {
+      // Back to the state the server knows: flagged only if it already holds edits.
+      const unflag = (imgs: ImageItem[]) => imgs.map(i => unchangedIds.has(i._id)
+        ? { ...i, edited: originalsById.get(i._id)?.edited ?? false }
+        : i);
+      this.images.update(unflag);
+      // Patch the visible lists in place (like markCurrentImageEdited) so the open
+      // scan does not drop out of the "Upravené" filter while it is displayed.
+      this.displayedImages.update(unflag);
+      this.displayedImagesPages.update(unflag);
+      this.mainImageItem.update(img => this.images().find(i => i._id === img._id) ?? img);
+    }
 
-    if (!editedImages.length) {
+    if (!payloads.length) {
       this.sthWasEdited = false;
       this.ui.showToast('Žádné změny k uložení.', { type: 'info' });
       return;
     }
 
-    this.updatePages(this.book(), editedImages).pipe(
+    this.updatePages(this.book(), payloads).pipe(
       catchError(err => {
         this.ui.showToast('Při ukládání změn se něco pokazilo. Zkuste změny uložit znovu.', { type: 'error' });
         console.error(err);
@@ -272,20 +272,31 @@ export class EditorService {
       })
     ).subscribe(() => {
       this.sthWasEdited = false;
+      // The server now holds these edits: later saves compare against them, so a
+      // revert back to the loaded geometry is still sent as a change.
+      const savedById = new Map(changed.map(i => [i._id, { ...i, edited: true }]));
+      this.originalImages.update(prev => prev.map(o => savedById.get(o._id) ?? o));
       this.setDisplayedImages();
       this.ui.showToast('Změny byly úspěšně uloženy!', { type: 'success' });
       this.telemetry.noteSave();
-      this.telemetry.track('save', { scans_edited: editedImages.length, via });
+      this.telemetry.track('save', { scans_edited: payloads.length, via });
     });
   }
 
-  // True when orientation or any crop (4-decimal payload precision) differs
-  // from the scan as it was loaded with the title.
-  private differsFromOriginal(image: ImageItem, toPayload: (img: ImageItem) => UpdateImagePayload): boolean {
-    const original = this.originalImages().find(o => o._id === image._id);
-    if (!original) return true;
-    const a = toPayload(image);
-    const b = toPayload(original);
+  // Scan as sent to the API: crops in the original (unrotated) frame at the
+  // 4-decimal / 2-decimal precision the backend stores.
+  private toUpdatePayload({ pages, ...i }: ImageItem): UpdateImagePayload {
+    return {
+      ...i,
+      orientation: this.normalizeOrientation(i.orientation),
+      pages: pages.map(page => {
+        const { xc, yc, width, height } = this.pageToOriginalOrientation(page, i.orientation);
+        return { xc, yc, width, height, angle: roundToDecimals(page.angle, 2) };
+      })
+    };
+  }
+
+  private payloadsDiffer(a: UpdateImagePayload, b: UpdateImagePayload): boolean {
     if (a.orientation !== b.orientation || a.pages.length !== b.pages.length) return true;
     return a.pages.some((p, idx) => {
       const q = b.pages[idx];

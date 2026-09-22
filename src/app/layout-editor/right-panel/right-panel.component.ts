@@ -111,7 +111,6 @@ export class RightPanelComponent {
   }
 
   selectFlagPage(flag: string): void {
-    if (this.editor.mainImageItem().edited) return;
     const ids = this.flagPageIds(flag);
     if (!ids.length) return;
     // Cycle through the flagged crops when one of them is already selected.
@@ -176,9 +175,7 @@ export class RightPanelComponent {
     if (isNaN(value)) value = 0;
 
     value = parseFloat(value.toFixed(editor.decimals + 2));
-
-    // Confirming the value that is already there is not an edit.
-    if (value === parseFloat(page[type].toFixed(editor.decimals + 2))) return;
+    const before = this.geometryKey(page);
 
     const cw = editor.c.width;
     const ch = editor.c.height;
@@ -441,9 +438,17 @@ export class RightPanelComponent {
         break;
     }
 
+    // Re-confirming the current value (or one that clamps back to it) is not an edit.
+    if (this.geometryKey(page) === before) return;
+
     editor.pageWasEdited = true;
     editor.sthWasEdited = true;
     this.updateAndRedraw(page);
+  }
+
+  private geometryKey(page: Page): string {
+    const d = this.editor.decimals + 2;
+    return [page.xc, page.yc, page.width, page.height, page.angle].map(v => v.toFixed(d)).join('|');
   }
 
   onKeyDown(type: InputType, event: KeyboardEvent, input: HTMLInputElement): void {
