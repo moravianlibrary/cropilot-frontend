@@ -225,16 +225,45 @@ export class EditorService {
     this.applyDefaultZoom();
     this.updateMainImageItemAndImages();
     
-    const editedImages: UpdateImagePayload[] = this.images()
-      .filter(i => i.edited)
-      .map(({ pages, ...i }) => ({
-        ...i,
-        orientation: this.normalizeOrientation(i.orientation),
-        pages: pages.map(page => {
-          const { xc, yc, width, height } = this.pageToOriginalOrientation(page, i.orientation);
-          return { xc, yc, width, height, angle: page.angle };
-        })
+    // Only scans that really differ from what was loaded are sent. A scan can
+    // carry `edited` without a change (rotate all 90° and back, a click with a
+    // tiny mouse jitter, ...); those are unflagged again unless the server
+    // already holds user edits for them.
+    const toPayload = ({ pages, ...i }: ImageItem): UpdateImagePayload => ({
+      ...i,
+      orientation: this.normalizeOrientation(i.orientation),
+      pages: pages.map(page => {
+        const { xc, yc, width, height } = this.pageToOriginalOrientation(page, i.orientation);
+        return { xc, yc, width, height, angle: roundToDecimals(page.angle, 2) };
+      })
+    });
+    const unchangedIds = new Set(
+      this.images()
+        .filter(i => i.edited && !this.differsFromOriginal(i, toPayload))
+        .map(i => i._id)
+    );
+    if (unchangedIds.size) {
+      this.images.update(prev => prev.map(i => {
+        if (!unchangedIds.has(i._id)) return i;
+        const original = this.originalImages().find(o => o._id === i._id);
+        return { ...i, edited: original?.edited ?? false };
       }));
+      this.mainImageItem.update(img => unchangedIds.has(img._id)
+        ? { ...img, edited: this.originalImages().find(o => o._id === img._id)?.edited ?? false }
+        : img);
+      this.setDisplayedImages();
+    }
+
+    const editedImages: UpdateImagePayload[] = this.images()
+      .filter(i => i.edited && !unchangedIds.has(i._id))
+      .map(toPayload);
+
+    if (!editedImages.length) {
+      this.sthWasEdited = false;
+      this.ui.showToast('Žádné změny k uložení.', { type: 'info' });
+      return;
+    }
+
     this.updatePages(this.book(), editedImages).pipe(
       catchError(err => {
         this.ui.showToast('Při ukládání změn se něco pokazilo. Zkuste změny uložit znovu.', { type: 'error' });
@@ -247,6 +276,20 @@ export class EditorService {
       this.ui.showToast('Změny byly úspěšně uloženy!', { type: 'success' });
       this.telemetry.noteSave();
       this.telemetry.track('save', { scans_edited: editedImages.length, via });
+    });
+  }
+
+  // True when orientation or any crop (4-decimal payload precision) differs
+  // from the scan as it was loaded with the title.
+  private differsFromOriginal(image: ImageItem, toPayload: (img: ImageItem) => UpdateImagePayload): boolean {
+    const original = this.originalImages().find(o => o._id === image._id);
+    if (!original) return true;
+    const a = toPayload(image);
+    const b = toPayload(original);
+    if (a.orientation !== b.orientation || a.pages.length !== b.pages.length) return true;
+    return a.pages.some((p, idx) => {
+      const q = b.pages[idx];
+      return p.xc !== q.xc || p.yc !== q.yc || p.width !== q.width || p.height !== q.height || p.angle !== q.angle;
     });
   }
 

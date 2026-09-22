@@ -33,6 +33,8 @@ export class MainComponent {
   private rotateCursorBottomLeft: string = "url('/assets/rotate-cursor-bototm-left.png') 9.5 9.5, auto";
 
   private edgeHitTolerance = 14;
+  // Screen pixels the mouse must travel before a mousedown on a crop counts as a move.
+  private dragThresholdPx = 2;
   private cornerHitTolerance = 14;
   private rotateHandleOffset = 14;
   private rotateHitTolerance = 24;
@@ -448,6 +450,10 @@ export class MainComponent {
     const mousePos = this.getMousePos(e);
     if (!start || !mousePos || !editor.dragStartMouse) return;
     const page = editor.selectedPage;
+
+    // A click with a hair of mouse jitter is a selection, not a move.
+    const scale = editor.viewport.scale || 1;
+    if (Math.hypot(mousePos.x - editor.dragStartMouse.x, mousePos.y - editor.dragStartMouse.y) * scale < this.dragThresholdPx) return;
 
     const dx = (mousePos.x - editor.dragStartMouse.x) / width;
     const dy = (mousePos.y - editor.dragStartMouse.y) / height;

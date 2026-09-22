@@ -177,6 +177,9 @@ export class RightPanelComponent {
 
     value = parseFloat(value.toFixed(editor.decimals + 2));
 
+    // Confirming the value that is already there is not an edit.
+    if (value === parseFloat(page[type].toFixed(editor.decimals + 2))) return;
+
     const cw = editor.c.width;
     const ch = editor.c.height;
     const ratio = cw / ch;
