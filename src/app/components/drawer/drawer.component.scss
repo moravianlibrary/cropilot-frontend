@@ -112,6 +112,15 @@
           pointer-events: none;
         }
 
+        // Icon + short label (e.g. "Export"), same height as the icon squares.
+        &.with-label {
+          width: auto;
+          gap: var(--spacing-x1-5);
+          padding: 0 var(--spacing-x2-5) 0 var(--spacing-x2);
+          @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x4), var(--text-secondary));
+          white-space: nowrap;
+        }
+
         width: var(--control-sm);
         height: var(--control-sm);
         background-color: var(--bg-base);

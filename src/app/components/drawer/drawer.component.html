@@ -27,10 +27,9 @@
         <!-- CSV export of the group's titles: a header action like edit / delete -->
         @if (canExport) {
           <span
-            class="drawer-export action icon-button tip tip-below"
+            class="drawer-export action icon-button with-label"
             [class.disabled]="dashboard.exportingTitles()"
-            data-tooltip="Exportovat seznam titulů (CSV)"
-            aria-label="Exportovat seznam titulů (CSV)"
+            aria-label="Stáhnout seznam titulů jako CSV"
             (click)="dashboard.exportTitlesCsv(exportGroup!._id, exportGroup!.name)"
             (keydown.space)="dashboard.exportTitlesCsv(exportGroup!._id, exportGroup!.name)"
             (keydown.enter)="dashboard.exportTitlesCsv(exportGroup!._id, exportGroup!.name)"
@@ -39,6 +38,7 @@
             <span class="icon">
               <app-icon name="arrow-down-in-rect" [size]="14" />
             </span>
+            Stáhnout jako CSV
           </span>
         }
         @if (isAdmin && !isTitlesDrawer) {
