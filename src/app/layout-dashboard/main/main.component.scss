@@ -602,6 +602,11 @@
           padding: 0 var(--spacing-x1) 0 var(--spacing-x4) !important;
         }
 
+        // Permission chips carry .tip tooltips; the cell must not clip them.
+        .perm-cell {
+          overflow: visible !important;
+        }
+
         // First-scan thumbnail: 32px tile in the 44px row.
         .thumb-cell {
           padding: var(--spacing-x1-5) var(--spacing-x2) var(--spacing-x1-5) var(--spacing-x1) !important;
@@ -772,37 +777,6 @@
     padding: 0 var(--spacing-x1);
     color: var(--text-light);
   }
-}
-
-// Permission legend strip under the groups/users tables.
-.table-legend {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-x2);
-  flex-wrap: wrap;
-  padding: var(--spacing-x2) var(--spacing-x6);
-  background-color: var(--bg-table-header);
-  border-top: 1px solid var(--border-light);
-  border-radius: 0 0 var(--radius-card) var(--radius-card);
-
-  .legend-label {
-    @include styles.micro-label;
-  }
-
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-x1);
-    height: var(--chip-h);
-    padding: 0 var(--spacing-x2);
-    border-radius: var(--radius-chip);
-    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-base));
-  }
-
-  .info    { color: var(--tag-info-text); background-color: var(--tag-info-bg); .icon { color: var(--tag-info-icon); } }
-  .success { color: var(--tag-success-text); background-color: var(--tag-success-bg); .icon { color: var(--tag-success-icon); } }
-  .pending { color: var(--tag-pending-text); background-color: var(--tag-pending-bg); .icon { color: var(--tag-pending-icon); } }
-  .error   { color: var(--tag-error-text); background-color: var(--tag-error-bg); .icon { color: var(--tag-error-icon); } }
 }
 
 // ============================================================
@@ -1080,37 +1054,6 @@
       .icon { display: inline-flex; }
     }
   }
-}
-
-// Legend under the card grid — mirrors the table legend strip.
-.cards-legend {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-x2);
-  flex-wrap: wrap;
-  padding: var(--spacing-x2) var(--spacing-x6);
-  background-color: var(--bg-table-header);
-  border: 1px solid var(--border-color);
-  border-radius: var(--spacing-x2);
-
-  .legend-label {
-    @include styles.micro-label;
-  }
-
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-x1);
-    height: var(--chip-h);
-    padding: 0 var(--spacing-x2);
-    border-radius: var(--radius-chip);
-    @include styles.font(500, var(--font-size-x1), var(--spacing-x4), var(--text-base));
-  }
-
-  .info    { color: var(--tag-info-text); background-color: var(--tag-info-bg); .icon { color: var(--tag-info-icon); } }
-  .success { color: var(--tag-success-text); background-color: var(--tag-success-bg); .icon { color: var(--tag-success-icon); } }
-  .pending { color: var(--tag-pending-text); background-color: var(--tag-pending-bg); .icon { color: var(--tag-pending-icon); } }
-  .error   { color: var(--tag-error-text); background-color: var(--tag-error-bg); .icon { color: var(--tag-error-icon); } }
 }
 
 .cards-empty-state {

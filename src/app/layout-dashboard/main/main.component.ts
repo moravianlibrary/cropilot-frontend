@@ -46,14 +46,6 @@ export class MainComponent {
     if (this.auth.canReadTitle()) this.dashboard.loadTitleThumbnail(title);
   }
 
-  // Legend of permission tags shown under the groups/users tables.
-  permLegend: { label: string; icon: string; klass: string }[] = [
-    { label: 'Správa', icon: 'settings', klass: 'success' },
-    { label: 'Úpravy', icon: 'edit', klass: 'info' },
-    { label: 'Detail titulu', icon: 'book', klass: 'pending' },
-    { label: 'Zobrazení všech titulů', icon: 'open-folder', klass: 'error' },
-  ];
-
   // Server-side titles paging/filter state
   private currentGroupId = '';
   private titlesSearchDebounce?: ReturnType<typeof setTimeout>;

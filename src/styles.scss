@@ -614,6 +614,22 @@ a:focus-visible {
     transform: translateX(-50%) translateY(0);
   }
 
+  // Below the element (for rows inside a scroll container, where "above" gets clipped).
+  &.tip-below::after {
+    bottom: auto;
+    top: calc(100% + 8px);
+    transform: translateX(-50%) translateY(-4px);
+  }
+
+  &.tip-below::before {
+    bottom: auto;
+    top: calc(100% + 3px);
+    transform: translateX(-50%) translateY(-4px);
+    border: 5px solid transparent;
+    border-bottom-color: var(--text-base);
+    border-top: 0;
+  }
+
   // Longer texts: wrap inside a narrow bubble instead of one long line.
   &.tip-wrap::after {
     white-space: normal;

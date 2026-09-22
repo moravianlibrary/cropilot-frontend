@@ -107,6 +107,11 @@
 
       // Same 28px square as the group-card "…" action.
       .icon-button {
+        &.disabled {
+          opacity: 0.5;
+          pointer-events: none;
+        }
+
         width: var(--control-sm);
         height: var(--control-sm);
         background-color: var(--bg-base);

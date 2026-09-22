@@ -20,8 +20,27 @@
   </div>
 
   <span class="drawer-actions">
-    @if (isAdmin || canActOnTitle) {
+    @let exportGroup = ui.drawerContentType() === 'groups' ? dashboard.selectedGroupDetail() : null;
+    @let canExport = !!exportGroup && dashboard.canUploadInGroup(exportGroup._id);
+    @if (isAdmin || canActOnTitle || canExport) {
       <span class="icon-button-actions">
+        <!-- CSV export of the group's titles: a header action like edit / delete -->
+        @if (canExport) {
+          <span
+            class="drawer-export action icon-button tip tip-below"
+            [class.disabled]="dashboard.exportingTitles()"
+            data-tooltip="Exportovat seznam titulů (CSV)"
+            aria-label="Exportovat seznam titulů (CSV)"
+            (click)="dashboard.exportTitlesCsv(exportGroup!._id, exportGroup!.name)"
+            (keydown.space)="dashboard.exportTitlesCsv(exportGroup!._id, exportGroup!.name)"
+            (keydown.enter)="dashboard.exportTitlesCsv(exportGroup!._id, exportGroup!.name)"
+            [tabindex]="dialogOpen ? -1 : 0"
+          >
+            <span class="icon">
+              <app-icon name="arrow-down-in-rect" [size]="14" />
+            </span>
+          </span>
+        }
         @if (isAdmin && !isTitlesDrawer) {
           <span
             class="drawer-edit action icon-button"
@@ -35,6 +54,7 @@
             </span>
           </span>
         }
+        @if (isAdmin || canActOnTitle) {
         <span
           class="drawer-delete action icon-button"
           (click)="drawerDeleteAction()"
@@ -46,6 +66,7 @@
             <app-icon name="delete" [size]="14" />
           </span>
         </span>
+        }
       </span>
     }
     <span
@@ -96,24 +117,6 @@
           </div>
         </div>
 
-        @if (dashboard.canUploadInGroup(group?._id)) {
-          <div class="block">
-            <span
-              class="button real-button with-icon secondary"
-              [class.disabled]="dashboard.exportingTitles()"
-              (click)="dashboard.exportTitlesCsv(group?._id ?? '', group?.name ?? '')"
-              (keydown.space)="dashboard.exportTitlesCsv(group?._id ?? '', group?.name ?? '')"
-              (keydown.enter)="dashboard.exportTitlesCsv(group?._id ?? '', group?.name ?? '')"
-              [tabindex]="dialogOpen ? -1 : 0"
-            >
-              <span class="icon">
-                <app-icon name="arrow-down-in-rect" [size]="16" />
-              </span>
-              Exportovat CSV
-            </span>
-          </div>
-        }
-        
         <div class="many-blocks dates">
           <span class="block">
             <div class="label">VYTVOŘENO</div>

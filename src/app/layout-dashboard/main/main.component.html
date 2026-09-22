@@ -137,25 +137,25 @@
                   <div class="card-chips">
                     @for (permType of permTypes; track permType) {
                       @if (permType === 'upload' && (isAdmin ? permCounts['upload'] : true)) {
-                        <span class="tag permission success" title="Správa">
+                        <span class="tag permission success tip" data-tooltip="Správa">
                           <span class="icon"><app-icon name="settings" [size]="14" /></span>
                           {{ isAdmin ? permCounts['upload'] : '' }}
                         </span>
                       }
                       @if (permType === 'write' && (isAdmin ? permCounts['write'] : true)) {
-                        <span class="tag permission info" title="Úpravy">
+                        <span class="tag permission info tip" data-tooltip="Úpravy">
                           <span class="icon"><app-icon name="edit" [size]="14" /></span>
                           {{ isAdmin ? permCounts['write'] : '' }}
                         </span>
                       }
                       @if (permType === 'read_title' && (isAdmin ? permCounts['read_title'] : true)) {
-                        <span class="tag permission pending" title="Detail titulu">
+                        <span class="tag permission pending tip" data-tooltip="Detail titulu">
                           <span class="icon"><app-icon name="book" [size]="14" /></span>
                           {{ isAdmin ? permCounts['read_title'] : '' }}
                         </span>
                       }
                       @if (permType === 'read_group' && (isAdmin ? permCounts['read_group'] : true)) {
-                        <span class="tag permission error" title="Zobrazení všech titulů">
+                        <span class="tag permission error tip" data-tooltip="Zobrazení všech titulů">
                           <span class="icon"><app-icon name="open-folder" [size]="14" /></span>
                           {{ isAdmin ? permCounts['read_group'] : '' }}
                         </span>
@@ -180,16 +180,6 @@
                 </span>
               </div>
             </div>
-          }
-        </div>
-
-        <div class="cards-legend">
-          <span class="legend-label">{{ `Práv${isAdmin ? 'a' : 'o'}` }}:</span>
-          @for (item of permLegend; track item.label) {
-            <span class="tag permission {{ item.klass }}">
-              <span class="icon"><app-icon [name]="item.icon" [size]="14" /></span>
-              {{ item.label }}
-            </span>
           }
         </div>
       </div>
@@ -887,35 +877,35 @@
                       </span>
                     </td>
                     <td>{{ user.email }}</td>
-                    <td>
+                    <td class="perm-cell">
                       @let permTypes = getUserPermissions(user.permissions);
                       @if (!permTypes.length) {
                         <span class="empty-cell">—</span>
                       } @else {
                         <div class="tags">
                           @if (permTypes.includes('upload')) {
-                            <span class="tag permission success" title="Správa">
+                            <span class="tag permission success tip tip-below" data-tooltip="Správa">
                               <span class="icon">
                                 <app-icon name="settings" [size]="16" />
                               </span>
                             </span>
                           }
                           @if (permTypes.includes('write')) {
-                            <span class="tag permission info" title="Úpravy">
+                            <span class="tag permission info tip tip-below" data-tooltip="Úpravy">
                               <span class="icon">
                                 <app-icon name="edit" [size]="16" />
                               </span>
                             </span>
                           }
                           @if (permTypes.includes('read_title')) {
-                            <span class="tag permission pending" title="Detail titulu">
+                            <span class="tag permission pending tip tip-below" data-tooltip="Detail titulu">
                               <span class="icon">
                                 <app-icon name="book" [size]="16" />
                               </span>
                             </span>
                           }
                           @if (permTypes.includes('read_group')) {
-                            <span class="tag permission error" title="Zobrazení všech titulů">
+                            <span class="tag permission error tip tip-below" data-tooltip="Zobrazení všech titulů">
                               <span class="icon">
                                 <app-icon name="open-folder" [size]="16" />
                               </span>
@@ -950,15 +940,6 @@
               }
             </tbody>
           </table>
-        </div>
-        <div class="table-legend">
-          <span class="legend-label">Práva:</span>
-          @for (item of permLegend; track item.label) {
-            <span class="tag permission {{ item.klass }}">
-              <span class="icon"><app-icon [name]="item.icon" [size]="14" /></span>
-              {{ item.label }}
-            </span>
-          }
           <!-- Pagination scrolls with the rows: it shows up once the list is scrolled to the end. -->
           <div class="pagination-row">
             @if (currentListTotalPages() > 1) {
