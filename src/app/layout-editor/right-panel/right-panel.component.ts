@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { EditorService } from '../../services/editor.service';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
@@ -6,8 +6,9 @@ import { ChangeDetectorRef } from '@angular/core';
 import { ImageOrientation, InputType, Page, RotationScope } from '../../app.types';
 import { clamp, defer, degreeToRadian, focusMainWrapper } from '../../utils/utils';
 import { MenuComponent } from '../../components/menu/menu.component';
-import { flagMessages } from '../../app.config';
+import { errorFlagTypes, flagActionHints, flagHints, flagMessages } from '../../app.config';
 import { AuthService } from '../../services/auth.service';
+import { LocalStorageService } from '../../services/local-storage.service';
 import { TelemetryService } from '../../services/telemetry.service';
 import { TelemetryAction } from '../../stats.types';
 import { IconComponent } from '../../components/icon/icon.component';
@@ -43,6 +44,22 @@ export class RightPanelComponent {
 
 
   // ========== HEADER ==========
+  // Scan rotation section: collapsed by default, remembered per browser.
+  private storage = inject(LocalStorageService);
+  rotationOpen = signal<boolean>(this.storage.get<boolean>('rotationSectionOpen', false, true) === true);
+
+  toggleRotation(): void {
+    this.rotationOpen.update(open => !open);
+    this.storage.set('rotationSectionOpen', this.rotationOpen());
+  }
+
+  // Shown on the collapsed button when the scan is not upright.
+  get rotationSuffix(): string {
+    const orientation = this.activeOrientation;
+    if (orientation === null) return 'různé';
+    return orientation === 0 ? '' : `${orientation === 270 ? -90 : orientation}°`;
+  }
+
   get currentIndexImage(): number {
     const images = this.editor.displayedImagesFinal();
     const current = this.editor.mainImageItem();
@@ -50,7 +67,58 @@ export class RightPanelComponent {
   }
 
   getFlagLabel(flag: string): string {
-    return flagMessages[flag];
+    return flagMessages[flag] ?? flag;
+  }
+
+  // ---- Scan status row ----
+  // Flags of the open scan; "Nejistota" is dropped when a more specific flag exists.
+  getScanFlags(): string[] {
+    const flags = this.editor.mainImageItem().flags;
+    return flags.length > 1 ? flags.filter(f => f !== 'low_confidence') : flags;
+  }
+
+  scanSeverity(): 'error' | 'warning' {
+    return this.getScanFlags().some(f => errorFlagTypes.includes(f)) ? 'error' : 'warning';
+  }
+
+  getFlagHint(flag: string): string {
+    return flagHints[flag] ?? this.getFlagLabel(flag);
+  }
+
+  getFlagActionHint(flag: string): string | null {
+    return flagActionHints[flag] ?? null;
+  }
+
+  // Crops of the open scan that carry the flag (empty for scan-level flags).
+  private flagPageIds(flag: string): string[] {
+    return this.editor.currentPages.filter(p => p.flags.includes(flag)).map(p => p._id);
+  }
+
+  isFlagLinked(flag: string): boolean {
+    return this.flagPageIds(flag).length > 0;
+  }
+
+  // With a crop selected, flags of the other crops step back.
+  isFlagDimmed(flag: string): boolean {
+    const selected = this.editor.selectedPage;
+    if (!selected) return false;
+    const ids = this.flagPageIds(flag);
+    return ids.length > 0 && !ids.includes(selected._id);
+  }
+
+  hoverFlag(flag: string | null): void {
+    this.editor.setHighlightedPages(flag ? this.flagPageIds(flag) : []);
+  }
+
+  selectFlagPage(flag: string): void {
+    if (this.editor.mainImageItem().edited) return;
+    const ids = this.flagPageIds(flag);
+    if (!ids.length) return;
+    // Cycle through the flagged crops when one of them is already selected.
+    const current = this.editor.selectedPage?._id ?? '';
+    const next = ids[(ids.indexOf(current) + 1) % ids.length];
+    this.editor.selectPageById(next);
+    this.telemetry.track('mouse_action', { action: 'cycle_page' });
   }
 
   get activeOrientation(): ImageOrientation | null {
@@ -481,7 +549,7 @@ export class RightPanelComponent {
 
   private updateAndRedraw(page: Page): void {
     const editor = this.editor;
-    editor.imgWasEdited.set(true);
+    editor.markCurrentImageEdited();
     editor.lastSelectedPage = page;
     editor.currentPages = editor.currentPages.map(p => (p._id === page._id ? page : p));
 

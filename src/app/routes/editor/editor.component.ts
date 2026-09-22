@@ -6,8 +6,8 @@ import { LeftPanelComponent } from '../../layout-editor/left-panel/left-panel.co
 import { RightPanelComponent } from '../../layout-editor/right-panel/right-panel.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, forkJoin, map, Observable, of, Subscription, switchMap, tap, throwError } from 'rxjs';
-import { DIM_OPACITY_DEFAULT } from '../../app.config';
-import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, ImageItem, OutlineWidthLabel, PageNumberType, ScanType, TitleDetail } from '../../app.types';
+import { CROP_COLOR_DEFAULT, DIM_OPACITY_DEFAULT, OUTLINE_WIDTH_DEFAULT, cropColorDict, dimColorDict } from '../../app.config';
+import { CropColorLabel, DefaultFitMode, DimColor, GridDensityLabel, GridLineWidthLabel, GridMode, ImageItem, OutlineWidthLabel, PageNumberType, ScanType, TitleDetail } from '../../app.types';
 import { AuthService } from '../../services/auth.service';
 import { DialogComponent } from '../../components/dialog/dialog.component';
 import { UiService } from '../../services/ui.service';
@@ -104,7 +104,8 @@ export class EditorComponent {
         editor.predictedOrientedImages.set(imgItemsPredicted ?? []);
 
         // Set settings stuff
-        editor.dimColor.set(this.storage.get('dimColor', 'Černá', true) as DimColor);
+        const storedDimColor = this.storage.get('dimColor', 'Černá', true) as DimColor;
+        editor.dimColor.set(storedDimColor in dimColorDict ? storedDimColor : 'Černá');
         editor.dimRadio.set(editor.dimColor());
         const storedDimOpacity = Number(this.storage.get('dimOpacity', DIM_OPACITY_DEFAULT, true));
         editor.dimOpacity.set(Number.isFinite(storedDimOpacity)
@@ -115,11 +116,13 @@ export class EditorComponent {
         editor.gridRadio.set(editor.gridMode());
         editor.gridDensityLabel.set(this.storage.get('gridDensityLabel', 'Hustá', true) as GridDensityLabel);
         editor.gridDensityRadio.set(editor.gridDensityLabel());
-        editor.gridColorLabel.set(this.storage.get('gridColorLabel', 'Modrá', true) as GridColorLabel);
-        editor.gridColorRadio.set(editor.gridColorLabel());
+        const storedCropColor = this.storage.get('cropColorLabel', CROP_COLOR_DEFAULT, true) as CropColorLabel;
+        editor.cropColorLabel.set(storedCropColor in cropColorDict ? storedCropColor : CROP_COLOR_DEFAULT);
+        editor.cropColorRadio.set(editor.cropColorLabel());
+        this.storage.remove('gridColorLabel'); // replaced by cropColorLabel
         editor.gridLineWidthLabel.set(this.storage.get('gridLineWidthLabel', 'Tenká', true) as GridLineWidthLabel);
         editor.gridLineWidthRadio.set(editor.gridLineWidthLabel());
-        editor.outlineWidthLabel.set(this.storage.get('outlineWidthLabel', 'Silný', true) as OutlineWidthLabel);
+        editor.outlineWidthLabel.set(this.storage.get('outlineWidthLabel', OUTLINE_WIDTH_DEFAULT, true) as OutlineWidthLabel);
         editor.outlineRadio.set(editor.outlineWidthLabel());
         editor.outlineDashed = !!this.storage.get('outlineDashed', false, true);
         editor.outlineDashedRadio.set(editor.outlineDashed);

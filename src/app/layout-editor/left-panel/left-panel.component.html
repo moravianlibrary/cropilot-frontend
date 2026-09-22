@@ -48,11 +48,11 @@
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'flagged'"
-        [class.disabled-filter]="editor.flaggedRemaining() === 0"
+        [class.disabled-filter]="editor.flaggedImages().length === 0"
         (keydown.enter)="editor.switchFilter('flagged')"
         (keydown.space)="editor.switchFilter('flagged')"
-        [attr.aria-disabled]="editor.flaggedRemaining() === 0"
-        [attr.tabindex]="editor.flaggedRemaining() === 0 ? -1 : 0"
+        [attr.aria-disabled]="editor.flaggedImages().length === 0"
+        [attr.tabindex]="editor.flaggedImages().length === 0 ? -1 : 0"
         (click)="editor.switchFilter('flagged')"
       ><span class="dot warning"></span>Podezřelé <span class="filter-number">({{ editor.flaggedRemaining() }})</span></span>
       <span

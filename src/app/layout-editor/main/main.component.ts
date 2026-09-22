@@ -497,7 +497,7 @@ export class MainComponent {
     );
 
     editor.pageWasEdited = true;
-    editor.imgWasEdited.set(true);
+    editor.markCurrentImageEdited();
     editor.sthWasEdited = true;
     editor.redrawAllPages();
   }
@@ -564,7 +564,7 @@ export class MainComponent {
     );
 
     editor.pageWasEdited = true;
-    editor.imgWasEdited.set(true);
+    editor.markCurrentImageEdited();
     editor.sthWasEdited = true;
     editor.redrawAllPages();
   }
@@ -588,7 +588,7 @@ export class MainComponent {
     }
 
     editor.pageWasEdited = true;
-    editor.imgWasEdited.set(true);
+    editor.markCurrentImageEdited();
     editor.sthWasEdited = true;
   }
 

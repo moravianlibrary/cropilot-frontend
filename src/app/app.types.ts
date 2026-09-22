@@ -232,10 +232,10 @@ export type InputType = 'left' | 'top' | 'width' | 'height' | 'angle';
 export type Role = 'admin' | 'user';
 export type GridMode = 'always' | 'never' | 'when-rotating';
 export type GridDensityLabel = 'Řídká' | 'Běžná' | 'Hustá' | 'Velmi hustá';
-export type GridColorLabel = 'Modrá' | 'Azurová' | 'Žlutá' | 'Červená';
+export type CropColorLabel = 'Tyrkysová' | 'Korálová' | 'Bílá' | 'Černá';
 export type GridLineWidthLabel = 'Tenká' | 'Střední' | 'Silná' | 'Výrazná';
 export type OutlineWidthLabel = 'Silný' | 'Střední' | 'Tenký' | 'Žádný';
-export type DimColor = 'Černá' | 'Červená' | 'Bílá' | 'Žádná';
+export type DimColor = 'Černá' | 'Tmavě modrá' | 'Bílá' | 'Žádná';
 export type TitleState = 'new' | 'scheduled' | 'in_progress' | 'failed' | 'ready' | 'user_approved' | 'retrain' | 'completed';
 
 // Cursors

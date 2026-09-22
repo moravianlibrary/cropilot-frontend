@@ -49,34 +49,74 @@
     text-overflow: ellipsis;
   }
 
-  // Callout: tinted background only (same family as the drawer's model-change warning).
-  .flag {
+  // Scan status row: one tinted callout for all flags of the open scan.
+  .flag-row {
     padding: var(--spacing-x2) var(--spacing-x3);
     border-radius: var(--radius-control);
     @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x5));
     color: var(--text-secondary);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--spacing-x2);
 
     .icon {
-      color: var(--icon-black);
+      flex-shrink: 0;
+      display: inline-flex;
+      height: var(--spacing-x5);
+      align-items: center;
     }
-  }
 
-  .warning {
-    background-color: var(--bg-color-warning);
-    .icon { color: var(--status-icon-warning); }
-  }
+    .flag-text {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0 var(--spacing-x1);
+      min-width: 0;
+    }
 
-  .error {
-    background-color: var(--bg-color-error);
-    .icon { color: var(--status-icon-error); }
-  }
+    .flag-item {
+      border-radius: var(--spacing-x1);
+      transition: opacity 0.15s ease, background-color 0.15s ease;
 
-  .edited {
-    background-color: var(--bg-color-edited);
-    .icon { color: var(--tag-pending-icon); }
+      // Linked to a crop: hover highlights it on the canvas, click selects it.
+      &.linked {
+        cursor: pointer;
+        text-decoration: underline dotted;
+        text-underline-offset: 3px;
+
+        &:hover,
+        &:focus-visible {
+          background-color: rgba(10, 13, 16, 0.06);
+        }
+      }
+
+      &.dimmed {
+        opacity: 0.5;
+      }
+    }
+
+    .muted,
+    .sep {
+      color: var(--text-light);
+      font-weight: 400;
+    }
+
+    &.warning {
+      background-color: var(--bg-color-warning);
+      .icon { color: var(--status-icon-warning); }
+    }
+
+    &.error {
+      background-color: var(--bg-color-error);
+      .icon { color: var(--status-icon-error); }
+    }
+
+    // Edited scan: the flags are kept for reference only.
+    &.reviewed {
+      background-color: var(--bg-hover);
+      color: var(--text-light);
+      .icon { color: var(--text-light); }
+    }
   }
 
   // Label + control(s) with a 6px gap — replaces the negative-margin hack.
@@ -170,7 +210,8 @@
   gap: var(--spacing-x2);
   max-width: 100%;
 
-  .action.add-crop {
+  .action.add-crop,
+  .action.rotation-toggle {
     width: 100%;
     border-style: dashed;
     color: var(--primary);
@@ -184,6 +225,26 @@
       border-color: var(--primary);
     }
   }
+
+  // Disclosure button for the scan rotation; solid border while open.
+  .action.rotation-toggle {
+    font: inherit;
+    @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x4), var(--primary));
+
+    .value {
+      color: var(--text-light);
+      font-weight: 400;
+    }
+
+    &.open {
+      border-style: solid;
+    }
+  }
+
+  .rotation-section {
+    width: 100%;
+    padding: var(--spacing-x1) var(--spacing-x1) var(--spacing-x1);
+  }
 }
 
 // Extra breathing room between the rotation block and "Přidat výřez".
@@ -193,6 +254,18 @@
 
 .middle {
   flex: 1;
+
+  // Status / edited markers next to the crop heading: the same dots the scan
+  // list uses.
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &.edited  { background-color: var(--status-icon-edited); }
+  }
 
   .no-crop-hint {
     display: block;

@@ -139,13 +139,21 @@ export class LeftPanelComponent {
     return image.edited || this.editor.reviewedFlaggedIds().has(image._id);
   }
 
-  getStatus(image: ImageItem): 'edited' | 'error' | 'warning' | 'success' {
+  // Flagged scan the user has already looked at (not edited): grey dot instead of
+  // the misleading green "OK".
+  private isViewedFlagged(image: ImageItem): boolean {
+    return !image.edited && image.flags.length > 0 && this.editor.reviewedFlaggedIds().has(image._id);
+  }
+
+  getStatus(image: ImageItem): 'edited' | 'error' | 'warning' | 'success' | 'reviewed' {
     if (image.edited) return 'edited';
+    if (this.isViewedFlagged(image)) return 'reviewed';
 
     const errorFlags = [
       'page_count_mismatch',
       'no_prediction',
       'prediction_overlap',
+      'bad_split',
     ];
     if (image.flags.some(f => errorFlags.includes(f))) {
       return 'error';
@@ -167,7 +175,14 @@ export class LeftPanelComponent {
       return 'Upraveno';
     }
 
-    const flags = image.flags;
+    if (this.isViewedFlagged(image)) {
+      return `Zkontrolováno · původně ${this.flagsSentence(image.flags)}`;
+    }
+
+    return this.flagsSentence(image.flags);
+  }
+
+  private flagsSentence(flags: string[]): string {
 
     let matchedMessages = Object.entries(flagMessages)
       .filter(([flag]) => flags.includes(flag))

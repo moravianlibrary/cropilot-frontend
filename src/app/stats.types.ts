@@ -3,7 +3,7 @@
 // no user identity; the backend derives the user from the JWT and only ever
 // exposes aggregates per group / model / month.
 
-import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, PagePlacementStrategy, ScanType } from './app.types';
+import { CropColorLabel, DefaultFitMode, DimColor, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, PagePlacementStrategy, ScanType } from './app.types';
 
 // Frontend sends one heartbeat every HEARTBEAT_SECONDS while the editor tab is
 // visible; the backend computes session duration as heartbeats * HEARTBEAT_SECONDS.
@@ -32,7 +32,7 @@ export interface EditorSettingsSnapshot {
   dimOpacity: number;
   gridMode: GridMode;
   gridDensityLabel: GridDensityLabel;
-  gridColorLabel: GridColorLabel;
+  cropColorLabel: CropColorLabel;
   gridLineWidthLabel: GridLineWidthLabel;
   outlineWidthLabel: OutlineWidthLabel;
   outlineDashed: boolean;

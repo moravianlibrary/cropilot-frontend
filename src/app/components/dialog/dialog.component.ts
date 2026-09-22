@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
-import { DefaultFitMode, DialogButton, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
+import { CropColorLabel, DefaultFitMode, DialogButton, DimColor, GridDensityLabel, GridLineWidthLabel, GridMode, OutlineWidthLabel, PageNumberType, ScanType } from '../../app.types';
 import { EditorService } from '../../services/editor.service';
-import { DIM_OPACITY_DEFAULT, defaultFitModeDict, dimColorDict, filterPageNumberStartDict, filterScanTypeStartDict, gridColorDict, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict } from '../../app.config';
+import { DIM_OPACITY_DEFAULT, cropColorDict, defaultFitModeDict, dimColorDict, dimColorSwatch, filterPageNumberStartDict, filterScanTypeStartDict, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict } from '../../app.config';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../services/dashboard.service';
 import { AuthService } from '../../services/auth.service';
@@ -66,8 +66,8 @@ export class DialogComponent {
   gridDensityDict: Record<GridDensityLabel, number> = gridDensityDict;
   gridDensityDictKeys = Object.keys(gridDensityDict) as GridDensityLabel[];
 
-  gridColorDict: Record<GridColorLabel, string> = gridColorDict;
-  gridColorDictKeys = Object.keys(gridColorDict) as GridColorLabel[];
+  cropColorDict: Record<CropColorLabel, string> = cropColorDict;
+  cropColorDictKeys = Object.keys(cropColorDict) as CropColorLabel[];
 
   gridLineWidthDict: Record<GridLineWidthLabel, number> = gridLineWidthDict;
   gridLineWidthDictKeys = Object.keys(gridLineWidthDict) as GridLineWidthLabel[];
@@ -99,10 +99,10 @@ export class DialogComponent {
     label: value
   }));
 
-  gridColorOptions: SegmentedControlOption[] = this.gridColorDictKeys.map(value => ({
+  cropColorOptions: SegmentedControlOption[] = this.cropColorDictKeys.map(value => ({
     value,
     label: value,
-    color: this.gridColorDict[value]
+    color: this.cropColorDict[value]
   }));
 
   gridLineWidthOptions: SegmentedControlOption[] = this.gridLineWidthDictKeys.map(value => ({
@@ -122,7 +122,7 @@ export class DialogComponent {
   dimColorOptions: SegmentedControlOption[] = this.dimColorDictKeys.map(value => ({
     value,
     label: value,
-    color: value === 'Žádná' ? undefined : `rgba(${this.dimColorDict[value]})`
+    color: value === 'Žádná' ? undefined : dimColorSwatch(value)
   }));
 
   scanTypeOptions: SegmentedControlOption[] = this.filterScanTypeStartDictKeys.map(value => ({
@@ -156,8 +156,8 @@ export class DialogComponent {
     this.editor.gridDensityRadio.set(value as GridDensityLabel);
   }
 
-  setGridColor(value: SegmentedControlValue): void {
-    this.editor.gridColorRadio.set(value as GridColorLabel);
+  setCropColor(value: SegmentedControlValue): void {
+    this.editor.cropColorRadio.set(value as CropColorLabel);
   }
 
   setGridLineWidth(value: SegmentedControlValue): void {

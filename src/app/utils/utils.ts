@@ -1,4 +1,4 @@
-import { defaultColor, editedColor, errorColor, warningColor } from '../app.config';
+import { errorColor, warningColor } from '../app.config';
 import { Page } from '../app.types';
 
 // ========== MATH ==========
@@ -160,9 +160,9 @@ export const waitForElement = (selector: string, root: ParentNode = document): P
 
 
 // ========== PAGES ==========
-export const getColor = (page: Page): string => {
-  if (page.edited) return editedColor;
-
+// Color of the state badge drawn at the crop corner; null when the crop has no
+// anomaly flag. The outline itself always uses the user-selected crop color.
+export const getStatusColor = (page: Page): string | null => {
   const errorFlags = ['prediction_overlap', 'bad_split'];
   if (page.flags.some(f => errorFlags.includes(f))) {
     return errorColor;
@@ -176,5 +176,5 @@ export const getColor = (page: Page): string => {
     return warningColor;
   }
 
-  return defaultColor;
+  return null;
 }

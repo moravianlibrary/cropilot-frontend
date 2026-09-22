@@ -87,17 +87,6 @@
                 </div>
 
                 <div class="settings-row">
-                  <div class="sublabel">Barva</div>
-                  <app-segmented-control
-                    ariaLabel="Barva mřížky"
-                    variant="swatches"
-                    [options]="gridColorOptions"
-                    [value]="editor.gridColorRadio()"
-                    (valueChange)="setGridColor($event)"
-                  />
-                </div>
-
-                <div class="settings-row">
                   <div class="sublabel">Tloušťka čáry</div>
                   <app-segmented-control
                     ariaLabel="Tloušťka čáry mřížky"
@@ -111,6 +100,17 @@
 
               <section class="settings-block">
                 <h3>Obrys výřezu</h3>
+
+                <div class="settings-row">
+                  <div class="sublabel">Barva (výřez i mřížka)</div>
+                  <app-segmented-control
+                    ariaLabel="Barva výřezu a mřížky"
+                    variant="swatches"
+                    [options]="cropColorOptions"
+                    [value]="editor.cropColorRadio()"
+                    (valueChange)="setCropColor($event)"
+                  />
+                </div>
 
                 <div class="settings-row">
                   <div class="sublabel">Tloušťka</div>
@@ -245,9 +245,9 @@
               <tr><th>Změnit šířku / výšku výřezu</th><td><kbd>Shift + ←, →, ↑, ↓</kbd></td></tr>
               <tr><th>Otočit výřez</th><td><kbd>A, S</kbd></td></tr>
               <tr><th>Otočit sken o -90° / 0° / 90° / 180°</th><td><kbd>D, F, G, H</kbd></td></tr>
-              <tr><th>Přepnout zobrazení mřížky</th><td><kbd>M</kbd></td></tr>
-              <tr><th>Přepnout zobrazení obrysu</th><td><kbd>O</kbd></td></tr>
-              <tr><th>Přepnout barvu clony</th><td><kbd>C</kbd></td></tr>
+              <tr><th>Přepnout zobrazení mřížky (jen pro tuto relaci)</th><td><kbd>M</kbd></td></tr>
+              <tr><th>Přepnout zobrazení obrysu (jen pro tuto relaci)</th><td><kbd>O</kbd></td></tr>
+              <tr><th>Přepnout barvu clony (jen pro tuto relaci)</th><td><kbd>C</kbd></td></tr>
             }
             @if (canWriteTitle) { <tr><th>Přiblížit / oddálit / vybraný výřez / reset</th><td><kbd>Q, W, E, R</kbd></td></tr> }
             @else { <tr><th>Přiblížit / oddálit / reset</th><td><kbd>Q, W, R</kbd></td></tr> }

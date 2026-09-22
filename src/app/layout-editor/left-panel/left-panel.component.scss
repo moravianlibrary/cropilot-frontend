@@ -254,6 +254,7 @@
   }
 
   .success { background-color: var(--status-icon-success); }
+  .reviewed { background-color: var(--text-disabled); }
 
   .warning { background-color: var(--status-icon-warning); }
 
@@ -305,18 +306,12 @@
   }
 }
 
-.thumbnail-wrapper.reviewed {
-  img {
-    opacity: 0.3;
-    filter: grayscale(1);
-    transition: opacity 0.2s ease, filter 0.2s ease;
-  }
-
-  // The scan currently open stays fully visible even once reviewed.
-  &.selected img {
-    opacity: 1;
-    filter: none;
-  }
+// Reviewed scans in the "Podezřelé" filter are greyed out, including the one
+// currently open, so the list matches the (0) counter on the filter chip.
+.thumbnail-wrapper.reviewed img {
+  opacity: 0.3;
+  filter: grayscale(1);
+  transition: opacity 0.2s ease, filter 0.2s ease;
 }
 
 .selected {

@@ -13,63 +13,94 @@
       <app-menu [type]="'menu-secondary'" />
     }
   </div>
-  @for (flag of editor.mainImageItem().flags; track flag) {
-    @if (!(editor.mainImageItem().flags.length > 1 && flag === 'low_confidence')) {
-      <span
-        class="flag"
-        [class.edited]="editor.mainImageItem().edited"
-        [class.error]="['page_count_mismatch', 'no_prediction', 'prediction_overlap', 'bad_split'].includes(flag)"
-        [class.warning]="['low_confidence', 'odd_dimensions'].includes(flag)"
-      >
-        @if (editor.mainImageItem().edited) {
-          <span class="icon">
-            <app-icon name="info" [size]="16"></app-icon>
-          </span>
-        } @else {
-          <span class="icon">
-            <app-icon name="warning" [size]="16"></app-icon>
-          </span>
-        }
-        {{ getFlagLabel(flag) + (editor.mainImageItem().edited ? ' (změna)': '') }}
+  <!-- Scan status: one row for all flags; greyed out once the scan was edited.
+       Flags that belong to a crop highlight it on hover and select it on click. -->
+  @let scanFlags = getScanFlags();
+  @if (scanFlags.length) {
+    @let reviewed = editor.mainImageItem().edited;
+    <div
+      class="flag-row"
+      [class.reviewed]="reviewed"
+      [class.error]="!reviewed && scanSeverity() === 'error'"
+      [class.warning]="!reviewed && scanSeverity() === 'warning'"
+    >
+      <span class="icon">
+        <app-icon [name]="reviewed ? 'checkmark' : 'warning'" [size]="16"></app-icon>
       </span>
-    }
+      <span class="flag-text">
+        @for (flag of scanFlags; track flag; let last = $last) {
+          <span
+            class="flag-item tip tip-wrap"
+            [class.linked]="!reviewed && isFlagLinked(flag)"
+            [class.dimmed]="!reviewed && isFlagDimmed(flag)"
+            [attr.data-tooltip]="getFlagHint(flag)"
+            [attr.role]="!reviewed && isFlagLinked(flag) ? 'button' : null"
+            [attr.tabindex]="!reviewed && isFlagLinked(flag) ? 0 : null"
+            (mouseenter)="hoverFlag(flag)"
+            (mouseleave)="hoverFlag(null)"
+            (click)="selectFlagPage(flag)"
+            (keydown.enter)="selectFlagPage(flag)"
+          >{{ getFlagLabel(flag) }}</span>
+          @if (!reviewed && getFlagActionHint(flag)) {
+            <span class="muted">· {{ getFlagActionHint(flag) }}</span>
+          }
+          @if (!last) { <span class="sep">·</span> }
+        }
+      </span>
+    </div>
   }
-  <div class="field">
-    <div class="rotation-heading">
-      <div class="label">Otočení</div>
-    </div>
-    <app-segmented-control
-      class="view-switch"
-      ariaLabel="Orientace skenu"
-      [options]="orientationOptions"
-      [value]="activeOrientation"
-      (valueChange)="setOrientation($event)"
-    />
-  <div class="scope-row">
-    <span class="scope-label">Použít na:</span>
-    <div class="radios-wrapper scope-radios">
-      <label class="radio">
-        <input
-          type="radio"
-          name="rotation-scope"
-          [checked]="editor.rotationScope() === 'current'"
-          (change)="setRotationScope('current')"
-        />
-        <span class="radio-value">Tento sken</span>
-      </label>
-      <label class="radio">
-        <input
-          type="radio"
-          name="rotation-scope"
-          [checked]="editor.rotationScope() === 'all'"
-          (change)="setRotationScope('all')"
-        />
-        <span class="radio-value">Všechny</span>
-      </label>
-    </div>
-  </div>
-  </div>
   <div class="actions">
+    <!-- Scan rotation: collapsed by default, the button doubles as the heading -->
+    <button
+      type="button"
+      class="action rotation-toggle"
+      [class.open]="rotationOpen()"
+      [attr.aria-expanded]="rotationOpen()"
+      aria-controls="rotation-section"
+      (click)="toggleRotation()"
+    >
+      Otočit sken
+      @if (!rotationOpen() && rotationSuffix) {
+        <span class="value">· {{ rotationSuffix }}</span>
+      }
+      <span class="icon">
+        <app-icon [name]="rotationOpen() ? 'chevron-up' : 'rotate-right'" [size]="16"></app-icon>
+      </span>
+    </button>
+    @if (rotationOpen()) {
+      <div id="rotation-section" class="field rotation-section">
+        <app-segmented-control
+          class="view-switch"
+          ariaLabel="Orientace skenu"
+          [options]="orientationOptions"
+          [value]="activeOrientation"
+          (valueChange)="setOrientation($event)"
+        />
+        <div class="scope-row">
+          <span class="scope-label">Použít na:</span>
+          <div class="radios-wrapper scope-radios">
+            <label class="radio">
+              <input
+                type="radio"
+                name="rotation-scope"
+                [checked]="editor.rotationScope() === 'current'"
+                (change)="setRotationScope('current')"
+              />
+              <span class="radio-value">Tento sken</span>
+            </label>
+            <label class="radio">
+              <input
+                type="radio"
+                name="rotation-scope"
+                [checked]="editor.rotationScope() === 'all'"
+                (change)="setRotationScope('all')"
+              />
+              <span class="radio-value">Všechny</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    }
     <span
       class="action add-crop"
       [class.disabled]="!canEditTitle || editor.currentPages.length >= editor.maxPages || !editor.displayedImagesFinal().length"
@@ -89,6 +120,9 @@
       <span class="header">
         <span class="title-menu-wrapper">
           <h1>Výřez (obdélník)</h1>
+          @if (editor.selectedPage.edited || editor.pageWasEdited) {
+            <span class="dot edited tip" role="img" aria-label="Upraveno" data-tooltip="Výřez byl v této relaci upraven"></span>
+          }
         </span>
         <span class="actions">
           <span

@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
-import { DefaultFitMode, DimColor, GridColorLabel, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation, RotationScope } from '../app.types';
+import { CropColorLabel, DefaultFitMode, DimColor, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation, RotationScope } from '../app.types';
 import { catchError, Observable, throwError } from 'rxjs';
-import { clamp, degreeToRadian, getColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
+import { clamp, degreeToRadian, getStatusColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
-import { DIM_OPACITY_DEFAULT, dimColorRgba, gridColorDict, gridDensityDict, gridLineWidthDict, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
+import { CROP_COLOR_DEFAULT, DIM_OPACITY_DEFAULT, OUTLINE_WIDTH_DEFAULT, cropColorDict, dimColorRgba, gridColor, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
 import { AuthService } from './auth.service';
 import { UiService } from './ui.service';
 import { LocalStorageService } from './local-storage.service';
@@ -121,15 +121,24 @@ export class EditorService {
   dimColor = signal<DimColor>('Černá');
   dimOpacity = signal<number>(DIM_OPACITY_DEFAULT);
   gridDensityLabel = signal<GridDensityLabel>('Hustá');
-  gridColorLabel = signal<GridColorLabel>('Modrá');
+  cropColorLabel = signal<CropColorLabel>(CROP_COLOR_DEFAULT);
   gridLineWidthLabel = signal<GridLineWidthLabel>('Tenká');
-  outlineWidthLabel = signal<OutlineWidthLabel>('Silný');
+  outlineWidthLabel = signal<OutlineWidthLabel>(OUTLINE_WIDTH_DEFAULT);
   outlineDashed: boolean = false;
   dashLength: number = 6;
   dashGapLength: number = 4;
+  // Outline opacity: focused / unselected-while-another-is-selected.
+  outlineAlpha: string = 'E6';
+  outlineAlphaSecondary: string = '80';
+  // Fallback thickness when the outline is set to 'Žádný' but nothing is selected.
   pageOutlineWidthSecondary: number = 1;
-  cornerOutlineWidth: number = outlineWidthDict[this.outlineWidthLabel()] - 1;
   cornerSize: number = 6;
+  // Flagged crops are outlined in their status color (orange / red) until the
+  // user selects them once in this session; selected or edited crops always use
+  // the configured crop color.
+  reviewedPageIds = new Set<string>();
+  // Crops emphasised on the canvas while a flag in the side panel is hovered.
+  highlightedPageIds = new Set<string>();
   showPredictions: boolean = false;
   
   // Max pages per image
@@ -687,19 +696,42 @@ export class EditorService {
     const outlineWidth = this.effOutlineWidthLabel() === 'Žádný'
       ? this.pageOutlineWidthSecondary
       : outlineWidthDict[this.effOutlineWidthLabel()];
-    if (this.effOutlineDashed()) ctx.setLineDash([this.dashLength, this.dashGapLength]);
-    ctx.strokeStyle = getColor(p) + 'B2';
-    ctx.lineWidth = outlineWidth;
-    ctx.strokeRect(
-      -width / 2 - outlineWidth / 2,
-      -height / 2 - outlineWidth / 2,
-      width + outlineWidth,
-      height + outlineWidth
-    );
-    ctx.setLineDash([]);
+    this.strokeOutline(width, height, outlineWidth, this.pageOutlineColor(p) + this.outlineAlpha);
 
     ctx.restore();
   }
+
+  // Outline color of a crop: status color while the crop is flagged, unedited
+  // and not yet selected in this session, otherwise the configured crop color.
+  pageOutlineColor(p: Page): string {
+    const isSelected = this.selectedPage?._id === p._id;
+    if (isSelected) this.reviewedPageIds.add(p._id);
+    const statusColor = getStatusColor(p);
+    if (statusColor && !isSelected && !p.edited && !this.reviewedPageIds.has(p._id)) return statusColor;
+    return this.cropColor();
+  }
+
+  cropColor(): string {
+    return cropColorDict[this.effCropColorLabel()];
+  }
+
+  // Crop outline in the crop's local frame; the stroke sits entirely outside
+  // the crop rectangle.
+  private strokeOutline(width: number, height: number, lineWidth: number, strokeStyle: string): void {
+    const { ctx } = this;
+
+    if (this.effOutlineDashed()) ctx.setLineDash([this.dashLength, this.dashGapLength]);
+    ctx.strokeStyle = strokeStyle;
+    ctx.lineWidth = lineWidth;
+    ctx.strokeRect(
+      -width / 2 - lineWidth / 2,
+      -height / 2 - lineWidth / 2,
+      width + lineWidth,
+      height + lineWidth
+    );
+    ctx.setLineDash([]);
+  }
+
 
   getPageRectPx(p: Page): { centerX: number; centerY: number; width: number; height: number } {
     const { x, y, width, height } = this.imageRect;
@@ -1360,7 +1392,7 @@ export class EditorService {
     this.applyDefaultZoom();
     this.updateMainImageItem();
 
-    this.imgWasEdited.set(true);
+    this.markCurrentImageEdited();
     this.sthWasEdited = true;
   }
 
@@ -1485,6 +1517,26 @@ export class EditorService {
     this.redrawAllPages(hoveredPageId);
   }
 
+  setHighlightedPages(ids: string[]): void {
+    this.highlightedPageIds = new Set(ids);
+    if (this.c && this.mainImage) this.redrawAllPages();
+  }
+
+  // Select a crop of the open scan from outside the canvas (e.g. the flag row).
+  selectPageById(id: string): void {
+    if (!this.auth.canEditTitle()) return;
+    const page = this.currentPages.find(p => p._id === id);
+    if (!page || this.selectedPage?._id === id) return;
+
+    if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
+    this.lastSelectedPage = this.selectedPage;
+    this.selectedPage = page;
+    this.clickedDiffPage = !!(this.lastSelectedPage && this.lastSelectedPage !== page);
+    this.lastPageCursorIsInside = page;
+    this.redrawAllPages();
+    this.updateMainImageItem();
+  }
+
   updateHoverPage(): void {
     if (!this.auth.canEditTitle()) return;
     
@@ -1535,16 +1587,19 @@ export class EditorService {
     const { ctx } = this;
 
     const { centerX, centerY, width, height } = this.getPageRectPx(p);
-    const color = getColor(p);
-    const isPageNotSelectedWhileOtherIs = this.currentPages.length > 1 && this.selectedPage && p !== this.selectedPage;
-    const outlineWidthLabel = this.effOutlineWidthLabel();
+    const color = this.pageOutlineColor(p);
     const isSelectedPage = this.selectedPage?._id === p._id;
+    const isPageNotSelectedWhileOtherIs = this.currentPages.length > 1 && !!this.selectedPage && !isSelectedPage;
+    const outlineWidthLabel = this.effOutlineWidthLabel();
     // 'Žádný' hides the outline only on the focused (selected) crop; when nothing
     // is selected, fall back to a thin outline so crops stay visible in the overview.
     const hideOutline = outlineWidthLabel === 'Žádný' && isSelectedPage;
-    const pageOutlineWidth = isPageNotSelectedWhileOtherIs || outlineWidthLabel === 'Žádný'
+    // Unselected crops keep the configured thickness and only lose opacity, so
+    // the second page of a spread stays readable while the first one is edited.
+    const pageOutlineWidth = outlineWidthLabel === 'Žádný'
       ? this.pageOutlineWidthSecondary
       : outlineWidthDict[outlineWidthLabel];
+    const outlineAlpha = isPageNotSelectedWhileOtherIs ? this.outlineAlphaSecondary : this.outlineAlpha;
     
     ctx.save();
 
@@ -1552,25 +1607,15 @@ export class EditorService {
     ctx.rotate(degreeToRadian(p.angle));
 
     // Outline
-    {
-      if (this.effOutlineDashed()) ctx.setLineDash([this.dashLength, this.dashGapLength]);
-
-      ctx.strokeStyle = hideOutline
-        ? transparentColor
-        : color + (isPageNotSelectedWhileOtherIs ? '77' : 'B2');
-      ctx.lineWidth = pageOutlineWidth;
-      ctx.strokeRect(
-        -width / 2 - pageOutlineWidth / 2,
-        -height / 2 - pageOutlineWidth / 2,
-        width + pageOutlineWidth,
-        height + pageOutlineWidth
-      );
-
-      ctx.setLineDash([]);
+    if (!hideOutline) {
+      this.strokeOutline(width, height, pageOutlineWidth, color + outlineAlpha);
     }
 
-    // Hover
-    if (p._id === hoveredId && this.selectedPage?._id !== p._id) {
+    // Hover / flag highlight (a hovered flag in the side panel tints its crop)
+    if (this.highlightedPageIds.has(p._id)) {
+      ctx.fillStyle = color + '33';
+      ctx.fillRect(-width / 2, -height / 2, width, height);
+    } else if (p._id === hoveredId && this.selectedPage?._id !== p._id) {
       ctx.fillStyle = color + '10';
       ctx.fillRect(-width / 2, -height / 2, width, height);
     }
@@ -1595,7 +1640,7 @@ export class EditorService {
       const sx = Math.hypot(ctx.getTransform().a, ctx.getTransform().b) || 1;
       ctx.lineWidth = gridLineWidthDict[this.effGridLineWidthLabel()] / sx;
 
-      ctx.strokeStyle = gridColorDict[this.effGridColorLabel()];
+      ctx.strokeStyle = gridColor(this.effCropColorLabel());
 
       // Align to half-pixel in local space so thin canvas lines stay crisp.
       // Also ensure the first line starts exactly at the top-left corner.
@@ -1633,8 +1678,8 @@ export class EditorService {
       ctx.fillStyle = '#FFFFFF';
       ctx.strokeStyle = p._id === this.selectedPage?._id && outlineWidthLabel === 'Žádný'
         ? transparentColor
-        : color + 'B2';
-      const cornerOutlineWidth = pageOutlineWidth - 1;
+        : color + this.outlineAlpha;
+      const cornerOutlineWidth = Math.max(1, pageOutlineWidth - 1);
       ctx.lineWidth = cornerOutlineWidth;
 
       for (const c of corners) {
@@ -1680,7 +1725,7 @@ export class EditorService {
     // Keep crops ordered left → right so the left page is always page 1.
     this.currentPages = [...this.currentPages, addedPage].sort((a, b) => a.xc - b.xc);
     this.selectedPage = addedPage;
-    this.imgWasEdited.set(true);
+    this.markCurrentImageEdited();
     this.redrawAllPages();
 
     this.applyDefaultZoom();
@@ -1726,7 +1771,7 @@ export class EditorService {
     this.redrawAllPages();
     this.updateMainImageItem();
     this.pageWasEdited = true;
-    this.imgWasEdited.set(true);
+    this.markCurrentImageEdited();
     this.sthWasEdited = true;
   }
 
@@ -1810,6 +1855,24 @@ export class EditorService {
     );
   }
 
+  // Flag the current scan as edited right away, so the "Upravené" filter, its
+  // counter and the thumbnail dot react to the first change instead of waiting
+  // until the user leaves the scan. imgWasEdited stays true until the
+  // navigation flows consume it (updateImagesByEdited).
+  markCurrentImageEdited(): void {
+    this.imgWasEdited.set(true);
+    const id = this.mainImageItem()._id;
+    if (!id) return;
+
+    if (!this.mainImageItem().edited) this.mainImageItem.update(img => ({ ...img, edited: true }));
+    const flag = (imgs: ImageItem[]) => imgs.map(img => img._id === id && !img.edited ? { ...img, edited: true } : img);
+    this.images.update(flag);
+    // Patch the item in place; the lists are re-filtered only on navigation so
+    // the scan does not vanish from the "OK" filter while it is being edited.
+    this.displayedImages.update(flag);
+    this.displayedImagesPages.update(flag);
+  }
+
   updateImagesByEdited(imgId: string): void {
     this.images.update(prev =>
       prev.map(img => img._id === imgId
@@ -1827,9 +1890,9 @@ export class EditorService {
   // ========== DIALOG ACTIONS ==========
   gridRadio = signal<GridMode>('when-rotating');
   gridDensityRadio = signal<GridDensityLabel>('Hustá');
-  gridColorRadio = signal<GridColorLabel>('Modrá');
+  cropColorRadio = signal<CropColorLabel>(CROP_COLOR_DEFAULT);
   gridLineWidthRadio = signal<GridLineWidthLabel>('Tenká');
-  outlineRadio = signal<OutlineWidthLabel>('Silný');
+  outlineRadio = signal<OutlineWidthLabel>(OUTLINE_WIDTH_DEFAULT);
   dimRadio = signal<DimColor>('Černá');
   dimOpacityRadio = signal<number>(DIM_OPACITY_DEFAULT);
   outlineDashedRadio = signal<boolean>(false);
@@ -1847,7 +1910,7 @@ export class EditorService {
 
   effGridMode(): GridMode { return this.previewingSettings() ? this.gridRadio() : this.gridMode(); }
   effGridDensityLabel(): GridDensityLabel { return this.previewingSettings() ? this.gridDensityRadio() : this.gridDensityLabel(); }
-  effGridColorLabel(): GridColorLabel { return this.previewingSettings() ? this.gridColorRadio() : this.gridColorLabel(); }
+  effCropColorLabel(): CropColorLabel { return this.previewingSettings() ? this.cropColorRadio() : this.cropColorLabel(); }
   effGridLineWidthLabel(): GridLineWidthLabel { return this.previewingSettings() ? this.gridLineWidthRadio() : this.gridLineWidthLabel(); }
   effOutlineWidthLabel(): OutlineWidthLabel { return this.previewingSettings() ? this.outlineRadio() : this.outlineWidthLabel(); }
   effOutlineDashed(): boolean { return this.previewingSettings() ? this.outlineDashedRadio() : this.outlineDashed; }
@@ -1859,7 +1922,7 @@ export class EditorService {
   private settingsPreviewRedraw = effect(() => {
     const previewing = this.previewingSettings();
     // Read every drafted value so any change while previewing schedules a redraw.
-    this.gridRadio(); this.gridDensityRadio(); this.gridColorRadio(); this.gridLineWidthRadio();
+    this.gridRadio(); this.gridDensityRadio(); this.cropColorRadio(); this.gridLineWidthRadio();
     this.outlineRadio(); this.outlineDashedRadio(); this.dimRadio(); this.dimOpacityRadio();
     untracked(() => {
       if ((previewing || this.wasPreviewingSettings) && this.c && this.mainImage) this.redrawAllPages();
@@ -1906,19 +1969,20 @@ export class EditorService {
           this.gridDensityRadio.set('Hustá');
           this.gridDensityLabel.set('Hustá');
           this.storage.set('gridDensityLabel', 'Hustá');
-          this.gridColorRadio.set('Modrá');
-          this.gridColorLabel.set('Modrá');
-          this.storage.set('gridColorLabel', 'Modrá');
+          this.cropColorRadio.set(CROP_COLOR_DEFAULT);
+          this.cropColorLabel.set(CROP_COLOR_DEFAULT);
+          this.storage.set('cropColorLabel', CROP_COLOR_DEFAULT);
           this.gridLineWidthRadio.set('Tenká');
           this.gridLineWidthLabel.set('Tenká');
           this.storage.set('gridLineWidthLabel', 'Tenká');
-          this.outlineRadio.set('Silný');
-          this.outlineWidthLabel.set('Silný');
-          this.storage.set('outlineWidthLabel', 'Silný');
+          this.outlineRadio.set(OUTLINE_WIDTH_DEFAULT);
+          this.outlineWidthLabel.set(OUTLINE_WIDTH_DEFAULT);
+          this.storage.set('outlineWidthLabel', OUTLINE_WIDTH_DEFAULT);
           this.outlineDashed = false;
           this.outlineDashedRadio.set(false);
           this.storage.set('outlineDashed', false);
           this.storage.remove('outlineTransparent');
+          this.storage.remove('rotationSectionOpen');
           this.dimColor.set('Černá');
           this.dimRadio.set('Černá');
           this.storage.set('dimColor', 'Černá');
@@ -1953,7 +2017,7 @@ export class EditorService {
   resetSettingsDraft(): void {
     this.gridRadio.set(this.gridMode());
     this.gridDensityRadio.set(this.gridDensityLabel());
-    this.gridColorRadio.set(this.gridColorLabel());
+    this.cropColorRadio.set(this.cropColorLabel());
     this.gridLineWidthRadio.set(this.gridLineWidthLabel());
     this.outlineRadio.set(this.outlineWidthLabel());
     this.outlineDashedRadio.set(this.outlineDashed);
@@ -1980,9 +2044,9 @@ export class EditorService {
     const gridDensityRadio = this.gridDensityRadio();
     this.gridDensityLabel.set(gridDensityRadio);
     this.storage.set('gridDensityLabel', gridDensityRadio);
-    const gridColorRadio = this.gridColorRadio();
-    this.gridColorLabel.set(gridColorRadio);
-    this.storage.set('gridColorLabel', gridColorRadio);
+    const cropColorRadio = this.cropColorRadio();
+    this.cropColorLabel.set(cropColorRadio);
+    this.storage.set('cropColorLabel', cropColorRadio);
     const gridLineWidthRadio = this.gridLineWidthRadio();
     this.gridLineWidthLabel.set(gridLineWidthRadio);
     this.storage.set('gridLineWidthLabel', gridLineWidthRadio);
@@ -2019,7 +2083,7 @@ export class EditorService {
       dimOpacity: this.dimOpacity(),
       gridMode: this.gridMode(),
       gridDensityLabel: this.gridDensityLabel(),
-      gridColorLabel: this.gridColorLabel(),
+      cropColorLabel: this.cropColorLabel(),
       gridLineWidthLabel: this.gridLineWidthLabel(),
       outlineWidthLabel: this.outlineWidthLabel(),
       outlineDashed: this.outlineDashed,
@@ -2028,6 +2092,14 @@ export class EditorService {
       filterPageNumberStart: this.storage.get<PageNumberType>('filterPageNumberStart', 'all', true) ?? 'all',
       showPredictions: this.showPredictions
     };
+  }
+
+  // Feedback for the M / O / C shortcuts. They change the view for this session
+  // only; the persisted setting is left alone (save it in Nastavení if wanted).
+  private settingToastId: string | null = null;
+  private showSettingToast(label: string, value: string): void {
+    if (this.settingToastId) this.ui.dismissToast(this.settingToastId);
+    this.settingToastId = this.ui.showToast(`${label}: ${value} (jen pro tuto relaci)`, { type: 'info', duration: 2000 });
   }
 
   openShortcutsDialog(): void {
@@ -2163,15 +2235,15 @@ export class EditorService {
       this.updateMainImageItem();
     }
 
-    // Unselect page
+    // Close dialog (works in read mode too) / unselect page
+    if (key === 'Escape' && dialogOpen) {
+      this.ui.dialogOpen.set(false);
+      this.ui.dialogOpened = false;
+      if (this.ui.dialogTitle() === 'Nastavení') this.resetSettingsDraft();
+      return;
+    }
+
     if (canEditTitle && key === 'Escape') {
-      if (dialogOpen) {
-        this.ui.dialogOpen.set(false);
-        this.ui.dialogOpened = false;
-        if (this.ui.dialogTitle() === 'Nastavení') this.resetSettingsDraft();
-        return;
-      }
-      
       if (this.pageWasEdited) this.updateCurrentPagesWithEdited();
       this.lastSelectedPage = this.selectedPage;
       this.selectedPage = null;
@@ -2202,8 +2274,8 @@ export class EditorService {
         : this.gridMode() === 'never' ? 'when-rotating' : 'never');
       const gridMode = this.gridMode();
       this.gridRadio.set(gridMode);
-      this.storage.set('gridMode', gridMode);
       this.redrawAllPages();
+      this.showSettingToast('Mřížka', gridModeDict[gridMode]);
     };
 
     // Outline width
@@ -2212,16 +2284,16 @@ export class EditorService {
       this.outlineWidthLabel.set(outlineWidthLabel === 'Silný' ? 'Střední' : (outlineWidthLabel === 'Střední' ? 'Tenký' : (outlineWidthLabel === 'Tenký' ? 'Žádný' : 'Silný')));
       const outlineWidthLabel2 = this.outlineWidthLabel();
       this.outlineRadio.set(outlineWidthLabel2);
-      this.storage.set('outlineWidthLabel', outlineWidthLabel2);
       this.redrawAllPages();
+      this.showSettingToast('Obrys výřezu', outlineWidthLabel2);
     }
 
     // Dimming color
     if (canEditTitle && ['c', 'C'].includes(key) && this.selectedPage && !event.ctrlKey && !event.metaKey && !dialogOpen) {
-      this.dimColor.update(prev => prev === 'Černá' ? 'Červená' : (prev === 'Červená' ? 'Bílá' : (prev === 'Bílá' ? 'Žádná' : 'Černá')));
+      this.dimColor.update(prev => prev === 'Černá' ? 'Tmavě modrá' : (prev === 'Tmavě modrá' ? 'Bílá' : (prev === 'Bílá' ? 'Žádná' : 'Černá')));
       this.dimRadio.set(this.dimColor());
-      this.storage.set('dimColor', this.dimColor());
       this.redrawAllPages();
+      this.showSettingToast('Clona', this.dimColor());
     }
 
     // Prev/next scan
@@ -2278,7 +2350,7 @@ export class EditorService {
       };
 
       this.pageWasEdited = true;
-      this.imgWasEdited.set(true);
+      this.markCurrentImageEdited();
       this.sthWasEdited = true;
       this.selectedPage = updatedPage;
       this.lastSelectedPage = updatedPage;
@@ -2529,7 +2601,7 @@ export class EditorService {
       }
 
       this.pageWasEdited = true;
-      this.imgWasEdited.set(true);
+      this.markCurrentImageEdited();
       this.sthWasEdited = true;
       this.redrawAllPages();
     }
@@ -2572,7 +2644,7 @@ export class EditorService {
       page.bottom = bounds.bottom;
 
       this.pageWasEdited = true;
-      this.imgWasEdited.set(true);
+      this.markCurrentImageEdited();
       this.sthWasEdited = true;
       this.redrawAllPages();
     }

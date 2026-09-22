@@ -570,3 +570,55 @@ a:focus-visible {
 .cdk-overlay-backdrop.assign-backdrop {
   background: transparent;
 }
+
+// Custom tooltip: add class "tip" and data-tooltip="text" to any element.
+// White text on a dark pill above the element, shown on hover and keyboard focus.
+.tip {
+  position: relative;
+
+  &::before,
+  &::after {
+    position: absolute;
+    left: 50%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 30;
+  }
+
+  &::after {
+    content: attr(data-tooltip);
+    bottom: calc(100% + 8px);
+    transform: translateX(-50%) translateY(4px);
+    background-color: var(--text-base);
+    @include font(500, var(--font-size-x1), var(--spacing-x4), var(--text-white));
+    padding: var(--spacing-x1) var(--spacing-x2);
+    border-radius: var(--spacing-x1);
+    white-space: nowrap;
+  }
+
+  &::before {
+    content: "";
+    bottom: calc(100% + 3px);
+    transform: translateX(-50%) translateY(4px);
+    border: 5px solid transparent;
+    border-top-color: var(--text-base);
+    border-bottom: 0;
+  }
+
+  &:hover::before,
+  &:hover::after,
+  &:focus-visible::before,
+  &:focus-visible::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  // Longer texts: wrap inside a narrow bubble instead of one long line.
+  &.tip-wrap::after {
+    white-space: normal;
+    width: max-content;
+    max-width: 220px;
+    text-align: center;
+  }
+}

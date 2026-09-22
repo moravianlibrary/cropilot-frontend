@@ -45,7 +45,7 @@ const PLACEMENT_LABELS: Record<string, string> = {
 const SETTING_LABELS: Record<string, string> = {
   gridMode: 'Mřížka',
   gridDensityLabel: 'Hustota mřížky',
-  gridColorLabel: 'Barva mřížky',
+  cropColorLabel: 'Barva výřezu a mřížky',
   gridLineWidthLabel: 'Tloušťka mřížky',
   outlineWidthLabel: 'Obrys výřezu',
   outlineDashed: 'Čárkovaný obrys',

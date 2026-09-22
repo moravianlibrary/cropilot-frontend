@@ -98,7 +98,8 @@
   border-radius: var(--spacing-x2);
 
   .segment {
-    overflow: hidden;
+    // Visible overflow so the .tip tooltip can sit above the swatch.
+    overflow: visible;
     height: calc(var(--control-md) - 6px);
     border-radius: var(--spacing-x1-5);
   }

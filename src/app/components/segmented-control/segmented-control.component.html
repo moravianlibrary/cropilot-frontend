@@ -19,6 +19,8 @@
       role="radio"
       [attr.aria-checked]="option.value === value()"
       [attr.aria-label]="option.ariaLabel ?? (variant() === 'swatches' ? option.label : null)"
+      [class.tip]="variant() === 'swatches'"
+      [attr.data-tooltip]="variant() === 'swatches' ? option.label : null"
       (click)="select(option)"
     >
       @if (variant() === 'swatches' && option.color) {
