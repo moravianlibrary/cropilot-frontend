@@ -238,6 +238,9 @@
       flex-direction: column;
       overflow-x: auto;
       scrollbar-width: none;
+      // Lets .pagination-row size itself to the visible width (100cqw) even
+      // when the table is wider than the viewport.
+      container-type: inline-size;
 
       .table-body-y-scroll, table {
         width: max-content;
@@ -250,6 +253,19 @@
     .table-body-y-scroll {
       overflow-x: hidden;
       overflow-y: auto;
+    }
+
+    // Pagination sits at the end of the scrolled rows (no fixed footer): it is
+    // reached by scrolling to the bottom of the list. Sticky-left keeps it
+    // centred in the visible part when the table scrolls horizontally.
+    .pagination-row {
+      position: sticky;
+      left: 0;
+      width: 100%;
+      width: 100cqw;
+      padding: var(--spacing-x3) var(--spacing-x4);
+      border-top: 1px solid var(--border-color);
+      background-color: var(--bg-base);
     }
 
     table {

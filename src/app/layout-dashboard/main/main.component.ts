@@ -464,6 +464,10 @@ export class MainComponent {
       case 'groups': this.loadGroups(page); break;
       case 'users': this.loadUsers(page); break;
     }
+
+    // Titles and users: the pagination lives at the end of the scrolled rows, so
+    // start the new page at the top. OverlayScrollbars scrolls its own viewport.
+    (this.osInstance?.elements().viewport ?? this.bodyScroll()?.nativeElement)?.scrollTo({ top: 0 });
   }
 
   prevPage(): void {

@@ -707,49 +707,51 @@
               }
             </tbody>
           </table>
+          <!-- Pagination scrolls with the rows: it shows up once the list is scrolled to the end. -->
+          <div class="pagination-row">
+            @if (currentListTotalPages() > 1) {
+              <div class="pagination">
+                <span
+                  class="page-button prev"
+                  [class.disabled]="currentListPage() <= 1"
+                  (click)="prevPage()"
+                  [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+                >
+                  <app-icon name="arrow-down" [size]="16" />
+                  Předchozí
+                </span>
+
+                <span class="pages">
+                  @for (page of pageNumbers(); track $index) {
+                    @if (page === -1) {
+                      <span class="ellipsis">…</span>
+                    } @else {
+                      <span
+                        class="page-number"
+                        [class.active]="page === currentListPage()"
+                        [attr.aria-current]="page === currentListPage() ? 'page' : null"
+                        (click)="goToPage(page)"
+                        [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+                      >{{ page }}</span>
+                    }
+                  }
+                </span>
+
+                <span
+                  class="page-button next"
+                  [class.disabled]="currentListPage() >= currentListTotalPages()"
+                  (click)="nextPage()"
+                  [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+                >
+                  Další
+                  <app-icon name="arrow-down" [size]="16" />
+                </span>
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>
-
-    @if (currentListTotalPages() > 1) {
-      <div class="pagination">
-        <span
-          class="page-button prev"
-          [class.disabled]="currentListPage() <= 1"
-          (click)="prevPage()"
-          [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-        >
-          <app-icon name="arrow-down" [size]="16" />
-          Předchozí
-        </span>
-
-        <span class="pages">
-          @for (page of pageNumbers(); track $index) {
-            @if (page === -1) {
-              <span class="ellipsis">…</span>
-            } @else {
-              <span
-                class="page-number"
-                [class.active]="page === currentListPage()"
-                [attr.aria-current]="page === currentListPage() ? 'page' : null"
-                (click)="goToPage(page)"
-                [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-              >{{ page }}</span>
-            }
-          }
-        </span>
-
-        <span
-          class="page-button next"
-          [class.disabled]="currentListPage() >= currentListTotalPages()"
-          (click)="nextPage()"
-          [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-        >
-          Další
-          <app-icon name="arrow-down" [size]="16" />
-        </span>
-      </div>
-    }
   </div>
 } @else if (dashboard.dashboardPage() === 'users') {
   
@@ -957,49 +959,51 @@
               {{ item.label }}
             </span>
           }
+          <!-- Pagination scrolls with the rows: it shows up once the list is scrolled to the end. -->
+          <div class="pagination-row">
+            @if (currentListTotalPages() > 1) {
+              <div class="pagination">
+                <span
+                  class="page-button prev"
+                  [class.disabled]="currentListPage() <= 1"
+                  (click)="prevPage()"
+                  [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+                >
+                  <app-icon name="arrow-down" [size]="16" />
+                  Předchozí
+                </span>
+
+                <span class="pages">
+                  @for (page of pageNumbers(); track $index) {
+                    @if (page === -1) {
+                      <span class="ellipsis">…</span>
+                    } @else {
+                      <span
+                        class="page-number"
+                        [class.active]="page === currentListPage()"
+                        [attr.aria-current]="page === currentListPage() ? 'page' : null"
+                        (click)="goToPage(page)"
+                        [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+                      >{{ page }}</span>
+                    }
+                  }
+                </span>
+
+                <span
+                  class="page-button next"
+                  [class.disabled]="currentListPage() >= currentListTotalPages()"
+                  (click)="nextPage()"
+                  [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+                >
+                  Další
+                  <app-icon name="arrow-down" [size]="16" />
+                </span>
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>
-
-    @if (currentListTotalPages() > 1) {
-      <div class="pagination">
-        <span
-          class="page-button prev"
-          [class.disabled]="currentListPage() <= 1"
-          (click)="prevPage()"
-          [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-        >
-          <app-icon name="arrow-down" [size]="16" />
-          Předchozí
-        </span>
-
-        <span class="pages">
-          @for (page of pageNumbers(); track $index) {
-            @if (page === -1) {
-              <span class="ellipsis">…</span>
-            } @else {
-              <span
-                class="page-number"
-                [class.active]="page === currentListPage()"
-                [attr.aria-current]="page === currentListPage() ? 'page' : null"
-                (click)="goToPage(page)"
-                [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-              >{{ page }}</span>
-            }
-          }
-        </span>
-
-        <span
-          class="page-button next"
-          [class.disabled]="currentListPage() >= currentListTotalPages()"
-          (click)="nextPage()"
-          [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-        >
-          Další
-          <app-icon name="arrow-down" [size]="16" />
-        </span>
-      </div>
-    }
   </div>
 }
 
