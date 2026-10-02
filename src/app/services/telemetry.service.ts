@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { EnvironmentService } from './environment.service';
 import { LocalStorageService } from './local-storage.service';
+import { randomUUID } from '../utils/uuid';
 import { EditorSettingsSnapshot, HEARTBEAT_SECONDS, TelemetryEvent, TelemetryEventMap, TelemetryEventType } from '../stats.types';
 
 // Collects editor usage events and ships them to POST /events in batches.
@@ -49,19 +50,28 @@ export class TelemetryService {
   // ========== SESSION ==========
   startSession(titleId: string, open: TelemetryEventMap['editor_open'], settings: EditorSettingsSnapshot): void {
     if (!this.enabled) return;
-    if (this.sessionId) this.endSession('close');
+    // The editor calls this before it renders the scans, so an exception here
+    // must never escape — it would leave the editor without displayed images.
+    try {
+      if (this.sessionId) this.endSession('close');
 
-    this.sessionId = crypto.randomUUID();
-    this.titleId = titleId;
-    this.saves = 0;
-    this.visibleMs = 0;
-    this.visibleSince = document.visibilityState === 'visible' ? performance.now() : null;
-    this.lastInput = performance.now();
+      this.sessionId = randomUUID();
+      this.titleId = titleId;
+      this.saves = 0;
+      this.visibleMs = 0;
+      this.visibleSince = document.visibilityState === 'visible' ? performance.now() : null;
+      this.lastInput = performance.now();
 
-    this.attachListeners();
-    this.track('editor_open', open);
-    this.track('settings_snapshot', settings);
-    this.startTimers();
+      this.attachListeners();
+      this.track('editor_open', open);
+      this.track('settings_snapshot', settings);
+      this.startTimers();
+    } catch (err) {
+      console.warn('Telemetry session could not start', err);
+      this.stopTimers();
+      this.sessionId = null;
+      this.titleId = null;
+    }
   }
 
   endSession(reason: 'close' | 'unload'): void {

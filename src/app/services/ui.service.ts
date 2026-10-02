@@ -2,6 +2,7 @@ import { effect, EffectRef, inject, Injectable, Injector, runInInjectionContext,
 import { DialogButton, DialogContentType, DrawerButton, DrawerContentType, Toast, ToastType } from '../app.types';
 import { defer, focusElement, focusMainWrapper, waitForElement } from '../utils/utils';
 import { OverlayScrollbars } from 'overlayscrollbars';
+import { randomUUID } from '../utils/uuid';
 
 @Injectable({
   providedIn: 'root'
@@ -35,7 +36,7 @@ export class UiService {
   private toastErrorDuration: number = 300000;
   
   showToast(message: string, opts?: { type?: ToastType; duration?: number }): string {
-    const id = crypto.randomUUID();
+    const id = randomUUID();
     const toast: Toast = {
       id,
       message,
