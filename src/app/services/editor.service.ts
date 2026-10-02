@@ -12,6 +12,7 @@ import { TelemetryService } from './telemetry.service';
 import { EditorSettingsSnapshot, TelemetryVia } from '../stats.types';
 import { shortcutAction } from '../utils/shortcut-actions';
 import { proposeNewPage } from '../utils/page-placement';
+import { t } from '../i18n/i18n';
 
 @Injectable({
   providedIn: 'root'
@@ -260,13 +261,13 @@ export class EditorService {
 
     if (!payloads.length) {
       this.sthWasEdited = false;
-      this.ui.showToast('Žádné změny k uložení.', { type: 'info' });
+      this.ui.showToast(t('Žádné změny k uložení.'), { type: 'info' });
       return;
     }
 
     this.updatePages(this.book(), payloads).pipe(
       catchError(err => {
-        this.ui.showToast('Při ukládání změn se něco pokazilo. Zkuste změny uložit znovu.', { type: 'error' });
+        this.ui.showToast(t('Při ukládání změn se něco pokazilo. Zkuste změny uložit znovu.'), { type: 'error' });
         console.error(err);
         return throwError(() => err);
       })
@@ -277,7 +278,7 @@ export class EditorService {
       const savedById = new Map(changed.map(i => [i._id, { ...i, edited: true }]));
       this.originalImages.update(prev => prev.map(o => savedById.get(o._id) ?? o));
       this.setDisplayedImages();
-      this.ui.showToast('Změny byly úspěšně uloženy!', { type: 'success' });
+      this.ui.showToast(t('Změny byly úspěšně uloženy!'), { type: 'success' });
       this.telemetry.noteSave();
       this.telemetry.track('save', { scans_edited: payloads.length, via });
     });
@@ -323,14 +324,14 @@ export class EditorService {
 
     this.imgWasEdited.set(false);
 
-    this.ui.showToast('Změny skenu byly úspěšně resetovány!', { type: 'success' });
+    this.ui.showToast(t('Změny skenu byly úspěšně resetovány!'), { type: 'success' });
     this.telemetry.track('reset_scan', {});
   }
 
   resetDoc(): void {
     this.reset(this.book()).pipe(
       catchError(err => {
-        this.ui.showToast('Při resetu změn dokumentu se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+        this.ui.showToast(t('Při resetu změn dokumentu se něco pokazilo. Zkuste to znovu.'), { type: 'error' });
         console.error('Fetch error:', err);
         return throwError(() => err);
       })
@@ -346,7 +347,7 @@ export class EditorService {
       this.setDisplayedImages();
       this.setMainImage(this.displayedImagesFinal()[0]);
 
-      this.ui.showToast('Změny dokumentu byly úspěšně resetovány!', { type: 'success' });
+      this.ui.showToast(t('Změny dokumentu byly úspěšně resetovány!'), { type: 'success' });
       this.telemetry.track('reset_title', {});
     });
   }
@@ -507,7 +508,7 @@ export class EditorService {
 
     this.fetchImage(img._id).subscribe({
       next: blob => {
-        if (blob.type.includes('tiff')) this.ui.showToast('Nepodařilo se zobrazit sken, protože je ve formátu TIFF.', { type: 'error' });
+        if (blob.type.includes('tiff')) this.ui.showToast(t('Nepodařilo se zobrazit sken, protože je ve formátu TIFF.'), { type: 'error' });
 
         const url = URL.createObjectURL(blob);
         if (bookId !== this.book()) {
@@ -2013,7 +2014,7 @@ export class EditorService {
     ui.dialogDescription.set(null);
     ui.dialogButtons.set([
       { 
-        label: 'Reset',
+        label: t('Reset'),
         action: () => {
           this.showPredictions = false;
           this.storage.remove('showPredictions');
@@ -2052,11 +2053,11 @@ export class EditorService {
           this.storage.set('defaultFitMode', 'page');
           this.applyDefaultZoom();
           ui.closeDialog();
-          ui.showToast('Nastavení bylo resetováno.', { type: 'success' });
+          ui.showToast(t('Nastavení bylo resetováno.'), { type: 'success' });
         }
       },
       {
-        label: 'Uložit',
+        label: t('Uložit'),
         primary: true,
         action: () => {
           ui.closeDialog();
@@ -2125,7 +2126,7 @@ export class EditorService {
     this.defaultFitMode.set(defaultFitModeRadio);
     this.storage.set('defaultFitMode', defaultFitModeRadio);
     this.applyDefaultZoom();
-    this.ui.showToast('Nastavení bylo uloženo.', { type: 'success' });
+    this.ui.showToast(t('Nastavení bylo uloženo.'), { type: 'success' });
     this.telemetry.track('settings_snapshot', this.settingsSnapshot());
   }
 
@@ -2153,7 +2154,7 @@ export class EditorService {
   private settingToastId: string | null = null;
   private showSettingToast(label: string, value: string): void {
     if (this.settingToastId) this.ui.dismissToast(this.settingToastId);
-    this.settingToastId = this.ui.showToast(`${label}: ${value} (jen pro tuto relaci)`, { type: 'info', duration: 2000 });
+    this.settingToastId = this.ui.showToast(t('{label}: {value} (jen pro tuto relaci)', { label: t(label), value: t(value) }), { type: 'info', duration: 2000 });
   }
 
   openShortcutsDialog(): void {
@@ -2177,11 +2178,11 @@ export class EditorService {
     ui.dialogTitle.set('Opravdu chcete resetovat změny dokumentu?');
     ui.dialogContent.set(false);
     ui.dialogContentType.set(null);
-    ui.dialogDescription.set('Reset změn se týká celého dokumentu.');
+    ui.dialogDescription.set(t('Reset změn se týká celého dokumentu.'));
     ui.dialogButtons.set([
-      { label: 'Zrušit' },
+      { label: t('Zrušit') },
       {
-        label: 'Resetovat celý dokument',
+        label: t('Resetovat celý dokument'),
         primary: true,
         destructive: true,
         action: () => {
@@ -2202,11 +2203,11 @@ export class EditorService {
     ui.dialogTitle.set('Opravdu chcete resetovat změny skenu?');
     ui.dialogContent.set(false);
     ui.dialogContentType.set(null);
-    ui.dialogDescription.set('Reset změn se týká aktuálního skenu.');
+    ui.dialogDescription.set(t('Reset změn se týká aktuálního skenu.'));
     ui.dialogButtons.set([
-      { label: 'Zrušit' },
+      { label: t('Zrušit') },
       {
-        label: 'Resetovat změny skenu',
+        label: t('Resetovat změny skenu'),
         primary: true,
         destructive: true,
         action: () => {

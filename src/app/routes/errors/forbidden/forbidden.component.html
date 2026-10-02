@@ -1,12 +1,12 @@
-<h1>Nemáte oprávnění</h1>
+<h1>{{ 'Nemáte oprávnění' | t }}</h1>
 
 <p>
-  Bohužel nemáte dostatečná oprávnění pro zobrazení této stránky.
-  <br />Zkuste požádat svého admina o udělení přístupu nebo se přihlaste pod jiným účtem.
+  {{ 'Bohužel nemáte dostatečná oprávnění pro zobrazení této stránky.' | t }}
+  <br />{{ 'Zkuste požádat svého admina o udělení přístupu nebo se přihlaste pod jiným účtem.' | t }}
 </p>
 
 <span
   class="button secondary"
   tabindex="0"
   (click)="goToLogin()"
->Přihlásit se pod jiným účtem</span>
+>{{ 'Přihlásit se pod jiným účtem' | t }}</span>

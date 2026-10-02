@@ -19,7 +19,7 @@
             <span class="icon">
               <app-icon name="add-group" [size]="16" />
             </span>
-            Vytvořit skupinu
+            {{ 'Vytvořit skupinu' | t }}
           </span>
         }
         <label for="search-group" #searchLabel>
@@ -30,7 +30,7 @@
             id="search-group"
             name="search-group"
             type="text"
-            placeholder="Hledat skupinu"
+            [attr.placeholder]="'Hledat skupinu' | t"
             [(ngModel)]="dashboard.searchGroups"
             (input)="filterGroups()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
@@ -40,7 +40,7 @@
 
       <div class="top-right">
         <span class="sort-toolbar">
-          <span class="sort-toolbar-label">Řadit:</span>
+          <span class="sort-toolbar-label">{{ 'Řadit:' | t }}</span>
           @for (opt of groupSortOptions; track opt.field) {
             <span
               class="sort-btn"
@@ -50,7 +50,7 @@
               (keydown.space)="$event.preventDefault(); sort(opt.field)"
               [tabindex]="dialogOrDrawerOpen ? -1 : 0"
             >
-              {{ opt.label }}
+              {{ opt.label | t }}
               @if (effectiveSortField() === opt.field) {
                 <span class="sort-btn-arrow" [class.asc]="effectiveSortDir() === 'asc'">
                   <app-icon name="arrow-down" [size]="14" />
@@ -86,7 +86,7 @@
                 @if (isAdmin) {
                   <span
                     class="button secondary action card-action"
-                    title="Detail skupiny"
+                    [title]="'Detail skupiny' | t"
                     (click)="openGroupDetail(group, $event)"
                     (keydown.enter)="openGroupDetail(group, $event)"
                     (keydown.space)="$event.preventDefault(); openGroupDetail(group, $event)"
@@ -106,7 +106,7 @@
               <!-- Members (admin-scoped data) -->
               @if (isAdmin) {
                 <div class="card-section">
-                  <div class="card-section-label">Uživatelé</div>
+                  <div class="card-section-label">{{ 'Uživatelé' | t }}</div>
                   @let members = getTags(group);
                   <div class="card-members-body">
                     @if (members.length) {
@@ -119,7 +119,7 @@
                         }
                       </div>
                     } @else {
-                      <span class="card-empty-note">Bez členů</span>
+                      <span class="card-empty-note">{{ 'Bez členů' | t }}</span>
                     }
                   </div>
                 </div>
@@ -127,35 +127,35 @@
 
               <!-- Permissions -->
               <div class="card-section card-section--last">
-                <div class="card-section-label">{{ `Práv${isAdmin ? 'a' : 'o'}` }}</div>
+                <div class="card-section-label">{{ (isAdmin ? 'Práva' : 'Právo') | t }}</div>
                 @let permCounts = isAdmin ? getGroupPermissionsCounts(group.users) : {};
                 @let permTypes = isAdmin ? getPermissionsTypes(permCounts) : group.permissions;
                 @let anyGroupPerm = isAdmin ? (permCounts['upload'] || permCounts['write'] || permCounts['read_title'] || permCounts['read_group']) : group.permissions.length;
                 @if (!anyGroupPerm) {
-                  <span class="card-empty-note">Žádná práva</span>
+                  <span class="card-empty-note">{{ 'Žádná práva' | t }}</span>
                 } @else {
                   <div class="card-chips">
                     @for (permType of permTypes; track permType) {
                       @if (permType === 'upload' && (isAdmin ? permCounts['upload'] : true)) {
-                        <span class="tag permission success tip" data-tooltip="Správa">
+                        <span class="tag permission success tip" [attr.data-tooltip]="'Správa' | t">
                           <span class="icon"><app-icon name="settings" [size]="14" /></span>
                           {{ isAdmin ? permCounts['upload'] : '' }}
                         </span>
                       }
                       @if (permType === 'write' && (isAdmin ? permCounts['write'] : true)) {
-                        <span class="tag permission info tip" data-tooltip="Úpravy">
+                        <span class="tag permission info tip" [attr.data-tooltip]="'Úpravy' | t">
                           <span class="icon"><app-icon name="edit" [size]="14" /></span>
                           {{ isAdmin ? permCounts['write'] : '' }}
                         </span>
                       }
                       @if (permType === 'read_title' && (isAdmin ? permCounts['read_title'] : true)) {
-                        <span class="tag permission pending tip" data-tooltip="Detail titulu">
+                        <span class="tag permission pending tip" [attr.data-tooltip]="'Detail titulu' | t">
                           <span class="icon"><app-icon name="book" [size]="14" /></span>
                           {{ isAdmin ? permCounts['read_title'] : '' }}
                         </span>
                       }
                       @if (permType === 'read_group' && (isAdmin ? permCounts['read_group'] : true)) {
-                        <span class="tag permission error tip" data-tooltip="Zobrazení všech titulů">
+                        <span class="tag permission error tip" [attr.data-tooltip]="'Zobrazení všech titulů' | t">
                           <span class="icon"><app-icon name="open-folder" [size]="14" /></span>
                           {{ isAdmin ? permCounts['read_group'] : '' }}
                         </span>
@@ -171,11 +171,11 @@
               <div class="card-foot">
                 <span
                   class="card-foot-meta"
-                  [title]="'Vytvořeno: ' + created[0] + ' ' + created[1] + '   Upraveno: ' + modified[0] + ' ' + modified[1]"
+                  [title]="'Vytvořeno: {created}   Upraveno: {modified}' | t: { created: created[0] + ' ' + created[1], modified: modified[0] + ' ' + modified[1] }"
                 >
-                  Upraveno {{ getRelativeDate(group.modified_at) }}
+                  {{ 'Upraveno {date}' | t: { date: getRelativeDate(group.modified_at) } }}
                 </span>
-                <span class="card-foot-link" title="Zobrazit tituly">
+                <span class="card-foot-link" [title]="'Zobrazit tituly' | t">
                   <span class="icon"><app-icon name="arrow-right" [size]="16" /></span>
                 </span>
               </div>
@@ -185,11 +185,11 @@
       </div>
     } @else {
       <div class="cards-empty-state">
-        <span>Nenalezeny žádné skupiny</span>
+        <span>{{ 'Nenalezeny žádné skupiny' | t }}</span>
         @if (dashboard.searchGroups()) {
-          <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Zrušit hledání</span>
+          <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">{{ 'Zrušit hledání' | t }}</span>
         } @else if (isAdmin) {
-          <span class="empty-action" (click)="dashboard.createGroupDialog()" (keydown.enter)="dashboard.createGroupDialog()" (keydown.space)="dashboard.createGroupDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Vytvořit skupinu</span>
+          <span class="empty-action" (click)="dashboard.createGroupDialog()" (keydown.enter)="dashboard.createGroupDialog()" (keydown.space)="dashboard.createGroupDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">{{ 'Vytvořit skupinu' | t }}</span>
         }
       </div>
     }
@@ -203,7 +203,7 @@
           [tabindex]="dialogOrDrawerOpen ? -1 : 0"
         >
           <app-icon name="arrow-down" [size]="16" />
-          Předchozí
+          {{ 'Předchozí' | t }}
         </span>
 
         <span class="pages">
@@ -228,7 +228,7 @@
           (click)="nextPage()"
           [tabindex]="dialogOrDrawerOpen ? -1 : 0"
         >
-          Další
+          {{ 'Další' | t }}
           <app-icon name="arrow-down" [size]="16" />
         </span>
       </div>
@@ -251,7 +251,7 @@
             <span class="icon">
               <app-icon name="add-in-rect" [size]="16" />
             </span>
-            Vytvořit titul
+            {{ 'Vytvořit titul' | t }}
           </span>
         }
         <label for="search-title" #searchLabel>
@@ -262,7 +262,7 @@
             id="search-title"
             name="search-title"
             type="text"
-            placeholder="Hledat titul"
+            [attr.placeholder]="'Hledat titul' | t"
             [(ngModel)]="dashboard.searchTitles"
             (input)="filterTitles()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
@@ -276,7 +276,7 @@
             (keydown.space)="clearStateFilter()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
           >
-            Stav: {{ activeStateFilterLabel }}
+            {{ 'Stav: {state}' | t: { state: (activeStateFilterLabel | t) } }}
             <span class="icon"><app-icon name="close" [size]="12" /></span>
           </span>
         }
@@ -309,8 +309,8 @@
           </colgroup>
           <thead>
             <tr>
-              @if (seeActions) { <th><span class="visually-hidden">Akce</span></th> }
-              <th><span class="visually-hidden">Náhled</span></th>
+              @if (seeActions) { <th><span class="visually-hidden">{{ 'Akce' | t }}</span></th> }
+              <th><span class="visually-hidden">{{ 'Náhled' | t }}</span></th>
               <th>
                 <span
                   class="sort-wrapper"
@@ -319,7 +319,7 @@
                   [direction]="sortState.direction"
                   [activeField]="'external_id'"
                 >
-                  Název titulu
+                  {{ 'Název titulu' | t }}
                   <span class="icon-wrapper">
                     <span
                       class="icon"
@@ -331,10 +331,10 @@
                   </span>
                 </span>
               </th>
-              <th>ID titulu</th>
+              <th>{{ 'ID titulu' | t }}</th>
               <th class="state-dropdown-wrapper" #stateDropdown cdkOverlayOrigin>
                 <div class="filter-dropdown-title" (click)="toggleStateDropdown()">
-                  Stav
+                  {{ 'Stav' | t }}
                   <span class="filter-icon-wrapper">
                     <span class="icon filter-icon" [class.active]="selectedState !== 'all'">
                       <app-icon name="filter" [size]="14" />
@@ -367,7 +367,7 @@
                           [checked]="stateValue === selectedState"
                           (click)="onStateChange(stateValue)"
                         />
-                        <span class="radio-value">{{ state }}</span>
+                        <span class="radio-value">{{ state | t }}</span>
                       </label>
                     }
                   </div>
@@ -381,7 +381,7 @@
                   [direction]="sortState.direction"
                   [activeField]="'assigned_to_name'"
                 >
-                  Zpracovatel
+                  {{ 'Zpracovatel' | t }}
                   <span class="icon-wrapper">
                     <span
                       class="icon"
@@ -395,7 +395,7 @@
               </th>
               <th class="crop-model-dropdown-wrapper" #cropModelDropdown cdkOverlayOrigin>
                 <div class="filter-dropdown-title" (click)="toggleCropModelDropdown()">
-                  Ořezový model
+                  {{ 'Ořezový model' | t }}
                   <span class="filter-icon-wrapper">
                     <span class="icon filter-icon" [class.active]="selectedCropModel !== 'all'">
                       <app-icon name="filter" [size]="14" />
@@ -427,7 +427,7 @@
                           [checked]="cropModel === selectedCropModel"
                           (click)="onCropModelChange(cropModel ?? 'all')"
                         />
-                        <span class="radio-value">{{ cropModel === 'all' ? 'Vše' : cropModel }}</span>
+                        <span class="radio-value">{{ cropModel === 'all' ? ('Vše' | t) : cropModel }}</span>
                       </label>
                     }
                   </div>
@@ -435,7 +435,7 @@
               </th>
               <th class="rotation-model-dropdown-wrapper" #rotationModelDropdown cdkOverlayOrigin>
                 <div class="filter-dropdown-title" (click)="toggleRotationModelDropdown()">
-                  Rotační
+                  {{ 'Rotační' | t }}
                   <span class="filter-icon-wrapper">
                     <span class="icon filter-icon" [class.active]="selectedRotationModel !== 'all'">
                       <app-icon name="filter" [size]="14" />
@@ -467,7 +467,7 @@
                           [checked]="rotationModel === selectedRotationModel"
                           (click)="onRotationModelChange(rotationModel ?? 'all')"
                         />
-                        <span class="radio-value">{{ rotationModel === 'all' ? 'Vše' : rotationModel }}</span>
+                        <span class="radio-value">{{ rotationModel === 'all' ? ('Vše' | t) : rotationModel }}</span>
                       </label>
                     }
                   </div>
@@ -481,7 +481,7 @@
                   [direction]="sortState.direction"
                   [activeField]="'created_at'"
                 >
-                  Vytvořeno
+                  {{ 'Vytvořeno' | t }}
                   <span class="icon-wrapper">
                     <span
                       class="icon"
@@ -501,7 +501,7 @@
                   [direction]="sortState.direction"
                   [activeField]="'modified_at'"
                 >
-                  Upraveno
+                  {{ 'Upraveno' | t }}
                   <span class="icon-wrapper">
                     <span
                       class="icon"
@@ -553,7 +553,7 @@
                         <div class="actions">
                           <span
                             class="button secondary action"
-                            title="Detail titulu"
+                            [title]="'Detail titulu' | t"
                             (click)="$event.stopPropagation(); dashboard.openTitleDetail(title)"
                             (keydown.space)="$event.stopPropagation(); dashboard.openTitleDetail(title)"
                             (keydown.enter)="$event.stopPropagation(); dashboard.openTitleDetail(title)"
@@ -591,7 +591,7 @@
                           (keydown.enter)="copyId(title._id, $event)"
                           (keydown.space)="copyId(title._id, $event)"
                           [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-                          [title]="copiedId() === title._id ? 'Zkopírováno!' : 'Kopírovat celé ID'"
+                          [title]="(copiedId() === title._id ? 'Zkopírováno!' : 'Kopírovat celé ID') | t"
                         >
                           <app-icon name="copy" [size]="14" />
                         </span>
@@ -605,7 +605,7 @@
                         [class.pending]="['new', 'scheduled', 'in_progress'].includes(title.state)"
                         [class.error]="['failed'].includes(title.state)"
                       >
-                        {{ titleStateDict[title.state] }}
+                        {{ titleStateDict[title.state] | t }}
                       </span>
                     </td>
                     <td class="assign-cell">
@@ -620,7 +620,7 @@
                           (keydown.enter)="openAssignMenu(title, $event)"
                           (keydown.space)="$event.preventDefault(); openAssignMenu(title, $event)"
                           [tabindex]="dialogOrDrawerOpen ? -1 : 0"
-                          [title]="title.assigned_to_name || 'Přiřadit uživateli'"
+                          [title]="title.assigned_to_name || ('Přiřadit uživateli' | t)"
                         >
                           @if (title.assigned_to_name) {
                             <span class="assign-name">{{ title.assigned_to_name }}</span>
@@ -642,7 +642,7 @@
                           <div class="assign-dropdown">
                             @if (title.assigned_to) {
                               <button type="button" class="assign-option unassign" (click)="assignTitleTo(title, null, $event)">
-                                Zrušit přiřazení
+                                {{ 'Zrušit přiřazení' | t }}
                               </button>
                             }
                             @for (u of assignableUsers(); track u._id) {
@@ -655,7 +655,7 @@
                                 {{ u.full_name }}
                               </button>
                             } @empty {
-                              <div class="assign-empty">Žádní uživatelé k přiřazení</div>
+                              <div class="assign-empty">{{ 'Žádní uživatelé k přiřazení' | t }}</div>
                             }
                           </div>
                         </ng-template>
@@ -663,8 +663,8 @@
                         <span class="assign-static" [class.assigned]="!!title.assigned_to_name" [title]="title.assigned_to_name || ''">{{ title.assigned_to_name || '—' }}</span>
                       }
                     </td>
-                    <td>{{ title.settings?.crop_model ?? 'Neznámý' }}</td>
-                    <td>{{ title.settings?.rotation_model ?? 'Neznámý' }}</td>
+                    <td>{{ title.settings?.crop_model ?? ('Neznámý' | t) }}</td>
+                    <td>{{ title.settings?.rotation_model ?? ('Neznámý' | t) }}</td>
                     <td>
                       @let created = getDate(title.created_at);
                       <span class="rel-date" [title]="created[0] + ' ' + created[1]">{{ getRelativeDate(title.created_at) }}</span>
@@ -685,11 +685,11 @@
                 <tr class="no-results">
                   <td>
                     <div class="empty-state">
-                      <span>Nenalezeny žádné tituly</span>
+                      <span>{{ 'Nenalezeny žádné tituly' | t }}</span>
                       @if (dashboard.searchTitles() || activeStateFilterLabel) {
-                        <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Zrušit hledání a filtry</span>
+                        <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">{{ 'Zrušit hledání a filtry' | t }}</span>
                       } @else if (dashboard.canUploadInCurrentGroup()) {
-                        <span class="empty-action" (click)="dashboard.createTitleDialog()" (keydown.enter)="dashboard.createTitleDialog()" (keydown.space)="dashboard.createTitleDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Vytvořit titul</span>
+                        <span class="empty-action" (click)="dashboard.createTitleDialog()" (keydown.enter)="dashboard.createTitleDialog()" (keydown.space)="dashboard.createTitleDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">{{ 'Vytvořit titul' | t }}</span>
                       }
                     </div>
                   </td>
@@ -708,7 +708,7 @@
                   [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                 >
                   <app-icon name="arrow-down" [size]="16" />
-                  Předchozí
+                  {{ 'Předchozí' | t }}
                 </span>
 
                 <span class="pages">
@@ -733,7 +733,7 @@
                   (click)="nextPage()"
                   [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                 >
-                  Další
+                  {{ 'Další' | t }}
                   <app-icon name="arrow-down" [size]="16" />
                 </span>
               </div>
@@ -759,7 +759,7 @@
           <span class="icon">
             <app-icon name="create-user" [size]="16" />
           </span>
-          Vytvořit uživatele
+          {{ 'Vytvořit uživatele' | t }}
         </span>
         <label for="search-user" #searchLabel>
           <span class="icon">
@@ -769,7 +769,7 @@
             id="search-user"
             name="search-user"
             type="text"
-            placeholder="Hledat uživatele"
+            [attr.placeholder]="'Hledat uživatele' | t"
             [(ngModel)]="dashboard.searchUsers"
             (input)="filterUsers()"
             [tabindex]="dialogOrDrawerOpen ? -1 : 0"
@@ -797,10 +797,10 @@
           </colgroup>
           <thead>
             <tr>
-              <th><span class="visually-hidden">Akce</span></th>
-              <th>Jméno</th>
-              <th>E-mail</th>
-              <th>Práva</th>
+              <th><span class="visually-hidden">{{ 'Akce' | t }}</span></th>
+              <th>{{ 'Jméno' | t }}</th>
+              <th>{{ 'E-mail' | t }}</th>
+              <th>{{ 'Práva' | t }}</th>
               <th>
                 <span
                   class="sort-wrapper"
@@ -809,7 +809,7 @@
                   [direction]="sortState.direction"
                   [activeField]="'modified_at'"
                 >
-                  Naposledy změněno
+                  {{ 'Naposledy změněno' | t }}
                   <span class="icon-wrapper">
                     <span
                       class="icon"
@@ -854,7 +854,7 @@
                       <div class="actions">
                         <span
                           class="button secondary action"
-                          title="Detail uživatele"
+                          [title]="'Detail uživatele' | t"
                           (click)="$event.stopPropagation(); dashboard.openUserDetail(user)"
                           (keydown.space)="$event.stopPropagation(); dashboard.openUserDetail(user)"
                           (keydown.enter)="$event.stopPropagation(); dashboard.openUserDetail(user)"
@@ -884,28 +884,28 @@
                       } @else {
                         <div class="tags">
                           @if (permTypes.includes('upload')) {
-                            <span class="tag permission success tip tip-below" data-tooltip="Správa">
+                            <span class="tag permission success tip tip-below" [attr.data-tooltip]="'Správa' | t">
                               <span class="icon">
                                 <app-icon name="settings" [size]="16" />
                               </span>
                             </span>
                           }
                           @if (permTypes.includes('write')) {
-                            <span class="tag permission info tip tip-below" data-tooltip="Úpravy">
+                            <span class="tag permission info tip tip-below" [attr.data-tooltip]="'Úpravy' | t">
                               <span class="icon">
                                 <app-icon name="edit" [size]="16" />
                               </span>
                             </span>
                           }
                           @if (permTypes.includes('read_title')) {
-                            <span class="tag permission pending tip tip-below" data-tooltip="Detail titulu">
+                            <span class="tag permission pending tip tip-below" [attr.data-tooltip]="'Detail titulu' | t">
                               <span class="icon">
                                 <app-icon name="book" [size]="16" />
                               </span>
                             </span>
                           }
                           @if (permTypes.includes('read_group')) {
-                            <span class="tag permission error tip tip-below" data-tooltip="Zobrazení všech titulů">
+                            <span class="tag permission error tip tip-below" [attr.data-tooltip]="'Zobrazení všech titulů' | t">
                               <span class="icon">
                                 <app-icon name="open-folder" [size]="16" />
                               </span>
@@ -928,11 +928,11 @@
                 <tr class="no-results">
                   <td>
                     <div class="empty-state">
-                      <span>Nenalezeni žádní uživatelé</span>
+                      <span>{{ 'Nenalezeni žádní uživatelé' | t }}</span>
                       @if (dashboard.searchUsers()) {
-                        <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Zrušit hledání</span>
+                        <span class="empty-action" (click)="clearSearch()" (keydown.enter)="clearSearch()" (keydown.space)="clearSearch()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">{{ 'Zrušit hledání' | t }}</span>
                       } @else {
-                        <span class="empty-action" (click)="dashboard.createUserDialog()" (keydown.enter)="dashboard.createUserDialog()" (keydown.space)="dashboard.createUserDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">Vytvořit uživatele</span>
+                        <span class="empty-action" (click)="dashboard.createUserDialog()" (keydown.enter)="dashboard.createUserDialog()" (keydown.space)="dashboard.createUserDialog()" [tabindex]="dialogOrDrawerOpen ? -1 : 0">{{ 'Vytvořit uživatele' | t }}</span>
                       }
                     </div>
                   </td>
@@ -951,7 +951,7 @@
                   [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                 >
                   <app-icon name="arrow-down" [size]="16" />
-                  Předchozí
+                  {{ 'Předchozí' | t }}
                 </span>
 
                 <span class="pages">
@@ -976,7 +976,7 @@
                   (click)="nextPage()"
                   [tabindex]="dialogOrDrawerOpen ? -1 : 0"
                 >
-                  Další
+                  {{ 'Další' | t }}
                   <app-icon name="arrow-down" [size]="16" />
                 </span>
               </div>

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { EditorService } from '../../services/editor.service';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
@@ -18,10 +18,12 @@ import {
   SegmentedControlOption,
   SegmentedControlValue
 } from '../../components/segmented-control/segmented-control.component';
+import { TPipe } from '../../i18n/t.pipe';
+import { t } from '../../i18n/i18n';
 
 @Component({
   selector: 'app-right-panel-editor',
-  imports: [MenuComponent, DecimalPipe, FormsModule, IconComponent, SegmentedControlComponent],
+  imports: [MenuComponent, DecimalPipe, FormsModule, IconComponent, SegmentedControlComponent, TPipe],
   templateUrl: './right-panel.component.html',
   styleUrl: './right-panel.component.scss'
 })
@@ -35,12 +37,13 @@ export class RightPanelComponent {
   private firstFocus = { left: true, top: true, width: true, height: true, angle: true };
   private holdInterval: any;
 
-  orientationOptions: SegmentedControlOption[] = [
-    { value: 270, label: '90', ariaLabel: 'Otočit vlevo o 90°', icon: 'reset', iconSize: 16 },
+  // computed() so the aria labels follow a language switch.
+  orientationOptions = computed<SegmentedControlOption[]>(() => [
+    { value: 270, label: '90', ariaLabel: t('Otočit vlevo o 90°'), icon: 'reset', iconSize: 16 },
     { value: 0, label: '0°' },
-    { value: 90, label: '90', ariaLabel: 'Otočit vpravo o 90°', icon: 'forward', iconSize: 16 },
+    { value: 90, label: '90', ariaLabel: t('Otočit vpravo o 90°'), icon: 'forward', iconSize: 16 },
     { value: 180, label: '180°' }
-  ];
+  ]);
 
 
   // ========== HEADER ==========
@@ -56,7 +59,7 @@ export class RightPanelComponent {
   // Shown on the collapsed button when the scan is not upright.
   get rotationSuffix(): string {
     const orientation = this.activeOrientation;
-    if (orientation === null) return 'různé';
+    if (orientation === null) return t('různé');
     return orientation === 0 ? '' : `${orientation === 270 ? -90 : orientation}°`;
   }
 
@@ -67,7 +70,7 @@ export class RightPanelComponent {
   }
 
   getFlagLabel(flag: string): string {
-    return flagMessages[flag] ?? flag;
+    return flagMessages[flag] ? t(flagMessages[flag]) : flag;
   }
 
   // ---- Scan status row ----
@@ -82,11 +85,11 @@ export class RightPanelComponent {
   }
 
   getFlagHint(flag: string): string {
-    return flagHints[flag] ?? this.getFlagLabel(flag);
+    return flagHints[flag] ? t(flagHints[flag]) : this.getFlagLabel(flag);
   }
 
   getFlagActionHint(flag: string): string | null {
-    return flagActionHints[flag] ?? null;
+    return flagActionHints[flag] ? t(flagActionHints[flag]) : null;
   }
 
   // Crops of the open scan that carry the flag (empty for scan-level flags).
@@ -121,7 +124,7 @@ export class RightPanelComponent {
   }
 
   get activeOrientation(): ImageOrientation | null {
-    return this.orientationOptions
+    return this.orientationOptions()
       .map(option => option.value as ImageOrientation)
       .find(orientation => this.editor.isOrientationActive(orientation)) ?? null;
   }

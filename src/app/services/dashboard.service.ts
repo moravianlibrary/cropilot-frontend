@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { checkEmailValidity, defer, downloadCsv, focusMainWrapper, getDate, rowsToCsv, scrollToAndFocusElement, scrollToElement } from '../utils/utils';
 import { inlineErrors, titleStateDict } from '../app.config';
 import { UiService } from './ui.service';
+import { t } from '../i18n/i18n';
 
 @Injectable({
   providedIn: 'root'
@@ -381,27 +382,27 @@ export class DashboardService {
 
     this.fetchAllTitles(groupId).pipe(
       catchError(err => {
-        this.ui.showToast('Export titulů se nezdařil. Zkuste to znovu.', { type: 'error' });
+        this.ui.showToast(t('Export titulů se nezdařil. Zkuste to znovu.'), { type: 'error' });
         console.error('Exporting titles failed:', err);
         this.exportingTitles.set(false);
         return throwError(() => err);
       })
     ).subscribe(titles => {
-      const header = ['Název titulu', 'ID titulu', 'Stav', 'Zpracovatel', 'Ořezový model', 'Rotační model', 'Vytvořeno', 'Upraveno'];
-      const rows = titles.map(t => [
-        t.external_id ?? t._id,
-        t._id,
-        titleStateDict[t.state] ?? t.state,
-        t.assigned_to_name ?? '',
-        t.settings?.crop_model ?? 'Neznámý',
-        t.settings?.rotation_model ?? 'Neznámý',
-        getDate(t.created_at).join(' '),
-        getDate(t.modified_at).join(' '),
+      const header = ['Název titulu', 'ID titulu', 'Stav', 'Zpracovatel', 'Ořezový model', 'Rotační model', 'Vytvořeno', 'Upraveno'].map(h => t(h));
+      const rows = titles.map(title => [
+        title.external_id ?? title._id,
+        title._id,
+        t(titleStateDict[title.state] ?? title.state),
+        title.assigned_to_name ?? '',
+        title.settings?.crop_model ?? t('Neznámý'),
+        title.settings?.rotation_model ?? t('Neznámý'),
+        getDate(title.created_at).join(' '),
+        getDate(title.modified_at).join(' '),
       ]);
 
       const date = new Date().toISOString().slice(0, 10);
-      const safeName = (groupName || 'skupina').replace(/[^\p{L}\p{N}_-]+/gu, '_');
-      downloadCsv(`tituly_${safeName}_${date}.csv`, rowsToCsv([header, ...rows]));
+      const safeName = (groupName || t('skupina')).replace(/[^\p{L}\p{N}_-]+/gu, '_');
+      downloadCsv(`${t('tituly')}_${safeName}_${date}.csv`, rowsToCsv([header, ...rows]));
       this.exportingTitles.set(false);
     });
   }
@@ -550,13 +551,13 @@ export class DashboardService {
     const ui = this.ui;
     
     ui.dialogWidth.set(520);
-    ui.dialogTitle.set('Nová skupina');
+    ui.dialogTitle.set(t('Nová skupina'));
     ui.dialogContent.set(true);
     ui.dialogContentType.set('new-group');
     ui.dialogButtons.set([
-      { label: 'Zrušit' },
+      { label: t('Zrušit') },
       {
-        label: 'Vytvořit',
+        label: t('Vytvořit'),
         primary: true,
         action: () => {
           const groupName = this.groupName();
@@ -590,7 +591,7 @@ export class DashboardService {
               ? this.bulkAddGroupMembers(res.id).pipe(
                   map(() => res),
                   catchError(err => {
-                    this.ui.showToast('Při přidávání členů do skupiny se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+                    this.ui.showToast(t('Při přidávání členů do skupiny se něco pokazilo. Zkuste to znovu.'), { type: 'error' });
                     console.error(err);
                     return throwError(() => err);
                   })
@@ -628,7 +629,7 @@ export class DashboardService {
               this.groupNameError.set('');
             }),
             catchError(err => {
-              this.ui.showToast('Při vytváření skupiny se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+              this.ui.showToast(t('Při vytváření skupiny se něco pokazilo. Zkuste to znovu.'), { type: 'error' });
               console.error(err);
               return throwError(() => err);
             })
@@ -651,13 +652,13 @@ export class DashboardService {
         this.selectedRotationModelUsed.set(false);
       }),
       catchError(err => {
-        this.ui.showToast('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        this.ui.showToast(t('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.'), { type: 'error' });
         console.error(err);
         return throwError(() => err);
       }),
       switchMap(() => this.fetchUsers().pipe(
         catchError(err => {
-          this.ui.showToast('Nepodařilo se načíst uživatele. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+          this.ui.showToast(t('Nepodařilo se načíst uživatele. Zkuste dialogové okno znovu otevřít.'), { type: 'error' });
           console.error(err);
           return throwError(() => err);
         })
@@ -679,13 +680,13 @@ export class DashboardService {
     if (!group) return;
     
     ui.dialogWidth.set(520);
-    ui.dialogTitle.set('Úprava skupiny');
+    ui.dialogTitle.set(t('Úprava skupiny'));
     ui.dialogContent.set(true);
     ui.dialogContentType.set('edit-group');
     ui.dialogButtons.set([
-      { label: 'Zrušit' },
+      { label: t('Zrušit') },
       {
-        label: 'Upravit',
+        label: t('Upravit'),
         primary: true,
         action: () => {
           const groupName = this.groupName();
@@ -708,7 +709,7 @@ export class DashboardService {
           
           return this.updateGroup(group._id).pipe(
             catchError(err => {
-              this.ui.showToast('Nepodařilo se upravit skupinu. Zkuste to znovu.', { type: 'error' });
+              this.ui.showToast(t('Nepodařilo se upravit skupinu. Zkuste to znovu.'), { type: 'error' });
               console.error(err);
               return throwError(() => err);
             })
@@ -737,7 +738,7 @@ export class DashboardService {
 
     this.fetchModels().pipe(
       catchError(err => {
-        this.ui.showToast('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        this.ui.showToast(t('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.'), { type: 'error' });
         console.error(err);
         return throwError(() => err);
       })
@@ -757,13 +758,13 @@ export class DashboardService {
     const group = this.selectedGroupDetail();
     
     ui.dialogWidth.set(520);
-    ui.dialogTitle.set('Smazat skupinu');
-    ui.dialogDescription.set(`Opravdu chcete smazat skupinu${' ' + group?.name}?`);
+    ui.dialogTitle.set(t('Smazat skupinu'));
+    ui.dialogDescription.set(t('Opravdu chcete smazat skupinu {name}?', { name: group?.name }));
     ui.dialogContent.set(false);
     ui.dialogButtons.set([
-      { label: 'Zrušit' },
+      { label: t('Zrušit') },
       {
-        label: 'Smazat skupinu',
+        label: t('Smazat skupinu'),
         primary: true,
         destructive: true,
         action: () => this.deleteGroup(group?._id ?? '').pipe(
@@ -775,7 +776,7 @@ export class DashboardService {
             ui.closeDialog();
           }),
           catchError(err => {
-            this.ui.showToast('Při mazání skupiny se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+            this.ui.showToast(t('Při mazání skupiny se něco pokazilo. Zkuste to znovu.'), { type: 'error' });
             console.error(err);
             return throwError(() => err);
           })
@@ -793,13 +794,13 @@ export class DashboardService {
     this.files.set([]);
     
     ui.dialogWidth.set(520);
-    ui.dialogTitle.set('Nový titul');
+    ui.dialogTitle.set(t('Nový titul'));
     ui.dialogContent.set(true);
     ui.dialogContentType.set('new-title');
     ui.dialogButtons.set([
-      { label: 'Zrušit' },
+      { label: t('Zrušit') },
       {
-        label: 'Vytvořit',
+        label: t('Vytvořit'),
         primary: true,
         action: () => {
           const titleName = this.titleName();
@@ -844,7 +845,7 @@ export class DashboardService {
             }),
             switchMap(id => this.uploadAllScans(id, this.files()).pipe(
               catchError(err => {
-                this.ui.showToast(`Při nahrávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.`, { type: 'error' });
+                this.ui.showToast(t('Při nahrávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.'), { type: 'error' });
                 console.error(err);
                 return throwError(() => err);
               })
@@ -852,13 +853,13 @@ export class DashboardService {
             switchMap(id => this.processTitle(id).pipe(
               tap(() => this.forgetTitleThumbnail(id)),
               catchError(err => {
-                this.ui.showToast(`Při zpracovávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.`, { type: 'error' });
+                this.ui.showToast(t('Při zpracovávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.'), { type: 'error' });
                 console.error(err);
                 return throwError(() => err);
               })
             )),
             catchError(err => {
-              this.ui.showToast(`Při vytváření titulu se něco pokazilo. Titul smažte a přidejte ho jako nový.`, { type: 'error' });
+              this.ui.showToast(t('Při vytváření titulu se něco pokazilo. Titul smažte a přidejte ho jako nový.'), { type: 'error' });
               console.error(err);
               return throwError(() => err);
             })
@@ -869,7 +870,7 @@ export class DashboardService {
 
     this.fetchModels().pipe(
       catchError(err => {
-        this.ui.showToast('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        this.ui.showToast(t('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.'), { type: 'error' });
         console.error(err);
         return throwError(() => err);
       })
@@ -904,13 +905,13 @@ export class DashboardService {
     const ui = this.ui;
     
     ui.dialogWidth.set(520);
-    ui.dialogTitle.set('Úprava titulu');
+    ui.dialogTitle.set(t('Úprava titulu'));
     ui.dialogContent.set(true);
     ui.dialogContentType.set('edit-title');
     ui.dialogButtons.set([
-      { label: 'Zrušit' },
+      { label: t('Zrušit') },
       {
-        label: 'Změnit',
+        label: t('Změnit'),
         primary: true,
         action: () => {
           if (!this.titleChanged()) return;
@@ -926,7 +927,7 @@ export class DashboardService {
           
           return this.updateTitle(title._id).pipe(
             catchError(err => {
-              this.ui.showToast(`Při ukládání změn se něco pokazilo. Zkuste to znovu.`, { type: 'error' });
+              this.ui.showToast(t('Při ukládání změn se něco pokazilo. Zkuste to znovu.'), { type: 'error' });
               console.error(err);
               return throwError(() => err);
             })
@@ -954,7 +955,7 @@ export class DashboardService {
 
     this.fetchModels().pipe(
       catchError(err => {
-        this.ui.showToast('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        this.ui.showToast(t('Nepodařilo se načíst dostupné modely. Zkuste dialogové okno znovu otevřít.'), { type: 'error' });
         console.error(err);
         return throwError(() => err);
       })
@@ -985,13 +986,13 @@ export class DashboardService {
     const ui = this.ui;
     
     ui.dialogWidth.set(520);
-    ui.dialogTitle.set('Smazat titul');
-    ui.dialogDescription.set(`Opravdu chcete smazat titul${' ' + title?.external_id}?`);
+    ui.dialogTitle.set(t('Smazat titul'));
+    ui.dialogDescription.set(t('Opravdu chcete smazat titul {name}?', { name: title?.external_id }));
     ui.dialogContent.set(false);
     ui.dialogButtons.set([
-      { label: 'Zrušit' },
+      { label: t('Zrušit') },
       {
-        label: 'Smazat titul',
+        label: t('Smazat titul'),
         primary: true,
         destructive: true,
         action: () => this.deleteTitle(title?._id ?? '').pipe(
@@ -1002,7 +1003,7 @@ export class DashboardService {
             ui.closeDialog();
           }),
           catchError(err => {
-            this.ui.showToast('Nepodařilo se smazat titul. Zkuste to znovu.', { type: 'error' })
+            this.ui.showToast(t('Nepodařilo se smazat titul. Zkuste to znovu.'), { type: 'error' })
             console.error(err);
             return throwError(() => err);
           })
@@ -1020,11 +1021,11 @@ export class DashboardService {
 
     const buttons: DrawerButton[] = [
       {
-        label: 'Zavřít',
+        label: t('Zavřít'),
         action: () => this.closeDrawer()
       },
       {
-        label: 'Uložit změny',
+        label: t('Uložit změny'),
         primary: true,
         action: () => {
           const current = this.selectedTitle();
@@ -1044,7 +1045,7 @@ export class DashboardService {
               ? this.assignTitle(current._id, newAssigneeId || null).pipe(map(a => ({ res, a })))
               : of({ res, a: null as { assigned_to: string | null; assigned_to_name: string | null } | null })),
             catchError(err => {
-              this.ui.showToast('Při ukládání změn se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+              this.ui.showToast(t('Při ukládání změn se něco pokazilo. Zkuste to znovu.'), { type: 'error' });
               console.error(err);
               return throwError(() => err);
             })
@@ -1071,7 +1072,7 @@ export class DashboardService {
 
     this.fetchModels().pipe(
       catchError(err => {
-        this.ui.showToast('Nepodařilo se načíst dostupné modely. Zkuste panel znovu otevřít.', { type: 'error' });
+        this.ui.showToast(t('Nepodařilo se načíst dostupné modely. Zkuste panel znovu otevřít.'), { type: 'error' });
         console.error(err);
         return throwError(() => err);
       })
@@ -1111,7 +1112,7 @@ export class DashboardService {
 
   // Loads the group members a title can be assigned to for the drawer select.
   private loadAssignees(title: Title): void {
-    const unassigned: SelectOption = { value: '', label: '— Nepřiřazeno —' };
+    const unassigned: SelectOption = { value: '', label: t('— Nepřiřazeno —') };
     // Baseline options always include "unassigned" and the current assignee, so
     // the drawer shows who a title is assigned to even if the member list fails.
     const base: SelectOption[] = [unassigned];
@@ -1141,13 +1142,13 @@ export class DashboardService {
     const ui = this.ui;
     
     ui.dialogWidth.set(520);
-    ui.dialogTitle.set('Nový uživatel');
+    ui.dialogTitle.set(t('Nový uživatel'));
     ui.dialogContent.set(true);
     ui.dialogContentType.set('new-user');
     ui.dialogButtons.set([
-      { label: 'Zrušit' },
+      { label: t('Zrušit') },
       {
-        label: 'Vytvořit',
+        label: t('Vytvořit'),
         primary: true,
         action: () => {
           if (!this.userFullname()) {
@@ -1217,11 +1218,11 @@ export class DashboardService {
               ui.confirmBtnDisabled.set(true);
               ui.confirmBtnDisabledTimer = window.setTimeout(() => ui.confirmBtnDisabled.set(false), 3000);
               ui.dialogWidth.set(520);
-              ui.dialogTitle.set('Nový uživatel');
+              ui.dialogTitle.set(t('Nový uživatel'));
               ui.dialogContent.set(true);
               ui.dialogContentType.set('new-password');
               ui.dialogButtons.set([{
-                label: 'Rozumím',
+                label: t('Rozumím'),
                 primary: true,
                 action: () => {
                   if (ui.confirmBtnDisabled()) return;
@@ -1230,7 +1231,7 @@ export class DashboardService {
               }]);
             }),
             catchError(err => {
-              ui.showToast('Nepodařilo se vytvořit uživatele. Zkuste to znovu.', { type: 'error' });
+              ui.showToast(t('Nepodařilo se vytvořit uživatele. Zkuste to znovu.'), { type: 'error' });
               console.error(err);
               return throwError(() => err);
             })
@@ -1247,7 +1248,7 @@ export class DashboardService {
 
     this.fetchGroups().pipe(
       catchError(err => {
-        this.ui.showToast('Nepodařilo se načíst skupiny. Zkuste dialogové okno znovu otevřít.', { type: 'error' });
+        this.ui.showToast(t('Nepodařilo se načíst skupiny. Zkuste dialogové okno znovu otevřít.'), { type: 'error' });
         console.error(err);
         return throwError(() => err);
       })
@@ -1266,13 +1267,13 @@ export class DashboardService {
     const ui = this.ui;
     
     ui.dialogWidth.set(360);
-    ui.dialogTitle.set('Změna údajů');
+    ui.dialogTitle.set(t('Změna údajů'));
     ui.dialogContent.set(true);
     ui.dialogContentType.set('edit-user');
     ui.dialogButtons.set([
-      { label: 'Zrušit' },
+      { label: t('Zrušit') },
       {
-        label: 'Uložit',
+        label: t('Uložit'),
         primary: true,
         action: () => {
           if (!this.userNonmembersDataChanged()) {
@@ -1321,7 +1322,7 @@ export class DashboardService {
               ui.drawerTitle.set(userFullname);
             }),
             catchError(err => {
-              this.ui.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
+              this.ui.showToast(t('Nepodařilo se uložit změny. Zkuste to znovu.'), { type: 'error' });
               console.error(err);
               return throwError(() => err);
             })
@@ -1342,13 +1343,13 @@ export class DashboardService {
     const user = this.selectedUser();
     
     ui.dialogWidth.set(520);
-    ui.dialogTitle.set('Smazat uživatele');
-    ui.dialogDescription.set(`Opravdu chcete smazat uživatele${' ' + user?.full_name}?`);
+    ui.dialogTitle.set(t('Smazat uživatele'));
+    ui.dialogDescription.set(t('Opravdu chcete smazat uživatele {name}?', { name: user?.full_name }));
     ui.dialogContent.set(false);
     ui.dialogButtons.set([
-      { label: 'Zrušit' },
+      { label: t('Zrušit') },
       {
-        label: 'Smazat uživatele',
+        label: t('Smazat uživatele'),
         primary: true,
         destructive: true,
         action: () => this.deleteUser(user?._id ?? '').pipe(
@@ -1360,7 +1361,7 @@ export class DashboardService {
             ui.closeDialog();
           }),
           catchError(err => {
-            this.ui.showToast('Nepodařilo se smazat uživatele. Zkuste to znovu.', { type: 'error' });
+            this.ui.showToast(t('Nepodařilo se smazat uživatele. Zkuste to znovu.'), { type: 'error' });
             console.error(err);
             return throwError(() => err);
           })
@@ -1376,7 +1377,7 @@ export class DashboardService {
     
     this.resetPassword(userId).pipe(
       catchError(err => {
-        ui.showToast('Při generování nového hesla se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+        ui.showToast(t('Při generování nového hesla se něco pokazilo. Zkuste to znovu.'), { type: 'error' });
         console.error(err);
         return throwError(() => err);
       })
@@ -1387,12 +1388,12 @@ export class DashboardService {
       ui.confirmBtnDisabled.set(true);
       ui.confirmBtnDisabledTimer = window.setTimeout(() => ui.confirmBtnDisabled.set(false), 3000);
       ui.dialogWidth.set(520);
-      ui.dialogTitle.set('Nové heslo');
+      ui.dialogTitle.set(t('Nové heslo'));
       ui.dialogContent.set(true);
       ui.dialogContentType.set('edit-password');
       ui.dialogButtons.set([
         {
-          label: 'Rozumím',
+          label: t('Rozumím'),
           primary: true,
           action: () => {
             if (ui.confirmBtnDisabled()) return;
@@ -1437,7 +1438,7 @@ export class DashboardService {
 
     this.fetchUsers().pipe(
       catchError(err => {
-        this.ui.showToast('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
+        this.ui.showToast(t('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.'), { type: 'error' });
         console.error('Fetching users failed:', err);
         return throwError(() => err);
       })
@@ -1452,11 +1453,11 @@ export class DashboardService {
     if (this.auth.user()?.role === 'admin') {
       ui.drawerButtons.set([
         {
-          label: 'Zavřít',
+          label: t('Zavřít'),
           action: () => this.closeDrawer()
         },
         {
-          label: 'Uložit změny',
+          label: t('Uložit změny'),
           primary: true,
           action: () => {
             const group = this.selectedGroupDetail();
@@ -1488,7 +1489,7 @@ export class DashboardService {
                 this.selectedGroupDetail.set(null);
               }),
               catchError(err => {
-                this.ui.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
+                this.ui.showToast(t('Nepodařilo se uložit změny. Zkuste to znovu.'), { type: 'error' });
                 console.error(err);
                 return throwError(() => err);
               })
@@ -1570,7 +1571,7 @@ export class DashboardService {
 
     this.fetchGroups().pipe(
       catchError(err => {
-        this.ui.showToast('Při načítání skupin se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
+        this.ui.showToast(t('Při načítání skupin se něco pokazilo. Zkuste stránku znovu načíst.'), { type: 'error' });
         console.error('Fetching groups failed:', err);
         return throwError(() => err);
       })
@@ -1589,11 +1590,11 @@ export class DashboardService {
     
     ui.drawerButtons.set([
       {
-        label: 'Zavřít',
+        label: t('Zavřít'),
         action: () => this.closeDrawer()
       },
       {
-        label: 'Uložit změny',
+        label: t('Uložit změny'),
         primary: true,
         action: () => {
           if (!this.userChanged()) return;
@@ -1645,7 +1646,7 @@ export class DashboardService {
               this.selectedUser.set(null);
             }),
             catchError(err => {
-              this.ui.showToast('Nepodařilo se uložit změny. Zkuste to znovu.', { type: 'error' });
+              this.ui.showToast(t('Nepodařilo se uložit změny. Zkuste to znovu.'), { type: 'error' });
               console.error(err);
               return throwError(() => err);
             })

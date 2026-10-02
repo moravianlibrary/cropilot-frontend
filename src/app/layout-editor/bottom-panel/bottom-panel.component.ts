@@ -4,10 +4,11 @@ import { IconComponent } from '../../components/icon/icon.component';
 import { AuthService } from '../../services/auth.service';
 import { TelemetryService } from '../../services/telemetry.service';
 import { TelemetryAction } from '../../stats.types';
+import { TPipe } from '../../i18n/t.pipe';
 
 @Component({
   selector: 'app-bottom-panel-editor',
-  imports: [IconComponent],
+  imports: [IconComponent, TPipe],
   templateUrl: './bottom-panel.component.html',
   styleUrl: './bottom-panel.component.scss'
 })

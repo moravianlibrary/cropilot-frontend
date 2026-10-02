@@ -5,20 +5,20 @@
   <div class="filters">
     <div class="filters-left">
       <app-segmented-control
-        [options]="presetOptions"
+        [options]="presetOptions()"
         [value]="stats.preset()"
         (valueChange)="onPreset($event)"
         size="small"
         [fit]="true"
-        ariaLabel="Období"
+        [ariaLabel]="'Období' | t"
       />
       @if (stats.preset() === 'custom') {
         <label class="date">
-          <span>Od</span>
+          <span>{{ 'Od' | t }}</span>
           <input type="date" [ngModel]="stats.from()" (ngModelChange)="onDate('from', $event)" [max]="stats.to()" />
         </label>
         <label class="date">
-          <span>Do</span>
+          <span>{{ 'Do' | t }}</span>
           <input type="date" [ngModel]="stats.to()" (ngModelChange)="onDate('to', $event)" [min]="stats.from()" />
         </label>
       } @else {
@@ -30,7 +30,7 @@
         inputName="stats-group"
         size="compact"
         [width]="220"
-        [options]="stats.groupOptions()"
+        [options]="groupOptionsView()"
         [ngModel]="stats.groupId()"
         (ngModelChange)="onSelect(stats.groupId, $event)"
       />
@@ -38,7 +38,7 @@
         inputName="stats-crop-model"
         size="compact"
         [width]="220"
-        [options]="stats.cropModelOptions()"
+        [options]="cropModelOptionsView()"
         [ngModel]="stats.cropModel()"
         (ngModelChange)="onSelect(stats.cropModel, $event)"
       />
@@ -46,7 +46,7 @@
         inputName="stats-rotation-model"
         size="compact"
         [width]="220"
-        [options]="stats.rotationModelOptions()"
+        [options]="rotationModelOptionsView()"
         [ngModel]="stats.rotationModel()"
         (ngModelChange)="onSelect(stats.rotationModel, $event)"
       />
@@ -67,43 +67,43 @@
 
       <section class="card">
         <div class="card-header">
-          <h2>Stavy titulů</h2>
+          <h2>{{ 'Stavy titulů' | t }}</h2>
         </div>
-        <app-stacked-bar [segments]="stateSegments()" emptyText="V období nejsou žádné tituly" />
+        <app-stacked-bar [segments]="stateSegments()" [emptyText]="'V období nejsou žádné tituly' | t" />
       </section>
 
       <!-- Kvalita predikcí -->
       <section class="card">
         <div class="card-header">
           <div>
-            <h2>Kvalita predikcí</h2>
-            <p class="subtitle">Jak moc museli uživatelé opravovat návrhy modelu. Počítá se z titulů, které byly v období uloženy.</p>
+            <h2>{{ 'Kvalita predikcí' | t }}</h2>
+            <p class="subtitle">{{ 'Jak moc museli uživatelé opravovat návrhy modelu. Počítá se z titulů, které byly v období uloženy.' | t }}</p>
           </div>
           <div class="card-actions">
-            <app-segmented-control [options]="groupByOptions" [value]="stats.qualityGroupBy()" (valueChange)="onQualityGroupBy($event)" size="small" [fit]="true" ariaLabel="Seskupit podle" />
+            <app-segmented-control [options]="groupByOptions()" [value]="stats.qualityGroupBy()" (valueChange)="onQualityGroupBy($event)" size="small" [fit]="true" [ariaLabel]="'Seskupit podle' | t" />
             <button type="button" class="button real-button compact secondary" (click)="exportQuality()" [disabled]="!stats.quality().length">Export CSV</button>
           </div>
         </div>
         @if (!stats.quality().length) {
-          <div class="empty">Žádné uložené tituly v období.</div>
+          <div class="empty">{{ 'Žádné uložené tituly v období.' | t }}</div>
         } @else {
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
                   <th>{{ groupByLabel(stats.qualityGroupBy()) }}</th>
-                  <th class="num">Tituly</th>
-                  <th class="num">Skeny</th>
-                  <th class="bar-col">Upravené skeny</th>
-                  <th class="num" title="Podíl skenů, kde se geometrie výřezu skutečně změnila (ne jen uložení beze změny)">Skutečně změněné</th>
-                  <th class="num" title="Průměrný překryv predikce a výsledného výřezu (1 = shoda)">IoU</th>
-                  <th class="num" title="Průměrný posun středu výřezu v podílu velikosti skenu">Posun</th>
-                  <th class="num">Δ úhel</th>
-                  <th class="num">+ strany</th>
-                  <th class="num">− strany</th>
-                  <th class="num" title="Podíl skenů s otočenou orientací">Orientace</th>
-                  <th class="bar-col" title="Podíl uzavřených titulů odeslaných na přetrénování (více než 10 % upravených skenů)">Přetrénování</th>
-                  <th class="num" title="Medián doby od dokončení predikce do prvního uložení">Doba kontroly</th>
+                  <th class="num">{{ 'Tituly' | t }}</th>
+                  <th class="num">{{ 'Skeny' | t }}</th>
+                  <th class="bar-col">{{ 'Upravené skeny' | t }}</th>
+                  <th class="num" [title]="'Podíl skenů, kde se geometrie výřezu skutečně změnila (ne jen uložení beze změny)' | t">{{ 'Skutečně změněné' | t }}</th>
+                  <th class="num" [title]="'Průměrný překryv predikce a výsledného výřezu (1 = shoda)' | t">IoU</th>
+                  <th class="num" [title]="'Průměrný posun středu výřezu v podílu velikosti skenu' | t">{{ 'Posun' | t }}</th>
+                  <th class="num">{{ 'Δ úhel' | t }}</th>
+                  <th class="num">{{ '+ strany' | t }}</th>
+                  <th class="num">{{ '− strany' | t }}</th>
+                  <th class="num" [title]="'Podíl skenů s otočenou orientací' | t">{{ 'Orientace' | t }}</th>
+                  <th class="bar-col" [title]="'Podíl uzavřených titulů odeslaných na přetrénování (více než 10 % upravených skenů)' | t">{{ 'Přetrénování' | t }}</th>
+                  <th class="num" [title]="'Medián doby od dokončení predikce do prvního uložení' | t">{{ 'Doba kontroly' | t }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,33 +140,33 @@
       <section class="card">
         <div class="card-header">
           <div>
-            <h2>Anomálie</h2>
-            <p class="subtitle">Jak dobře příznaky anomálií odpovídají tomu, co uživatelé skutečně opravili.</p>
+            <h2>{{ 'Anomálie' | t }}</h2>
+            <p class="subtitle">{{ 'Jak dobře příznaky anomálií odpovídají tomu, co uživatelé skutečně opravili.' | t }}</p>
           </div>
           <div class="card-actions">
-            <app-segmented-control [options]="anomaliesGroupByOptions" [value]="stats.anomaliesGroupBy()" (valueChange)="onAnomaliesGroupBy($event)" size="small" [fit]="true" ariaLabel="Seskupit podle" />
+            <app-segmented-control [options]="anomaliesGroupByOptions()" [value]="stats.anomaliesGroupBy()" (valueChange)="onAnomaliesGroupBy($event)" size="small" [fit]="true" [ariaLabel]="'Seskupit podle' | t" />
             <button type="button" class="button real-button compact secondary" (click)="exportAnomalies()" [disabled]="!stats.anomalies().length">Export CSV</button>
           </div>
         </div>
         @if (!stats.anomalies().length) {
-          <div class="empty">Žádné zpracované tituly v období.</div>
+          <div class="empty">{{ 'Žádné zpracované tituly v období.' | t }}</div>
         } @else if (anomaliesTotal()) {
           @let total = anomaliesTotal()!;
           <div class="mini-kpis">
-            <app-kpi-tile label="Skeny" [value]="fmtNum(total.scans)" />
-            <app-kpi-tile label="Podezřelé skeny" [value]="fmtNum(total.flagged)" [hint]="fmtPct(total.scans ? total.flagged / total.scans : null) + ' ze všech'" />
-            <app-kpi-tile label="Přesnost" [value]="fmtPct(total.precision)" hint="Podíl podezřelých skenů, které uživatel upravil" />
-            <app-kpi-tile label="Záchyt" [value]="fmtPct(total.recall)" hint="Podíl upravených skenů, které byly označeny jako podezřelé" />
-            <app-kpi-tile label="Upravené bez příznaku" [value]="fmtNum(total.unflagged_edited)" hint="Chyby, které anomálie nezachytily" />
+            <app-kpi-tile [label]="'Skeny' | t" [value]="fmtNum(total.scans)" />
+            <app-kpi-tile [label]="'Podezřelé skeny' | t" [value]="fmtNum(total.flagged)" [hint]="'{pct} ze všech' | t: { pct: fmtPct(total.scans ? total.flagged / total.scans : null) }" />
+            <app-kpi-tile [label]="'Přesnost' | t" [value]="fmtPct(total.precision)" [hint]="'Podíl podezřelých skenů, které uživatel upravil' | t" />
+            <app-kpi-tile [label]="'Záchyt' | t" [value]="fmtPct(total.recall)" [hint]="'Podíl upravených skenů, které byly označeny jako podezřelé' | t" />
+            <app-kpi-tile [label]="'Upravené bez příznaku' | t" [value]="fmtNum(total.unflagged_edited)" [hint]="'Chyby, které anomálie nezachytily' | t" />
           </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Anomálie</th>
-                  <th class="num">Skeny s příznakem</th>
-                  <th class="num">Z toho upravené</th>
-                  <th class="bar-col">Podíl upravených</th>
+                  <th>{{ 'Anomálie' | t }}</th>
+                  <th class="num">{{ 'Skeny s příznakem' | t }}</th>
+                  <th class="num">{{ 'Z toho upravené' | t }}</th>
+                  <th class="bar-col">{{ 'Podíl upravených' | t }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -190,12 +190,12 @@
               <thead>
                 <tr>
                   <th>{{ groupByLabel(stats.anomaliesGroupBy()) }}</th>
-                  <th class="num">Skeny</th>
-                  <th class="num">Podezřelé</th>
-                  <th class="num">Upravené</th>
-                  <th class="bar-col" title="Podíl podezřelých skenů, které uživatel upravil">Přesnost</th>
-                  <th class="num" title="Podíl upravených skenů, které byly označeny jako podezřelé">Záchyt</th>
-                  <th class="num">Upravené bez příznaku</th>
+                  <th class="num">{{ 'Skeny' | t }}</th>
+                  <th class="num">{{ 'Podezřelé' | t }}</th>
+                  <th class="num">{{ 'Upravené' | t }}</th>
+                  <th class="bar-col" [title]="'Podíl podezřelých skenů, které uživatel upravil' | t">{{ 'Přesnost' | t }}</th>
+                  <th class="num" [title]="'Podíl upravených skenů, které byly označeny jako podezřelé' | t">{{ 'Záchyt' | t }}</th>
+                  <th class="num">{{ 'Upravené bez příznaku' | t }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -223,23 +223,23 @@
       <section class="card">
         <div class="card-header">
           <div>
-            <h2>Používání editoru</h2>
-            <p class="subtitle">Z událostí editoru: čas s otevřenou záložkou, uložení, klávesové zkratky vs. myš. Agregováno, bez jednotlivých uživatelů.</p>
+            <h2>{{ 'Používání editoru' | t }}</h2>
+            <p class="subtitle">{{ 'Z událostí editoru: čas s otevřenou záložkou, uložení, klávesové zkratky vs. myš. Agregováno, bez jednotlivých uživatelů.' | t }}</p>
           </div>
           <div class="card-actions">
-            <app-segmented-control [options]="usageGroupByOptions" [value]="stats.usageGroupBy()" (valueChange)="onUsageGroupBy($event)" size="small" [fit]="true" ariaLabel="Seskupit podle" />
+            <app-segmented-control [options]="usageGroupByOptions()" [value]="stats.usageGroupBy()" (valueChange)="onUsageGroupBy($event)" size="small" [fit]="true" [ariaLabel]="'Seskupit podle' | t" />
             <button type="button" class="button real-button compact secondary" (click)="exportUsage()" [disabled]="!stats.usage().length">Export CSV</button>
           </div>
         </div>
         @if (!stats.usage().length) {
-          <div class="empty">V období nebyly zaznamenány žádné události editoru.</div>
+          <div class="empty">{{ 'V období nebyly zaznamenány žádné události editoru.' | t }}</div>
         } @else {
           @let totals = usageTotals();
           <div class="mini-kpis">
-            <app-kpi-tile label="Otevření editoru" [value]="fmtNum(totals.sessions)" />
-            <app-kpi-tile label="Průměrný čas na otevření" [value]="fmtDuration(totals.meanDuration)" />
-            <app-kpi-tile label="Uložení na otevření" [value]="fmtNum(totals.savesPerSession, 2)" />
-            <app-kpi-tile label="Podíl klávesnice" [value]="fmtPct(totals.keyboardRatio)" hint="Zkratky vs. akce myší" />
+            <app-kpi-tile [label]="'Otevření editoru' | t" [value]="fmtNum(totals.sessions)" />
+            <app-kpi-tile [label]="'Průměrný čas na otevření' | t" [value]="fmtDuration(totals.meanDuration)" />
+            <app-kpi-tile [label]="'Uložení na otevření' | t" [value]="fmtNum(totals.savesPerSession, 2)" />
+            <app-kpi-tile [label]="'Podíl klávesnice' | t" [value]="fmtPct(totals.keyboardRatio)" [hint]="'Zkratky vs. akce myší' | t" />
           </div>
 
           <div class="table-wrap">
@@ -247,14 +247,14 @@
               <thead>
                 <tr>
                   <th>{{ groupByLabel(stats.usageGroupBy()) }}</th>
-                  <th class="num">Otevření</th>
-                  <th class="num">Celkový čas</th>
-                  <th class="num">Průměrný čas</th>
-                  <th class="num">Uložení</th>
-                  <th class="num">Uložení / otevření</th>
-                  <th class="num">Zkratky</th>
-                  <th class="num">Akce myší</th>
-                  <th class="bar-col">Podíl klávesnice</th>
+                  <th class="num">{{ 'Otevření' | t }}</th>
+                  <th class="num">{{ 'Celkový čas' | t }}</th>
+                  <th class="num">{{ 'Průměrný čas' | t }}</th>
+                  <th class="num">{{ 'Uložení' | t }}</th>
+                  <th class="num">{{ 'Uložení / otevření' | t }}</th>
+                  <th class="num">{{ 'Zkratky' | t }}</th>
+                  <th class="num">{{ 'Akce myší' | t }}</th>
+                  <th class="bar-col">{{ 'Podíl klávesnice' | t }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -280,22 +280,22 @@
 
           <div class="two-cols">
             <div>
-              <h3>Nejpoužívanější zkratky</h3>
-              <app-bar-chart [data]="topShortcuts()" [horizontal]="true" emptyText="Žádné zkratky v období" />
+              <h3>{{ 'Nejpoužívanější zkratky' | t }}</h3>
+              <app-bar-chart [data]="topShortcuts()" [horizontal]="true" [emptyText]="'Žádné zkratky v období' | t" />
             </div>
             <div>
-              <h3>Klávesnice vs. myš podle akce</h3>
+              <h3>{{ 'Klávesnice vs. myš podle akce' | t }}</h3>
               @if (!actionRows().length) {
-                <div class="empty">Žádné akce v období.</div>
+                <div class="empty">{{ 'Žádné akce v období.' | t }}</div>
               } @else {
                 <div class="table-wrap compact">
                   <table>
                     <thead>
                       <tr>
-                        <th>Akce</th>
-                        <th class="num">Klávesnice</th>
-                        <th class="num">Myš</th>
-                        <th class="bar-col">Podíl klávesnice</th>
+                        <th>{{ 'Akce' | t }}</th>
+                        <th class="num">{{ 'Klávesnice' | t }}</th>
+                        <th class="num">{{ 'Myš' | t }}</th>
+                        <th class="bar-col">{{ 'Podíl klávesnice' | t }}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -318,7 +318,7 @@
           </div>
 
           @if (filterUsage().length) {
-            <h3>Použití filtrů</h3>
+            <h3>{{ 'Použití filtrů' | t }}</h3>
             <div class="distributions">
               @for (f of filterUsage(); track f.filter) {
                 <div class="distribution">
@@ -330,11 +330,11 @@
           }
 
           @if (placementSegments().length) {
-            <h3>Umístění nových výřezů</h3>
-            <p class="subtitle">Jak editor umístil výřez po kliknutí na „Přidat výřez“.</p>
+            <h3>{{ 'Umístění nových výřezů' | t }}</h3>
+            <p class="subtitle">{{ 'Jak editor umístil výřez po kliknutí na „Přidat výřez“.' | t }}</p>
             <div class="distributions">
               <div class="distribution">
-                <span class="dist-label">Strategie</span>
+                <span class="dist-label">{{ 'Strategie' | t }}</span>
                 <app-stacked-bar [segments]="placementSegments()" />
               </div>
             </div>
@@ -346,15 +346,15 @@
       <section class="card">
         <div class="card-header">
           <div>
-            <h2>Nastavení editoru</h2>
-            <p class="subtitle">Rozložení hodnot podle posledního nastavení každého uživatele{{ stats.settings()?.users_total ? ' (' + fmtNum(stats.settings()?.users_total) + ' uživatelů)' : '' }}. Nezávisí na zvoleném období.</p>
+            <h2>{{ 'Nastavení editoru' | t }}</h2>
+            <p class="subtitle">{{ settingsSubtitle() }}</p>
           </div>
           <div class="card-actions">
             <button type="button" class="button real-button compact secondary" (click)="exportSettings()" [disabled]="!settingRows().length">Export CSV</button>
           </div>
         </div>
         @if (!settingRows().length) {
-          <div class="empty">Zatím žádné snapshoty nastavení. Vzniknou při otevření editoru.</div>
+          <div class="empty">{{ 'Zatím žádné snapshoty nastavení. Vzniknou při otevření editoru.' | t }}</div>
         } @else {
           <div class="distributions">
             @for (s of settingRows(); track s.key) {

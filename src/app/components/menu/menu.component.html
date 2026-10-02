@@ -34,13 +34,13 @@
           <span class="icon">
             <app-icon name="settings" [size]="16" />
           </span>
-          Nastavení
+          {{ 'Nastavení' | t }}
         </div>
         <div class="menu-item" (click)="onShortcutsClick()">
           <span class="icon">
             <app-icon name="keyboard" [size]="16" />
           </span>
-          Klávesové zkratky
+          {{ 'Klávesové zkratky' | t }}
         </div>
         @if (canWriteTitle) {
           <div
@@ -50,7 +50,7 @@
             <span class="icon">
               <app-icon name="reset" [size]="16" />
             </span>
-            Reset změn v dokumentu
+            {{ 'Reset změn v dokumentu' | t }}
           </div>
         }
       }
@@ -62,7 +62,7 @@
           <span class="icon">
             <app-icon name="reset" [size]="16" />
           </span>
-          Reset mých změn ve skenu
+          {{ 'Reset mých změn ve skenu' | t }}
         </div>
       }
     </div>

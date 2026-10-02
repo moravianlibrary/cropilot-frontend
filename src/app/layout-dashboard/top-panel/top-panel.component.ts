@@ -5,10 +5,12 @@ import { DashboardService } from '../../services/dashboard.service';
 import { Router } from '@angular/router';
 import { UiService } from '../../services/ui.service';
 import { IconComponent } from '../../components/icon/icon.component';
+import { TPipe } from '../../i18n/t.pipe';
+import { LangSwitchComponent } from '../../components/lang-switch/lang-switch.component';
 
 @Component({
   selector: 'app-top-panel-dashboard',
-  imports: [IconComponent],
+  imports: [IconComponent, TPipe, LangSwitchComponent],
   templateUrl: './top-panel.component.html',
   styleUrl: './top-panel.component.scss'
 })

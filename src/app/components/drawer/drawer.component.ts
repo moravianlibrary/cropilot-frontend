@@ -7,10 +7,11 @@ import { FormsModule } from '@angular/forms';
 import { UiService } from '../../services/ui.service';
 import { SelectComponent } from '../select/select.component';
 import { IconComponent } from '../icon/icon.component';
+import { TPipe } from '../../i18n/t.pipe';
 
 @Component({
   selector: 'app-drawer',
-  imports: [FormsModule, SelectComponent, IconComponent],
+  imports: [FormsModule, SelectComponent, IconComponent, TPipe],
   templateUrl: './drawer.component.html',
   styleUrl: './drawer.component.scss',
   host: { '[class.open]': 'ui.drawerOpen()' },

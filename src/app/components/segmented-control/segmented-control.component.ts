@@ -1,5 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { IconComponent } from '../icon/icon.component';
+import { TPipe } from '../../i18n/t.pipe';
 
 export type SegmentedControlValue = string | number;
 export type SegmentedControlVariant = 'default' | 'lines' | 'swatches';
@@ -18,7 +19,7 @@ export interface SegmentedControlOption {
 
 @Component({
   selector: 'app-segmented-control',
-  imports: [IconComponent],
+  imports: [IconComponent, TPipe],
   templateUrl: './segmented-control.component.html',
   styleUrl: './segmented-control.component.scss',
   host: {

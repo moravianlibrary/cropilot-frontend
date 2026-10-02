@@ -1,4 +1,6 @@
 import { Component, computed, input } from '@angular/core';
+import { TPipe } from '../../../i18n/t.pipe';
+import { locale, plural, t } from '../../../i18n/i18n';
 
 export interface StackedSegment {
   label: string;
@@ -20,6 +22,7 @@ const PALETTE = [
 // One 100 % horizontal bar showing a distribution, with a legend.
 @Component({
   selector: 'app-stacked-bar',
+  imports: [TPipe],
   templateUrl: './stacked-bar.component.html',
   styleUrl: './stacked-bar.component.scss'
 })
@@ -29,6 +32,11 @@ export class StackedBarComponent {
   emptyText = input<string>('Žádná data');
 
   total = computed<number>(() => this.segments().reduce((sum, s) => sum + s.value, 0));
+
+  ariaLabel = computed<string>(() => {
+    const n = this.segments().length;
+    return plural(n, '{n} hodnota', '{n} hodnoty', '{n} hodnot');
+  });
 
   colored = computed(() => this.segments()
     .filter(s => s.value > 0)
@@ -40,8 +48,8 @@ export class StackedBarComponent {
     return total > 0 ? Math.round((value / total) * 1000) / 10 : 0;
   }
 
-  // Czech decimal comma for the legend / tooltip
+  // Locale decimal separator and percent spacing for the legend / tooltip
   fmtPct(pct: number): string {
-    return new Intl.NumberFormat('cs-CZ', { maximumFractionDigits: 1 }).format(pct);
+    return t('{value} %', { value: new Intl.NumberFormat(locale(), { maximumFractionDigits: 1 }).format(pct) });
   }
 }

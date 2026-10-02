@@ -1,4 +1,5 @@
 import { Component, computed, input } from '@angular/core';
+import { TPipe } from '../../../i18n/t.pipe';
 
 export interface BarDatum {
   label: string;
@@ -9,6 +10,7 @@ export interface BarDatum {
 // Minimal CSS bar chart (vertical or horizontal), no external dependency.
 @Component({
   selector: 'app-bar-chart',
+  imports: [TPipe],
   templateUrl: './bar-chart.component.html',
   styleUrl: './bar-chart.component.scss',
   host: {

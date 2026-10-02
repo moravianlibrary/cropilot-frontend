@@ -7,7 +7,7 @@
       @if (editor.titleExternalId()) {
         <div class="title-name" [title]="editor.titleExternalId()">{{ editor.titleExternalId() }}</div>
       }
-      <h1>Sken {{ currentIndexImage }}/{{ editor.displayedImagesFinal().length }}</h1>
+      <h1>{{ 'Sken {n}/{total}' | t: { n: currentIndexImage, total: editor.displayedImagesFinal().length } }}</h1>
     </div>
     @if (canWriteTitle) {
       <app-menu [type]="'menu-secondary'" />
@@ -59,7 +59,7 @@
       aria-controls="rotation-section"
       (click)="toggleRotation()"
     >
-      Otočit sken
+      {{ 'Otočit sken' | t }}
       @if (!rotationOpen() && rotationSuffix) {
         <span class="value">· {{ rotationSuffix }}</span>
       }
@@ -71,13 +71,13 @@
       <div id="rotation-section" class="field rotation-section">
         <app-segmented-control
           class="view-switch"
-          ariaLabel="Orientace skenu"
-          [options]="orientationOptions"
+          [ariaLabel]="'Orientace skenu' | t"
+          [options]="orientationOptions()"
           [value]="activeOrientation"
           (valueChange)="setOrientation($event)"
         />
         <div class="scope-row">
-          <span class="scope-label">Použít na:</span>
+          <span class="scope-label">{{ 'Použít na:' | t }}</span>
           <div class="radios-wrapper scope-radios">
             <label class="radio">
               <input
@@ -86,7 +86,7 @@
                 [checked]="editor.rotationScope() === 'current'"
                 (change)="setRotationScope('current')"
               />
-              <span class="radio-value">Tento sken</span>
+              <span class="radio-value">{{ 'Tento sken' | t }}</span>
             </label>
             <label class="radio">
               <input
@@ -95,7 +95,7 @@
                 [checked]="editor.rotationScope() === 'all'"
                 (change)="setRotationScope('all')"
               />
-              <span class="radio-value">Všechny</span>
+              <span class="radio-value">{{ 'Všechny' | t }}</span>
             </label>
           </div>
         </div>
@@ -106,7 +106,7 @@
       [class.disabled]="!canEditTitle || editor.currentPages.length >= editor.maxPages || !editor.displayedImagesFinal().length"
       (click)="editor.addPage('mouse')"
     >
-      Přidat výřez
+      {{ 'Přidat výřez' | t }}
       <span class="icon">
         <app-icon name="add" [size]="16"></app-icon>
       </span>
@@ -119,9 +119,9 @@
     <span class="page">
       <span class="header">
         <span class="title-menu-wrapper">
-          <h1>Výřez (obdélník)</h1>
+          <h1>{{ 'Výřez (obdélník)' | t }}</h1>
           @if (editor.selectedPage.edited || editor.pageWasEdited) {
-            <span class="dot edited tip" role="img" aria-label="Upraveno" data-tooltip="Výřez byl v této relaci upraven"></span>
+            <span class="dot edited tip" role="img" [attr.aria-label]="'Upraveno' | t" [attr.data-tooltip]="'Výřez byl v této relaci upraven' | t"></span>
           }
         </span>
         <span class="actions">
@@ -129,7 +129,7 @@
             class="action delete-crop"
             (click)="editor.removePage()"
           >
-            Smazat
+            {{ 'Smazat' | t }}
             <span class="icon">
               <app-icon name="delete" [size]="16"></app-icon>
             </span>
@@ -138,7 +138,7 @@
       </span>
 
       <span class="properties">
-        <h2>Pozice (v %)</h2>
+        <h2>{{ 'Pozice (v %)' | t }}</h2>
         <span class="inputs-wrapper">
           <span class="input-wrapper">
             <label for="X">X: </label>
@@ -146,7 +146,7 @@
               #xInput
               id="X"
               name="X"
-              title="Nejlevější bod výřezu (většinou levá strana nebo roh)"
+              [attr.title]="'Nejlevější bod výřezu (většinou levá strana nebo roh)' | t"
               class="left-input"
               type="number"
               [ngModel]="editor.selectedPage.left * 100 | number:'1.0-2'"
@@ -181,7 +181,7 @@
               #yInput
               id="Y"
               name="Y"
-              title="Nejhornější bod výřezu (většinou horní strana nebo roh)"
+              [attr.title]="'Nejhornější bod výřezu (většinou horní strana nebo roh)' | t"
               class="right-input"
               type="number"
               [ngModel]="editor.selectedPage.top * 100 | number:'1.0-2'"
@@ -214,15 +214,15 @@
       </span>
 
       <span class="properties">
-        <h2>Rozměry (v %)</h2>
+        <h2>{{ 'Rozměry (v %)' | t }}</h2>
         <span class="inputs-wrapper">
           <span class="input-wrapper">
-            <label for="width">š: </label>
+            <label for="width">{{ 'š:' | t }} </label>
             <input
               #widthInput
               id="width"
               name="width"
-              title="Šířka výřezu"
+              [attr.title]="'Šířka výřezu' | t"
               class="left-input"
               type="number"
               [ngModel]="editor.selectedPage.width * 100 | number:'1.0-2'"
@@ -261,12 +261,12 @@
             </span>
           </span>
           <span class="input-wrapper">
-            <label for="height">v: </label>
+            <label for="height">{{ 'v:' | t }} </label>
             <input
               #heightInput
               id="height"
               name="height"
-              title="Výška výřezu"
+              [attr.title]="'Výška výřezu' | t"
               class="right-input"
               type="number"
               [ngModel]="editor.selectedPage.height * 100 | number:'1.0-2'"
@@ -308,7 +308,7 @@
       </span>
 
       <span class="properties">
-        <h2>Otáčení (ve °)</h2>
+        <h2>{{ 'Otáčení (ve °)' | t }}</h2>
         <span class="angle-row">
           <input
             #angleSlider
@@ -317,8 +317,8 @@
             min="-45"
             max="45"
             step="0.1"
-            aria-label="Otáčení výřezu ve stupních"
-            title="Dvojklikem vrátíte na 0°"
+            [attr.aria-label]="'Otáčení výřezu ve stupních' | t"
+            [attr.title]="'Dvojklikem vrátíte na 0°' | t"
             [value]="editor.selectedPage.angle"
             (input)="onAngleSliderInput(angleSlider)"
             (dblclick)="onAngleSliderInput(angleSlider, 0)"
@@ -326,7 +326,7 @@
           <span class="input-wrapper angle-wrapper">
           <input
             #angleInput
-            title="Kladné stupně otáčí výřez po směru hodinových ručiček"
+            [attr.title]="'Kladné stupně otáčí výřez po směru hodinových ručiček' | t"
             class="left-input angle-input"
             type="number"
             [ngModel]="editor.selectedPage.angle | number:'1.0-2'"
@@ -377,21 +377,21 @@
       </span>
     </span>
   } @else if (editor.currentPages.length) {
-    <span class="no-crop-hint">Vyberte výřez kliknutím na obdélník ve skenu</span>
+    <span class="no-crop-hint">{{ 'Vyberte výřez kliknutím na obdélník ve skenu' | t }}</span>
   } @else if (editor.displayedImagesFinal().length) {
-    <span class="no-crop-hint">Sken nemá žádný výřez. Přidejte ho tlačítkem „Přidat výřez“.</span>
+    <span class="no-crop-hint">{{ 'Sken nemá žádný výřez. Přidejte ho tlačítkem „Přidat výřez“.' | t }}</span>
   }
 </div>
 
 <div class="footer">
   @if (!canWriteTitle) {
-    <div class="read-mode-note">Režim čtení, změny nelze uložit</div>
+    <div class="read-mode-note">{{ 'Režim čtení, změny nelze uložit' | t }}</div>
   } @else {
   <span
     class="button real-button primary"
     (click)="saveClick()"
   >
-    Uložit vše
+    {{ 'Uložit vše' | t }}
   </span>
   }
 </div>

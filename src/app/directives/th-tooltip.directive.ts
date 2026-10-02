@@ -1,5 +1,6 @@
 import { computed, Directive, ElementRef, inject, input, signal } from '@angular/core';
 import { SortDirection, SortField } from '../app.types';
+import { t } from '../i18n/i18n';
 
 @Directive({
   selector: '[thTooltip]',
@@ -19,19 +20,19 @@ export class ThTooltipDirective {
     // Date
     if (['created_at', 'modified_at'].includes(activeField ?? '')) {
       return direction === 'asc'
-        ? 'Řazení od nejstarších'
+        ? t('Řazení od nejstarších')
         : (direction === 'desc'
-          ? 'Řazení od nejnovějších'
-          : 'Žádné řazení'
+          ? t('Řazení od nejnovějších')
+          : t('Žádné řazení')
         )
     }
 
     // Text
     return direction === 'asc'
-      ? 'Řazení Z-A'
+      ? t('Řazení Z-A')
       : (direction === 'desc'
-        ? 'Řazení A-Z'
-        : 'Žádné řazení'
+        ? t('Řazení A-Z')
+        : t('Žádné řazení')
       )
   });
 

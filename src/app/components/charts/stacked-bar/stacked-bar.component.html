@@ -1,13 +1,13 @@
 @if (!total()) {
-  <div class="empty">{{ emptyText() }}</div>
+  <div class="empty">{{ emptyText() | t }}</div>
 } @else {
-  <div class="bar" role="img" [attr.aria-label]="segments().length + ' hodnot'">
+  <div class="bar" role="img" [attr.aria-label]="ariaLabel()">
     @for (s of colored(); track s.label) {
       <span
         class="segment"
         [style.flex]="s.value"
         [style.background-color]="s.color"
-        [title]="s.label + ': ' + s.value + ' (' + fmtPct(s.pct) + ' %)'"
+        [title]="s.label + ': ' + s.value + ' (' + fmtPct(s.pct) + ')'"
       ></span>
     }
   </div>
@@ -17,7 +17,7 @@
         <span class="item">
           <span class="dot" [style.background-color]="s.color"></span>
           <span class="name">{{ s.label }}</span>
-          <span class="count">{{ s.value }} ({{ fmtPct(s.pct) }} %)</span>
+          <span class="count">{{ s.value }} ({{ fmtPct(s.pct) }})</span>
         </span>
       }
     </div>

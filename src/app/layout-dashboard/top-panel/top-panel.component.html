@@ -31,7 +31,7 @@
       <span class="icon">
         <app-icon name="arrow-right" [size]="16" />
       </span>
-      Seznam skupin
+      {{ 'Seznam skupin' | t }}
     </span>
     @if (onTitlesPage) {
       <span class="breadcrumb-item">
@@ -59,7 +59,7 @@
         <span class="icon">
           <app-icon name="open-folder" [size]="16" />
         </span>
-        Správce skupin
+        {{ 'Správce skupin' | t }}
       </span>
       <span
         class="tab"
@@ -72,7 +72,7 @@
         <span class="icon">
           <app-icon name="users" [size]="16" />
         </span>
-        Správce uživatelů
+        {{ 'Správce uživatelů' | t }}
       </span>
       <span
         class="tab"
@@ -85,10 +85,11 @@
         <span class="icon">
           <app-icon name="chart" [size]="16" />
         </span>
-        Statistiky
+        {{ 'Statistiky' | t }}
       </span>
     </span>
   }
+  <app-lang-switch [tabindex]="dialogOrDrawerOpen ? -1 : 0" />
   @if (user?._id !== '69b92fc488cb90543bf1a587') {
     <span
       class="logout button real-button secondary"
@@ -119,7 +120,7 @@
       (keydown.enter)="auth.redirectToLogin()"
       [tabindex]="dialogOrDrawerOpen ? -1 : 0"
     >
-      <span class="user-name">Přihlásit se</span>
+      <span class="user-name">{{ 'Přihlásit se' | t }}</span>
       <span class="icon">
         <app-icon name="login" [size]="16" />
       </span>

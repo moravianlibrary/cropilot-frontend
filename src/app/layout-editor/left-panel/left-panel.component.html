@@ -8,7 +8,7 @@
         <span
           class="icon"
           role="button"
-          title="Zpět na seznam titulů"
+          [attr.title]="'Zpět na seznam titulů' | t"
           tabindex="0"
           (click)="backToMyGroupsTitles(canReadGroup)"
           (keydown.enter)="backToMyGroupsTitles(canReadGroup)"
@@ -44,7 +44,7 @@
         (keydown.space)="editor.switchFilter('all')"
         tabindex="0"
         (click)="editor.switchFilter('all')"
-      >Vše <span class="filter-number">({{ editor.images().length }})</span></span>
+      >{{ 'Vše' | t }} <span class="filter-number">({{ editor.images().length }})</span></span>
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'flagged'"
@@ -54,7 +54,7 @@
         [attr.aria-disabled]="editor.flaggedImages().length === 0"
         [attr.tabindex]="editor.flaggedImages().length === 0 ? -1 : 0"
         (click)="editor.switchFilter('flagged')"
-      ><span class="dot warning"></span>Podezřelé <span class="filter-number">({{ editor.flaggedRemaining() }})</span></span>
+      ><span class="dot warning"></span>{{ 'Podezřelé' | t }} <span class="filter-number">({{ editor.flaggedRemaining() }})</span></span>
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'edited'"
@@ -64,7 +64,7 @@
         [attr.aria-disabled]="editor.editedImages().length === 0"
         [attr.tabindex]="editor.editedImages().length === 0 ? -1 : 0"
         (click)="editor.switchFilter('edited')"
-      ><span class="dot edited"></span>Upravené <span class="filter-number">({{ editor.editedImages().length }})</span></span>
+      ><span class="dot edited"></span>{{ 'Upravené' | t }} <span class="filter-number">({{ editor.editedImages().length }})</span></span>
       <span
         class="filter"
         [class.selected-filter]="editor.selectedFilter === 'ok'"
@@ -79,7 +79,7 @@
 
     <!-- Number of pages filters -->
     <div class="number-filters-wrapper">
-      <h2>Strany</h2>
+      <h2>{{ 'Strany' | t }}</h2>
       <div class="filters">
         <span
           class="filter"
@@ -90,7 +90,7 @@
         [attr.aria-disabled]="editor.pageImagesNumber(1) === 0"
         [attr.tabindex]="editor.pageImagesNumber(1) === 0 ? -1 : 0"
         (click)="editor.togglePageNumberFilter('single')"
-        >Jednostrany</span>
+        >{{ 'Jednostrany' | t }}</span>
         <span
           class="filter"
           [class.selected-filter]="editor.selectedPageNumberFilter() === 'double'"
@@ -100,7 +100,7 @@
         [attr.aria-disabled]="editor.pageImagesNumber(2) === 0"
         [attr.tabindex]="editor.pageImagesNumber(2) === 0 ? -1 : 0"
         (click)="editor.togglePageNumberFilter('double')"
-        >Dvoustrany</span>
+        >{{ 'Dvoustrany' | t }}</span>
       </div>
     </div>
   </div>

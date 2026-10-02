@@ -16,7 +16,7 @@
   [style]="ui.dialogWidth() ? `width:min(90dvw, ${ui.dialogWidth()}px)` : ''"
 >
   <header class="dialog-header">
-    <h2>{{ ui.dialogTitle() }}</h2>
+    <h2>{{ ui.dialogTitle() | t }}</h2>
     <span
       class="icon dialog-close"
       (click)="close()"
@@ -29,7 +29,7 @@
   </header>
 
   @if (dialogContentType === 'settings') {
-    <nav class="settings-tabs" role="tablist" aria-label="Sekce nastavení">
+    <nav class="settings-tabs" role="tablist" [attr.aria-label]="'Sekce nastavení' | t">
       <button
         type="button"
         role="tab"
@@ -37,7 +37,7 @@
         [attr.aria-selected]="settingsTab() === 'editor'"
         (click)="selectSettingsTab('editor')"
       >
-        Vzhled editoru
+        {{ 'Vzhled editoru' | t }}
       </button>
       <button
         type="button"
@@ -46,7 +46,7 @@
         [attr.aria-selected]="settingsTab() === 'behavior'"
         (click)="selectSettingsTab('behavior')"
       >
-        Chování aplikace
+        {{ 'Chování aplikace' | t }}
       </button>
     </nav>
   }
@@ -64,34 +64,34 @@
           @if (settingsTab() === 'editor') {
             <div class="settings-panel" role="tabpanel">
               <section class="settings-block">
-                <h3>Mřížka</h3>
+                <h3>{{ 'Mřížka' | t }}</h3>
 
                 <div class="settings-row">
-                  <div class="sublabel">Zobrazení</div>
+                  <div class="sublabel">{{ 'Zobrazení' | t }}</div>
                   <app-segmented-control
-                    ariaLabel="Zobrazení mřížky"
-                    [options]="gridModeOptions"
+                    [ariaLabel]="'Zobrazení mřížky' | t"
+                    [options]="gridModeOptions()"
                     [value]="editor.gridRadio()"
                     (valueChange)="setGridMode($event)"
                   />
                 </div>
 
                 <div class="settings-row">
-                  <div class="sublabel">Hustota</div>
+                  <div class="sublabel">{{ 'Hustota' | t }}</div>
                   <app-segmented-control
-                    ariaLabel="Hustota mřížky"
-                    [options]="gridDensityOptions"
+                    [ariaLabel]="'Hustota mřížky' | t"
+                    [options]="gridDensityOptions()"
                     [value]="editor.gridDensityRadio()"
                     (valueChange)="setGridDensity($event)"
                   />
                 </div>
 
                 <div class="settings-row">
-                  <div class="sublabel">Tloušťka čáry</div>
+                  <div class="sublabel">{{ 'Tloušťka čáry' | t }}</div>
                   <app-segmented-control
-                    ariaLabel="Tloušťka čáry mřížky"
+                    [ariaLabel]="'Tloušťka čáry mřížky' | t"
                     variant="lines"
-                    [options]="gridLineWidthOptions"
+                    [options]="gridLineWidthOptions()"
                     [value]="editor.gridLineWidthRadio()"
                     (valueChange)="setGridLineWidth($event)"
                   />
@@ -99,25 +99,25 @@
               </section>
 
               <section class="settings-block">
-                <h3>Obrys výřezu</h3>
+                <h3>{{ 'Obrys výřezu' | t }}</h3>
 
                 <div class="settings-row">
-                  <div class="sublabel">Barva (výřez i mřížka)</div>
+                  <div class="sublabel">{{ 'Barva (výřez i mřížka)' | t }}</div>
                   <app-segmented-control
-                    ariaLabel="Barva výřezu a mřížky"
+                    [ariaLabel]="'Barva výřezu a mřížky' | t"
                     variant="swatches"
-                    [options]="cropColorOptions"
+                    [options]="cropColorOptions()"
                     [value]="editor.cropColorRadio()"
                     (valueChange)="setCropColor($event)"
                   />
                 </div>
 
                 <div class="settings-row">
-                  <div class="sublabel">Tloušťka</div>
+                  <div class="sublabel">{{ 'Tloušťka' | t }}</div>
                   <app-segmented-control
-                    ariaLabel="Tloušťka obrysu"
+                    [ariaLabel]="'Tloušťka obrysu' | t"
                     variant="lines"
-                    [options]="outlineWidthOptions"
+                    [options]="outlineWidthOptions()"
                     [value]="editor.outlineRadio()"
                     (valueChange)="setOutlineWidth($event)"
                   />
@@ -130,26 +130,26 @@
                     (change)="editor.toggleOutlineDashed()"
                   />
                   <span class="slider"></span>
-                  <span>Čárkovaný obrys</span>
+                  <span>{{ 'Čárkovaný obrys' | t }}</span>
                 </label>
               </section>
 
               <section class="settings-block">
-                <h3>Clona</h3>
+                <h3>{{ 'Clona' | t }}</h3>
 
                 <div class="settings-row">
-                  <div class="sublabel">Barva</div>
+                  <div class="sublabel">{{ 'Barva' | t }}</div>
                   <app-segmented-control
-                    ariaLabel="Barva clony"
+                    [ariaLabel]="'Barva clony' | t"
                     variant="swatches"
-                    [options]="dimColorOptions"
+                    [options]="dimColorOptions()"
                     [value]="editor.dimRadio()"
                     (valueChange)="setDimColor($event)"
                   />
                 </div>
 
                 <div class="settings-row">
-                  <div class="sublabel">Viditelnost clony</div>
+                  <div class="sublabel">{{ 'Viditelnost clony' | t }}</div>
                   <div class="range-row">
                     <input
                       #dimOpacitySlider
@@ -158,8 +158,8 @@
                       min="0"
                       max="100"
                       step="5"
-                      aria-label="Viditelnost clony"
-                      title="Dvojklikem vrátíte na výchozí hodnotu"
+                      [attr.aria-label]="'Viditelnost clony' | t"
+                      [title]="'Dvojklikem vrátíte na výchozí hodnotu' | t"
                       [disabled]="editor.dimRadio() === 'Žádná'"
                       [value]="editor.dimOpacityRadio()"
                       (input)="setDimOpacity(dimOpacitySlider.value)"
@@ -175,23 +175,23 @@
           @if (settingsTab() === 'behavior') {
             <div class="settings-panel" role="tabpanel">
               <section class="settings-block">
-                <h3>Aktivní filtry při startu aplikace</h3>
+                <h3>{{ 'Aktivní filtry při startu aplikace' | t }}</h3>
 
                 <div class="settings-row">
-                  <div class="sublabel">Typ skenů</div>
+                  <div class="sublabel">{{ 'Typ skenů' | t }}</div>
                   <app-segmented-control
-                    ariaLabel="Typ skenů při startu"
-                    [options]="scanTypeOptions"
+                    [ariaLabel]="'Typ skenů při startu' | t"
+                    [options]="scanTypeOptions()"
                     [value]="editor.scanTypeRadio()"
                     (valueChange)="setScanType($event)"
                   />
                 </div>
 
                 <div class="settings-row">
-                  <div class="sublabel">Strany</div>
+                  <div class="sublabel">{{ 'Strany' | t }}</div>
                   <app-segmented-control
-                    ariaLabel="Počet stran při startu"
-                    [options]="pageNumberOptions"
+                    [ariaLabel]="'Počet stran při startu' | t"
+                    [options]="pageNumberOptions()"
                     [value]="editor.pageNumberRadio()"
                     (valueChange)="setPageNumber($event)"
                   />
@@ -199,10 +199,10 @@
               </section>
 
               <section class="settings-block">
-                <h3>Výchozí zobrazení skenu</h3>
+                <h3>{{ 'Výchozí zobrazení skenu' | t }}</h3>
                 <app-segmented-control
-                  ariaLabel="Výchozí zobrazení skenu"
-                  [options]="defaultFitModeOptions"
+                  [ariaLabel]="'Výchozí zobrazení skenu' | t"
+                  [options]="defaultFitModeOptions()"
                   [value]="editor.defaultFitModeRadio()"
                   (valueChange)="setDefaultFitMode($event)"
                 />
@@ -217,7 +217,7 @@
                       (change)="editor.togglePredictions()"
                     />
                     <span class="slider"></span>
-                    <span>Zobrazení původních predikcí</span>
+                    <span>{{ 'Zobrazení původních predikcí' | t }}</span>
                     <span class="icon">
                       <app-icon name="admin" [size]="16" />
                     </span>
@@ -233,33 +233,33 @@
       @if (dialogContentType === 'shortcuts') {
         <div class="shortcuts-content-wrapper">
           <table cellspacing="0" cellpadding="0">
-            @if (isAdmin) { <tr><th>Ukazovat původní predikce</th><td><kbd>J</kbd></td></tr> }
+            @if (isAdmin) { <tr><th>{{ 'Ukazovat původní predikce' | t }}</th><td><kbd>J</kbd></td></tr> }
             @if (canWriteTitle) {
-              <tr><th>Vybrat výřez</th><td><kbd>1, 2</kbd></td></tr>
-              <tr><th>Vybrat další výřez</th><td><kbd>Tab</kbd></td></tr>
-              <tr><th>Vybrat při překrývání ten druhý výřez</th><td><kbd>Shift + MouseLeftClick</kbd></td></tr>
-              <tr><th>Zrušit výběr výřezu</th><td><kbd>Esc</kbd></td></tr>
-              <tr><th>Smazat výřez</th><td><kbd>Backspace, Delete</kbd></td></tr>
-              <tr><th>Přidat výřez</th><td><kbd>P</kbd></td></tr>
-              <tr><th>Změnit pozici výřezu (X, Y)</th><td><kbd>←, →, ↑, ↓</kbd></td></tr>
-              <tr><th>Změnit šířku / výšku výřezu</th><td><kbd>Shift + ←, →, ↑, ↓</kbd></td></tr>
-              <tr><th>Otočit výřez</th><td><kbd>A, S</kbd></td></tr>
-              <tr><th>Otočit sken o -90° / 0° / 90° / 180°</th><td><kbd>D, F, G, H</kbd></td></tr>
-              <tr><th>Přepnout zobrazení mřížky (jen pro tuto relaci)</th><td><kbd>M</kbd></td></tr>
-              <tr><th>Přepnout zobrazení obrysu (jen pro tuto relaci)</th><td><kbd>O</kbd></td></tr>
-              <tr><th>Přepnout barvu clony (jen pro tuto relaci)</th><td><kbd>C</kbd></td></tr>
+              <tr><th>{{ 'Vybrat výřez' | t }}</th><td><kbd>1, 2</kbd></td></tr>
+              <tr><th>{{ 'Vybrat další výřez' | t }}</th><td><kbd>Tab</kbd></td></tr>
+              <tr><th>{{ 'Vybrat při překrývání ten druhý výřez' | t }}</th><td><kbd>Shift + MouseLeftClick</kbd></td></tr>
+              <tr><th>{{ 'Zrušit výběr výřezu' | t }}</th><td><kbd>Esc</kbd></td></tr>
+              <tr><th>{{ 'Smazat výřez' | t }}</th><td><kbd>Backspace, Delete</kbd></td></tr>
+              <tr><th>{{ 'Přidat výřez' | t }}</th><td><kbd>P</kbd></td></tr>
+              <tr><th>{{ 'Změnit pozici výřezu (X, Y)' | t }}</th><td><kbd>←, →, ↑, ↓</kbd></td></tr>
+              <tr><th>{{ 'Změnit šířku / výšku výřezu' | t }}</th><td><kbd>Shift + ←, →, ↑, ↓</kbd></td></tr>
+              <tr><th>{{ 'Otočit výřez' | t }}</th><td><kbd>A, S</kbd></td></tr>
+              <tr><th>{{ 'Otočit sken o -90° / 0° / 90° / 180°' | t }}</th><td><kbd>D, F, G, H</kbd></td></tr>
+              <tr><th>{{ 'Přepnout zobrazení mřížky (jen pro tuto relaci)' | t }}</th><td><kbd>M</kbd></td></tr>
+              <tr><th>{{ 'Přepnout zobrazení obrysu (jen pro tuto relaci)' | t }}</th><td><kbd>O</kbd></td></tr>
+              <tr><th>{{ 'Přepnout barvu clony (jen pro tuto relaci)' | t }}</th><td><kbd>C</kbd></td></tr>
             }
-            @if (canWriteTitle) { <tr><th>Přiblížit / oddálit / vybraný výřez / reset</th><td><kbd>Q, W, E, R</kbd></td></tr> }
-            @else { <tr><th>Přiblížit / oddálit / reset</th><td><kbd>Q, W, R</kbd></td></tr> }
-            <tr><th>Předchozí / další sken</th><td><kbd>←, ↑, PageDown / Enter, →, ↓, PageUp, B</kbd></td></tr>
-            <tr><th>První / poslední sken</th><td><kbd>Home, End</kbd></td></tr>
-            <tr><th>Přepnout filter</th><td><kbd>F1, F2, F3, F4</kbd></td></tr>
-            <tr><th>Přepnout filter počet výřezů</th><td><kbd>Alt / Cmd + 1, 2</kbd></td></tr>
+            @if (canWriteTitle) { <tr><th>{{ 'Přiblížit / oddálit / vybraný výřez / reset' | t }}</th><td><kbd>Q, W, E, R</kbd></td></tr> }
+            @else { <tr><th>{{ 'Přiblížit / oddálit / reset' | t }}</th><td><kbd>Q, W, R</kbd></td></tr> }
+            <tr><th>{{ 'Předchozí / další sken' | t }}</th><td><kbd>←, ↑, PageDown / Enter, →, ↓, PageUp, B</kbd></td></tr>
+            <tr><th>{{ 'První / poslední sken' | t }}</th><td><kbd>Home, End</kbd></td></tr>
+            <tr><th>{{ 'Přepnout filter' | t }}</th><td><kbd>F1, F2, F3, F4</kbd></td></tr>
+            <tr><th>{{ 'Přepnout filter počet výřezů' | t }}</th><td><kbd>Alt / Cmd + 1, 2</kbd></td></tr>
             @if (canWriteTitle) {
-              <tr><th>Reset mých změn ve skenu</th><td><kbd>Ctrl / Cmd + R</kbd></td></tr>
-              <tr><th>Uložit vše</th><td><kbd>Ctrl / Cmd + Enter</kbd></td></tr>
+              <tr><th>{{ 'Reset mých změn ve skenu' | t }}</th><td><kbd>Ctrl / Cmd + R</kbd></td></tr>
+              <tr><th>{{ 'Uložit vše' | t }}</th><td><kbd>Ctrl / Cmd + Enter</kbd></td></tr>
             }
-            <tr><th>Zobrazit klávesové zkratky</th><td><kbd>K</kbd></td></tr>
+            <tr><th>{{ 'Zobrazit klávesové zkratky' | t }}</th><td><kbd>K</kbd></td></tr>
           </table>
         </div>
       }
@@ -278,7 +278,7 @@
                 class="above-input"
                 #newNameLabel
               >
-                NÁZEV
+                {{ 'NÁZEV' | t }}
                 <input
                   id="group-name"
                   name="group-name"
@@ -289,7 +289,7 @@
               </label>
               @let groupNameError = dashboard.groupNameError();
               @if (groupNameError) {
-                <span class="error">{{ groupNameError }}</span>
+                <span class="error">{{ groupNameError | t }}</span>
               }
             </div>
             <div class="block">
@@ -297,7 +297,7 @@
                 for="group-description"
                 class="above-input"
               >
-                POPIS
+                {{ 'POPIS' | t }}
                 <textarea
                   id="group-description"
                   name="group-description"
@@ -311,7 +311,7 @@
           <div class="many-blocks-horizontal">
             <div class="block">
               <label class="above-input select">
-                OŘEZOVÝ MODEL
+                {{ 'OŘEZOVÝ MODEL' | t }}
                 <app-select
                   [(ngModel)]="dashboard.selectedCropModel"
                   [inputName]="'group-crop-model'"
@@ -327,7 +327,7 @@
             </div>
             <div class="block">
               <label class="above-input select">
-                ROTAČNÍ MODEL
+                {{ 'ROTAČNÍ MODEL' | t }}
                 <app-select
                   [(ngModel)]="dashboard.selectedRotationModel"
                   [inputName]="'group-rotation-model'"
@@ -346,7 +346,7 @@
           @if (dialogContentType === 'new-group') {
             <div class="block permissions">
               <div class="header">
-                <div class="label">ČLENOVÉ A PRÁVA</div>
+                <div class="label">{{ 'ČLENOVÉ A PRÁVA' | t }}</div>
                 @let permissions = dashboard.groupPermissions();
                 <div class="add-permission-wrapper">
                   <div class="main">
@@ -358,7 +358,7 @@
                       [width]="250"
                       [maxDropdownHeight]="192"
                       [options]="dashboard.availableUsers()"
-                      [placeholder]="'Napište jméno'"
+                      [placeholder]="'Napište jméno' | t"
                       [usedIn]="dashboard.selectedUserUsed()"
                       (usedOut)="dashboard.onSelectUserUsed($event)"
                     ></app-select>
@@ -373,7 +373,7 @@
                       <span class="icon">
                         <app-icon name="add" [size]="16" />
                       </span>
-                      Přidat
+                      {{ 'Přidat' | t }}
                     </span>
                     <span
                       class="button quaternary primary remove-all"
@@ -386,12 +386,12 @@
                       <span class="icon">
                         <app-icon name="delete" [size]="14" />
                       </span>
-                      Odebrat vše
+                      {{ 'Odebrat vše' | t }}
                     </span>
                   </div>
                   @let selectedUserError = dashboard.selectedUserError();
                   @if (selectedUserError) {
-                    <span class="error">{{ selectedUserError }}</span>
+                    <span class="error">{{ selectedUserError | t }}</span>
                   }
                 </div>
               </div>
@@ -416,7 +416,7 @@
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="14" />
                         </span>
-                        Správa
+                        {{ 'Správa' | t }}
                         <span class="icon">
                           <app-icon name="settings" [size]="14" />
                         </span>
@@ -433,7 +433,7 @@
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="14" />
                         </span>
-                        Úpravy
+                        {{ 'Úpravy' | t }}
                         <span class="icon">
                           <app-icon name="edit" [size]="14" />
                         </span>
@@ -450,7 +450,7 @@
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="14" />
                         </span>
-                        Detail titulu
+                        {{ 'Detail titulu' | t }}
                         <span class="icon">
                           <app-icon name="book" [size]="14" />
                         </span>
@@ -467,7 +467,7 @@
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="14" />
                         </span>
-                        Zobrazení všech titulů
+                        {{ 'Zobrazení všech titulů' | t }}
                         <span class="icon">
                           <app-icon name="open-folder" [size]="14" />
                         </span>
@@ -486,7 +486,7 @@
                     </span>
                   </div>
                   @if (dashboard.userPermissionsError[user._id]) {
-                    <span class="permission-error error">{{ dashboard.userPermissionsError[user._id] }}</span>
+                    <span class="permission-error error">{{ dashboard.userPermissionsError[user._id] | t }}</span>
                   }
                 }
               </div>
@@ -500,7 +500,7 @@
         <div class="new-edit-content-wrapper title">
           <div class="block">
             <label class="above-input" for="new-title-name" #newNameLabel>
-              NÁZEV
+              {{ 'NÁZEV' | t }}
               <input
                 id="new-title-name"
                 name="new-title-name"
@@ -511,14 +511,14 @@
             </label>
             @let titleNameError = dashboard.titleNameError();
             @if (titleNameError) {
-              <span class="error">{{ titleNameError }}</span>
+              <span class="error">{{ titleNameError | t }}</span>
             }
           </div>
 
           <div class="many-blocks-horizontal">
             <div class="block">
               <label class="above-input select">
-                OŘEZOVÝ MODEL
+                {{ 'OŘEZOVÝ MODEL' | t }}
                 <app-select
                   [(ngModel)]="dashboard.selectedCropModel"
                   [inputName]="'title-crop-model'"
@@ -534,7 +534,7 @@
             </div>
             <div class="block">
               <label class="above-input select">
-                ROTAČNÍ MODEL
+                {{ 'ROTAČNÍ MODEL' | t }}
                 <app-select
                   [(ngModel)]="dashboard.selectedRotationModel"
                   [inputName]="'title-rotation-model'"
@@ -554,31 +554,27 @@
               <span class="icon">
                 <app-icon name="warning-round" [size]="20" />
               </span>
-              <span class="text">Změnou kteréhokoliv modelu ztratíte všechny úpravy.</span>
+              <span class="text">{{ 'Změnou kteréhokoliv modelu ztratíte všechny úpravy.' | t }}</span>
             </div>
           }
 
           @if (dialogContentType === 'new-title') {
             <div class="block">
               <label class="above-input upload-wrapper">
-                SKENY
+                {{ 'SKENY' | t }}
                 @let files = dashboard.files();
                 <app-upload
                   id="new-title-upload"
                   (filesSelected)="dashboard.uploadFiles($event)"
-                  [h3]="
-                    files.length === 0
-                    ? 'Přetáhněte sem'
-                    : `Vybrán${[2, 3, 4].includes(files.length) ? 'y' : files.length === 1 ? '' : 'o' } ${ files.length } sken${ [2, 3, 4].includes(files.length) ? 'y' : files.length === 1 ? '' : 'ů' }. Chcete sem přetáhnout další?`
-                  "
-                  formatsAndSizeText="JPEG a PNG formáty, až do 4 MB"
-                  [btnLabel]="`Vybrat ${files.length > 0 ? 'další ' : ''}skeny`"
+                  [h3]="uploadHeading(files.length)"
+                  [formatsAndSizeText]="'JPEG a PNG formáty, až do 4 MB' | t"
+                  [btnLabel]="(files.length > 0 ? 'Vybrat další skeny' : 'Vybrat skeny') | t"
                 >
                 </app-upload>
               </label>
               @let uploadFilesError = dashboard.uploadFilesError();
               @if (uploadFilesError) {
-                <span class="error">{{ uploadFilesError }}</span>
+                <span class="error">{{ uploadFilesError | t }}</span>
               }
             </div>
           }
@@ -594,7 +590,7 @@
         >
           <div class="many-blocks">
             <div class="block">
-              <label for="user-fullname">JMÉNO</label>
+              <label for="user-fullname">{{ 'JMÉNO' | t }}</label>
               <label for="user-fullname" #newNameLabel>
                 <span class="icon">
                   <app-icon name="user" [size]="16" />
@@ -609,11 +605,11 @@
               </label>
               @let userNameError = dashboard.userNameError();
               @if (userNameError) {
-                <span class="error">{{ userNameError }}</span>
+                <span class="error">{{ userNameError | t }}</span>
               }
             </div>
             <div class="block">
-              <label for="user-email">E-MAIL</label>
+              <label for="user-email">{{ 'E-MAIL' | t }}</label>
               <label for="user-email">
                 <span class="icon">
                   <app-icon name="email" [size]="16" />
@@ -628,7 +624,7 @@
               </label>
               @let userEmailError = dashboard.userEmailError();
               @if (userEmailError) {
-                <span class="error">{{ userEmailError }}</span>
+                <span class="error">{{ userEmailError | t }}</span>
               }
               @if (dialogContentType === 'edit-user') {
                 <span
@@ -641,7 +637,7 @@
                   <span class="icon">
                     <app-icon name="reset" [size]="16" />
                   </span>
-                  Resetovat heslo
+                  {{ 'Resetovat heslo' | t }}
                 </span>
               }
             </div>
@@ -650,7 +646,7 @@
           @if (dialogContentType === 'new-user') {
             <div class="block permissions">
               <div class="header">
-                <div class="label">SKUPINY A PRÁVA</div>
+                <div class="label">{{ 'SKUPINY A PRÁVA' | t }}</div>
                 @let permissions = dashboard.userPermissions();
                 @if (permissions.length < dashboard.groups().length) {
                   <div class="add-permission-wrapper">
@@ -663,7 +659,7 @@
                         [width]="250"
                         [maxDropdownHeight]="192"
                         [options]="dashboard.availableGroups()"
-                        [placeholder]="'Napište název'"
+                        [placeholder]="'Napište název' | t"
                         [usedIn]="dashboard.selectedGroupUsed()"
                         (usedOut)="dashboard.onSelectGroupUsed($event)"
                       ></app-select>
@@ -678,7 +674,7 @@
                         <span class="icon">
                           <app-icon name="add" [size]="16" />
                         </span>
-                        Přidat
+                        {{ 'Přidat' | t }}
                       </span>
                       <span
                         class="button quaternary primary remove-all"
@@ -691,12 +687,12 @@
                         <span class="icon">
                           <app-icon name="delete" [size]="14" />
                         </span>
-                        Odebrat vše
+                        {{ 'Odebrat vše' | t }}
                       </span>
                     </div>
                     @let selectedGroupError = dashboard.selectedGroupError();
                     @if (selectedGroupError) {
-                      <span class="error">{{ selectedGroupError }}</span>
+                      <span class="error">{{ selectedGroupError | t }}</span>
                     }
                   </div>
                 }
@@ -722,7 +718,7 @@
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="14" />
                         </span>
-                        Správa
+                        {{ 'Správa' | t }}
                         <span class="icon">
                           <app-icon name="settings" [size]="14" />
                         </span>
@@ -739,7 +735,7 @@
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="14" />
                         </span>
-                        Úpravy
+                        {{ 'Úpravy' | t }}
                         <span class="icon">
                           <app-icon name="edit" [size]="14" />
                         </span>
@@ -756,7 +752,7 @@
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="14" />
                         </span>
-                        Detail titulu
+                        {{ 'Detail titulu' | t }}
                         <span class="icon">
                           <app-icon name="book" [size]="14" />
                         </span>
@@ -773,7 +769,7 @@
                         <span class="check-mark">
                           <app-icon name="checkmark" [size]="14" />
                         </span>
-                        Zobrazení všech titulů
+                        {{ 'Zobrazení všech titulů' | t }}
                         <span class="icon">
                           <app-icon name="open-folder" [size]="14" />
                         </span>
@@ -792,7 +788,7 @@
                     </span>
                   </div>
                   @if (dashboard.groupPermissionsError[group.group_id]) {
-                    <span class="permission-error error">{{ dashboard.groupPermissionsError[group.group_id] }}</span>
+                    <span class="permission-error error">{{ dashboard.groupPermissionsError[group.group_id] | t }}</span>
                   }
                 }
               </div>
@@ -809,7 +805,7 @@
               <span class="icon">
                 <app-icon name="warning-round" [size]="20" />
               </span>
-              <span class="text">Zkopírujte jednorázové heslo a pošlete uživateli. Podruhé se nezobrazí.</span>
+              <span class="text">{{ 'Zkopírujte jednorázové heslo a pošlete uživateli. Podruhé se nezobrazí.' | t }}</span>
             </div>
             <div class="label">
               <span class="icon front">
@@ -829,18 +825,18 @@
                 >
                   <app-icon name="copy" [size]="14" />
                 </span>
-                <span class="tooltip" [class.show]="copied">Zkopírováno!</span>
+                <span class="tooltip" [class.show]="copied">{{ 'Zkopírováno!' | t }}</span>
               </span>
             </div>
             @if (dialogContentType === 'new-password') {
-              <div class="description">Heslo můžete případně resetovat na stránce Uživatelé.</div>
+              <div class="description">{{ 'Heslo můžete případně resetovat na stránce Uživatelé.' | t }}</div>
             }
           </div>
         </div>
       }
     </section>
   } @else if (ui.dialogDescription()) {
-    <p class="dialog-description single">{{ ui.dialogDescription() }}</p>
+    <p class="dialog-description single">{{ ui.dialogDescription() | t }}</p>
   }
 
   @if (dialogButtons.length) {
@@ -857,7 +853,7 @@
           (keydown.enter)="btn.action ? btn.action() : close()"
           tabindex="0"
         >
-          {{ btn.label }}
+          {{ btn.label | t }}
         </span>
       }
     </footer>

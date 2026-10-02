@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { DashboardService } from '../../services/dashboard.service';
 import { UiService } from '../../services/ui.service';
 import { IconComponent } from '../icon/icon.component';
+import { TPipe } from '../../i18n/t.pipe';
+import { plural, t } from '../../i18n/i18n';
 
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule, IconComponent],
+  imports: [CommonModule, IconComponent, TPipe],
   templateUrl: './upload.component.html',
   styleUrls: ['./upload.component.scss']
 })
@@ -44,18 +46,18 @@ export class UploadComponent {
 
     if (unallowedTypesFiles.length) {
       this.ui.showToast(
-        `Tyto skeny nejsou ve formátu JPEG nebo PNG:
+        `${t('Tyto skeny nejsou ve formátu JPEG nebo PNG:')}
          • ${unallowedTypesFiles.slice(0,this.maxNamedFiles).join('\n• ')}
-         ${unallowedTypesFiles.length > this.maxNamedFiles ? `...a ${unallowedTypesFiles.length - this.maxNamedFiles} další${[1, 2, 3, 4].includes(unallowedTypesFiles.length - this.maxNamedFiles) ? '' : 'ch'}` : ''}`,
+         ${this.moreFilesText(unallowedTypesFiles.length)}`,
         { type: 'error' }
       );
     }
 
     if (oversizedFiles.length) {
       this.ui.showToast(
-        `Tyto skeny jsou větší než 4 MB:
+        `${t('Tyto skeny jsou větší než 4 MB:')}
          • ${oversizedFiles.slice(0,this.maxNamedFiles).join('\n• ')}
-         ${oversizedFiles.length > this.maxNamedFiles ? `...a ${oversizedFiles.length - this.maxNamedFiles} další${[1, 2, 3, 4].includes(oversizedFiles.length - this.maxNamedFiles) ? '' : 'ch'}` : ''}`,
+         ${this.moreFilesText(oversizedFiles.length)}`,
         { type: 'error' }
       );
     }
@@ -67,6 +69,12 @@ export class UploadComponent {
     }
 
     input.value = '';
+  }
+
+  // "...a 2 další" / "...a 5 dalších" for the files not named in the toast.
+  private moreFilesText(count: number): string {
+    const rest = count - this.maxNamedFiles;
+    return rest > 0 ? plural(rest, '...a {n} další', '...a {n} další', '...a {n} dalších') : '';
   }
 
   onDragOver(event: DragEvent) {

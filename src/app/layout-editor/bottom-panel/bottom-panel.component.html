@@ -18,7 +18,7 @@
     </span>
   </span>
   @if (editor.displayedImagesFinal().length) {
-    <span class="scan-counter">Sken {{ editor.currentIndex() + 1 }} z {{ editor.displayedImagesFinal().length }}</span>
+    <span class="scan-counter">{{ 'Sken {n} z {total}' | t: { n: editor.currentIndex() + 1, total: editor.displayedImagesFinal().length } }}</span>
   }
 </div>
 
@@ -27,7 +27,7 @@
     class="button secondary"
     [class.disabled]="editor.viewport.scale === editor.maxZoom"
     (click)="zoomIn()"
-    aria-label="Přiblížit (Q)"
+    [attr.aria-label]="'Přiblížit (Q)' | t"
   >
     <span class="icon">
       <app-icon name="zoom-in" [size]="16" />
@@ -37,7 +37,7 @@
     class="button secondary"
     [class.disabled]="editor.viewport.scale <= editor.minZoom"
     (click)="zoomOut()"
-    aria-label="Oddálit (W)"
+    [attr.aria-label]="'Oddálit (W)' | t"
   >
     <span class="icon">
       <app-icon name="zoom-out" [size]="16" />
@@ -47,7 +47,7 @@
     class="button secondary"
     [class.disabled]="editor.viewport.scale === 1 && editor.viewport.x === 0 && editor.viewport.y === 0"
     (click)="zoomReset()"
-    aria-label="Celý sken (R)"
+    [attr.aria-label]="'Celý sken (R)' | t"
   >
     <span class="icon">
       <app-icon name="fit-to-screen" [size]="16" />
@@ -57,7 +57,7 @@
     class="button secondary"
     [class.disabled]="!editor.currentPages.length"
     (click)="fitPages()"
-    aria-label="Na výřezy (E)"
+    [attr.aria-label]="'Na výřezy (E)' | t"
   >
     <span class="icon">
       <app-icon name="fit-to-crops" [size]="16" />

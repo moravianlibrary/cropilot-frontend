@@ -5,10 +5,11 @@ import { OverlayScrollbars } from 'overlayscrollbars';
 import { scrollToElement, waitForElement } from '../../utils/utils';
 import { UiService } from '../../services/ui.service';
 import { IconComponent } from '../icon/icon.component';
+import { TPipe } from '../../i18n/t.pipe';
 
 @Component({
   selector: 'app-select',
-  imports: [IconComponent],
+  imports: [IconComponent, TPipe],
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss'],
   host: {

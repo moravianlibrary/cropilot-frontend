@@ -18,10 +18,12 @@ import { LocalStorageService } from '../../services/local-storage.service';
 import { IconComponent } from '../../components/icon/icon.component';
 import { StatisticsComponent } from '../statistics/statistics.component';
 import { OnVisibleDirective } from '../../directives/on-visible.directive';
+import { TPipe } from '../../i18n/t.pipe';
+import { plural, t } from '../../i18n/i18n';
 
 @Component({
   selector: 'app-main-dashboard',
-  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent, ThTooltipDirective, IconComponent, StatisticsComponent, OnVisibleDirective],
+  imports: [FormsModule, CommonModule, OverlayModule, ToastComponent, ThTooltipDirective, IconComponent, StatisticsComponent, OnVisibleDirective, TPipe],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
 })
@@ -100,7 +102,7 @@ export class MainComponent {
                   this.applyGroupsResponse(res);
                 }),
                 catchError(err => {
-                  this.ui.showToast('Při načítání skupin se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
+                  this.ui.showToast(t('Při načítání skupin se něco pokazilo. Zkuste stránku znovu načíst.'), { type: 'error' });
                   console.error('Fetching groups failed:', err);
                   return throwError(() => err);
                 })
@@ -130,7 +132,7 @@ export class MainComponent {
                 catchError(err => {
                   err.status === 403
                     ? this.router.navigate(['/forbidden'])
-                    : this.ui.showToast('Při načítání titulů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
+                    : this.ui.showToast(t('Při načítání titulů se něco pokazilo. Zkuste stránku znovu načíst.'), { type: 'error' });
                   console.error('Fetching titles failed:', err);
                   return throwError(() => err);
                 })
@@ -147,7 +149,7 @@ export class MainComponent {
                 catchError(err => {
                   err.status === 403
                     ? this.router.navigate(['/forbidden'])
-                    : this.ui.showToast('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.', { type: 'error' });
+                    : this.ui.showToast(t('Při načítání uživatelů se něco pokazilo. Zkuste stránku znovu načíst.'), { type: 'error' });
                   console.error('Fetching users failed:', err);
                   return throwError(() => err);
                 })
@@ -156,7 +158,7 @@ export class MainComponent {
             // Statistics (admin) — own component, no table below
             case 'statistics':
               this.dashboard.dashboardPage.set('statistics');
-              this.title.setTitle('Statistiky | CROPILOT');
+              this.title.setTitle(`${t('Statistiky')} | CROPILOT`);
               return of(null);
 
             default:
@@ -228,7 +230,7 @@ export class MainComponent {
 
   get totalGroupsLabel(): string {
     const length = this.dashboard.groupsTotal();
-    return `Celkem ${length} skupin${length === 1 ? 'a' : [2, 3, 4].includes(length) ? 'y' : '' }`;
+    return plural(length, 'Celkem {n} skupina', 'Celkem {n} skupiny', 'Celkem {n} skupin');
   }
 
   // Debounced server-side search (resets to first page).
@@ -249,7 +251,7 @@ export class MainComponent {
   loadGroups(page: number): void {
     this.dashboard.fetchGroupsPage(this.buildListQuery(page, this.dashboard.searchGroups(), this.dashboard.groupsPageSize())).pipe(
       catchError(err => {
-        this.ui.showToast('Při načítání skupin se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+        this.ui.showToast(t('Při načítání skupin se něco pokazilo. Zkuste to znovu.'), { type: 'error' });
         console.error('Fetching groups failed:', err);
         return throwError(() => err);
       })
@@ -298,9 +300,9 @@ export class MainComponent {
     return this.sortState.direction ?? 'asc';
   }
 
-  // Czech plural for the per-card title count (titul / tituly / titulů).
+  // Plural for the per-card title count (titul / tituly / titulů).
   titleCountLabel(count: number): string {
-    return count === 1 ? 'titul' : [2, 3, 4].includes(count) ? 'tituly' : 'titulů';
+    return plural(count, 'titul', 'tituly', 'titulů');
   }
 
   // The card ⋯ button opens the group detail drawer (edit/delete live there),
@@ -316,7 +318,7 @@ export class MainComponent {
 
   get totalTitlesLabel(): string {
     const length = this.dashboard.titlesTotal();
-    return `Celkem ${length} titul${length === 1 ? '' : [2, 3, 4].includes(length) ? 'y' : 'ů' }`;
+    return plural(length, 'Celkem {n} titul', 'Celkem {n} tituly', 'Celkem {n} titulů');
   }
 
   // ========== ASSIGN TITLE (managers only) ==========
@@ -335,7 +337,7 @@ export class MainComponent {
       this.dashboard.fetchAssignableUsers(this.currentGroupId).subscribe({
         next: users => { this.assignableUsers.set(users); this.assignableUsersLoaded = true; },
         error: err => {
-          this.ui.showToast('Načtení uživatelů se nezdařilo.', { type: 'error' });
+          this.ui.showToast(t('Načtení uživatelů se nezdařilo.'), { type: 'error' });
           console.error('Fetching assignable users failed:', err);
         },
       });
@@ -365,7 +367,7 @@ export class MainComponent {
         this.closeAssignMenu();
       },
       error: err => {
-        this.ui.showToast('Přiřazení se nezdařilo.', { type: 'error' });
+        this.ui.showToast(t('Přiřazení se nezdařilo.'), { type: 'error' });
         console.error('Assigning title failed:', err);
         this.assigningTitleId.set(null);
       },
@@ -420,7 +422,7 @@ export class MainComponent {
 
     this.dashboard.fetchTitles(this.currentGroupId, this.buildTitlesQuery(page)).pipe(
       catchError(err => {
-        this.ui.showToast('Při načítání titulů se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+        this.ui.showToast(t('Při načítání titulů se něco pokazilo. Zkuste to znovu.'), { type: 'error' });
         console.error('Fetching titles failed:', err);
         return throwError(() => err);
       })
@@ -563,7 +565,7 @@ export class MainComponent {
   // ========== USERS ==========
   get totalUsersLabel(): string {
     const length = this.dashboard.usersTotal();
-    return `Celkem ${length} uživatel${[2, 3, 4].includes(length) ? 'é' : 'ů' }`;
+    return plural(length, 'Celkem {n} uživatel', 'Celkem {n} uživatelé', 'Celkem {n} uživatelů');
   }
 
   // Debounced server-side search (resets to first page).
@@ -584,7 +586,7 @@ export class MainComponent {
   loadUsers(page: number): void {
     this.dashboard.fetchUsersPage(this.buildListQuery(page, this.dashboard.searchUsers(), this.dashboard.usersPageSize())).pipe(
       catchError(err => {
-        this.ui.showToast('Při načítání uživatelů se něco pokazilo. Zkuste to znovu.', { type: 'error' });
+        this.ui.showToast(t('Při načítání uživatelů se něco pokazilo. Zkuste to znovu.'), { type: 'error' });
         console.error('Fetching users failed:', err);
         return throwError(() => err);
       })

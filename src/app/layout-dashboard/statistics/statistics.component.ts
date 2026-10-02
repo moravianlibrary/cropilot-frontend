@@ -12,9 +12,12 @@ import { BarChartComponent, BarDatum } from '../../components/charts/bar-chart/b
 import { StackedBarComponent, StackedSegment } from '../../components/charts/stacked-bar/stacked-bar.component';
 import { KpiTileComponent } from '../../components/charts/kpi-tile/kpi-tile.component';
 import { defaultFitModeDict, filterPageNumberStartDict, filterScanTypeStartDict, flagMessages, gridModeDict, titleStateDict } from '../../app.config';
+import { SelectOption } from '../../app.types';
 import { AnomaliesRow, EditorUsageRow, StatsGroupBy, StatsPreset, UsageGroupBy } from '../../stats.types';
 import { fmtDuration, fmtNum, fmtPct } from '../../utils/stats-format';
 import { downloadCsv, rowsToCsv } from '../../utils/utils';
+import { locale, plural, t } from '../../i18n/i18n';
+import { TPipe } from '../../i18n/t.pipe';
 
 interface Kpi {
   label: string;
@@ -23,6 +26,7 @@ interface Kpi {
 }
 
 // Czech labels for telemetry action names (shared vocabulary with the backend).
+// Translated with t() at render time.
 const ACTION_LABELS: Record<string, string> = {
   nav_prev: 'Předchozí sken', nav_next: 'Další sken', nav_first: 'První sken', nav_last: 'Poslední sken', nav_thumbnail: 'Klik na náhled',
   select_page_left: 'Výběr levého výřezu', select_page_right: 'Výběr pravého výřezu', cycle_page: 'Přepnutí výřezu', unselect_page: 'Zrušení výběru',
@@ -64,7 +68,7 @@ const FILTER_LABELS: Record<string, string> = {
 
 @Component({
   selector: 'app-statistics',
-  imports: [FormsModule, SelectComponent, SegmentedControlComponent, LoaderComponent, BarChartComponent, StackedBarComponent, KpiTileComponent],
+  imports: [FormsModule, SelectComponent, SegmentedControlComponent, LoaderComponent, BarChartComponent, StackedBarComponent, KpiTileComponent, TPipe],
   templateUrl: './statistics.component.html',
   styleUrl: './statistics.component.scss'
 })
@@ -80,23 +84,31 @@ export class StatisticsComponent {
   flagMessages = flagMessages;
   titleStateDict = titleStateDict;
 
-  presetOptions: SegmentedControlOption[] = [
-    { value: 7, label: '7 dní' },
-    { value: 30, label: '30 dní' },
-    { value: 90, label: '90 dní' },
-    { value: 'custom', label: 'Vlastní' }
-  ];
-  groupByOptions: SegmentedControlOption[] = [
-    { value: 'group', label: 'Skupina' },
-    { value: 'crop_model', label: 'Ořezový model' },
-    { value: 'rotation_model', label: 'Rotační model' },
-    { value: 'month', label: 'Měsíc' }
-  ];
-  anomaliesGroupByOptions: SegmentedControlOption[] = [{ value: '', label: 'Celkem' }, ...this.groupByOptions];
-  usageGroupByOptions: SegmentedControlOption[] = [
-    { value: 'group', label: 'Skupina' },
-    { value: 'month', label: 'Měsíc' }
-  ];
+  // Option lists are computed so their labels follow the UI language.
+  presetOptions = computed<SegmentedControlOption[]>(() => [
+    { value: 7, label: t('7 dní') },
+    { value: 30, label: t('30 dní') },
+    { value: 90, label: t('90 dní') },
+    { value: 'custom', label: t('Vlastní') }
+  ]);
+  groupByOptions = computed<SegmentedControlOption[]>(() => [
+    { value: 'group', label: t('Skupina') },
+    { value: 'crop_model', label: t('Ořezový model') },
+    { value: 'rotation_model', label: t('Rotační model') },
+    { value: 'month', label: t('Měsíc') }
+  ]);
+  anomaliesGroupByOptions = computed<SegmentedControlOption[]>(() => [{ value: '', label: t('Celkem') }, ...this.groupByOptions()]);
+  usageGroupByOptions = computed<SegmentedControlOption[]>(() => [
+    { value: 'group', label: t('Skupina') },
+    { value: 'month', label: t('Měsíc') }
+  ]);
+
+  // The service keeps the Czech "all" option labels (value ''); translate them for display.
+  private translateAllOption = (options: SelectOption[]): SelectOption[] =>
+    options.map(o => o.value === '' ? { ...o, label: t(o.label) } : o);
+  groupOptionsView = computed(() => this.translateAllOption(this.stats.groupOptions()));
+  cropModelOptionsView = computed(() => this.translateAllOption(this.stats.cropModelOptions()));
+  rotationModelOptionsView = computed(() => this.translateAllOption(this.stats.rotationModelOptions()));
 
   private dateDebounce?: ReturnType<typeof setTimeout>;
 
@@ -132,7 +144,7 @@ export class StatisticsComponent {
     if (err?.status === 403) {
       this.router.navigate(['/forbidden']);
     } else {
-      this.ui.showToast(message + ' Zkuste stránku znovu načíst.', { type: 'error' });
+      this.ui.showToast(t(message) + ' ' + t('Zkuste stránku znovu načíst.'), { type: 'error' });
       console.error('Statistics failed:', err);
     }
     return throwError(() => err);
@@ -183,11 +195,11 @@ export class StatisticsComponent {
 
   private fmtDate(iso: string): string {
     const d = new Date(iso);
-    return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('cs-CZ');
+    return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString(locale());
   }
 
   groupByLabel(groupBy: string): string {
-    return this.groupByOptions.find(o => o.value === groupBy)?.label ?? 'Skupina';
+    return this.groupByOptions().find(o => o.value === groupBy)?.label ?? t('Skupina');
   }
 
 
@@ -199,14 +211,14 @@ export class StatisticsComponent {
     const finished = (st['completed'] ?? 0) + (st['retrain'] ?? 0);
     const editedRatio = ov.scans.total ? ov.scans.edited / ov.scans.total : null;
     return [
-      { label: 'Tituly v období', value: fmtNum(this.stats.titlesTotal()), hint: `${fmtNum(st['ready'] ?? 0)} nových · ${fmtNum(st['user_approved'] ?? 0)} uložených` },
-      { label: 'Dokončené tituly', value: fmtNum(st['completed'] ?? 0) },
-      { label: 'Na přetrénování', value: fmtNum(st['retrain'] ?? 0), hint: finished ? `${fmtPct((st['retrain'] ?? 0) / finished)} z uzavřených` : undefined },
-      { label: 'Skeny', value: fmtNum(ov.scans.total) },
-      { label: 'Upravené skeny', value: fmtPct(editedRatio), hint: `${fmtNum(ov.scans.edited)} z ${fmtNum(ov.scans.total)}` },
-      { label: 'Aktivní uživatelé', value: fmtNum(ov.active_users) },
-      { label: 'Otevření editoru', value: fmtNum(ov.sessions) },
-      { label: 'Čas v editoru', value: fmtDuration(ov.editor_time_s) }
+      { label: t('Tituly v období'), value: fmtNum(this.stats.titlesTotal()), hint: t('{ready} nových · {saved} uložených', { ready: fmtNum(st['ready'] ?? 0), saved: fmtNum(st['user_approved'] ?? 0) }) },
+      { label: t('Dokončené tituly'), value: fmtNum(st['completed'] ?? 0) },
+      { label: t('Na přetrénování'), value: fmtNum(st['retrain'] ?? 0), hint: finished ? t('{pct} z uzavřených', { pct: fmtPct((st['retrain'] ?? 0) / finished) }) : undefined },
+      { label: t('Skeny'), value: fmtNum(ov.scans.total) },
+      { label: t('Upravené skeny'), value: fmtPct(editedRatio), hint: t('{edited} z {total}', { edited: fmtNum(ov.scans.edited), total: fmtNum(ov.scans.total) }) },
+      { label: t('Aktivní uživatelé'), value: fmtNum(ov.active_users) },
+      { label: t('Otevření editoru'), value: fmtNum(ov.sessions) },
+      { label: t('Čas v editoru'), value: fmtDuration(ov.editor_time_s) }
     ];
   });
 
@@ -214,7 +226,7 @@ export class StatisticsComponent {
     const st = this.stats.overview()?.titles_by_state ?? {};
     return Object.entries(st)
       .filter(([, n]) => n > 0)
-      .map(([state, n]) => ({ label: titleStateDict[state as keyof typeof titleStateDict] ?? state, value: n }));
+      .map(([state, n]) => ({ label: t(titleStateDict[state as keyof typeof titleStateDict] ?? state), value: n }));
   });
 
   anomaliesTotal = computed<AnomaliesRow | null>(() => {
@@ -226,7 +238,7 @@ export class StatisticsComponent {
     const total = this.anomaliesTotal();
     if (!total) return [];
     return Object.entries(total.flags)
-      .map(([flag, s]) => ({ flag, label: flagMessages[flag] ?? flag, ...s }))
+      .map(([flag, s]) => ({ flag, label: t(flagMessages[flag] ?? flag), ...s }))
       .sort((a, b) => b.n - a.n);
   });
 
@@ -250,7 +262,7 @@ export class StatisticsComponent {
     const byAction = new Map<string, { action: string; label: string; keyboard: number; mouse: number }>();
     for (const row of this.stats.usage()) {
       for (const a of row.actions) {
-        const entry = byAction.get(a.action) ?? { action: a.action, label: ACTION_LABELS[a.action] ?? a.action, keyboard: 0, mouse: 0 };
+        const entry = byAction.get(a.action) ?? { action: a.action, label: t(ACTION_LABELS[a.action] ?? a.action), keyboard: 0, mouse: 0 };
         entry.keyboard += a.keyboard;
         entry.mouse += a.mouse;
         byAction.set(a.action, entry);
@@ -276,7 +288,7 @@ export class StatisticsComponent {
     }
     return Object.entries(merged).map(([filter, values]) => ({
       filter,
-      label: FILTER_LABELS[filter] ?? filter,
+      label: t(FILTER_LABELS[filter] ?? filter),
       segments: Object.entries(values).map(([value, n]) => ({ label: this.filterValueLabel(filter, value), value: n }))
     }));
   });
@@ -289,7 +301,7 @@ export class StatisticsComponent {
     }
     return Object.keys(PLACEMENT_LABELS)
       .filter(strategy => merged[strategy])
-      .map(strategy => ({ label: PLACEMENT_LABELS[strategy], value: merged[strategy] }));
+      .map(strategy => ({ label: t(PLACEMENT_LABELS[strategy]), value: merged[strategy] }));
   });
 
   settingRows = computed(() => {
@@ -298,7 +310,7 @@ export class StatisticsComponent {
       .filter(key => settings[key])
       .map(key => ({
         key,
-        label: SETTING_LABELS[key],
+        label: t(SETTING_LABELS[key]),
         segments: Object.entries(settings[key])
           .sort((a, b) => b[1] - a[1])
           .map(([value, n]): StackedSegment => ({ label: this.settingValueLabel(key, value), value: n }))
@@ -311,27 +323,35 @@ export class StatisticsComponent {
   }
 
   private filterValueLabel(filter: string, value: string): string {
-    if (filter === 'scan_type') return filterScanTypeStartDict[value as keyof typeof filterScanTypeStartDict] ?? value;
-    if (filter === 'page_number') return filterPageNumberStartDict[value as keyof typeof filterPageNumberStartDict] ?? value;
+    if (filter === 'scan_type') return t(filterScanTypeStartDict[value as keyof typeof filterScanTypeStartDict] ?? value);
+    if (filter === 'page_number') return t(filterPageNumberStartDict[value as keyof typeof filterPageNumberStartDict] ?? value);
     return value;
   }
 
   private settingValueLabel(setting: string, value: string): string {
-    if (value === 'true') return 'Ano';
-    if (value === 'false') return 'Ne';
+    if (value === 'true') return t('Ano');
+    if (value === 'false') return t('Ne');
     switch (setting) {
-      case 'gridMode': return gridModeDict[value as keyof typeof gridModeDict] ?? value;
-      case 'defaultFitMode': return defaultFitModeDict[value as keyof typeof defaultFitModeDict] ?? value;
-      case 'filterScanTypeStart': return filterScanTypeStartDict[value as keyof typeof filterScanTypeStartDict] ?? value;
-      case 'filterPageNumberStart': return filterPageNumberStartDict[value as keyof typeof filterPageNumberStartDict] ?? value;
-      case 'dimOpacity': return `${value} %`;
-      default: return value;
+      case 'gridMode': return t(gridModeDict[value as keyof typeof gridModeDict] ?? value);
+      case 'defaultFitMode': return t(defaultFitModeDict[value as keyof typeof defaultFitModeDict] ?? value);
+      case 'filterScanTypeStart': return t(filterScanTypeStartDict[value as keyof typeof filterScanTypeStartDict] ?? value);
+      case 'filterPageNumberStart': return t(filterPageNumberStartDict[value as keyof typeof filterPageNumberStartDict] ?? value);
+      case 'dimOpacity': return t('{value} %', { value });
+      // Remaining values are stored Czech labels ('Hustá', 'Tyrkysová', …).
+      default: return t(value);
     }
   }
 
   usageRowLabel(row: EditorUsageRow): string {
     return row.key_name;
   }
+
+  settingsSubtitle = computed<string>(() => {
+    const total = this.stats.settings()?.users_total;
+    if (!total) return t('Rozložení hodnot podle posledního nastavení každého uživatele. Nezávisí na zvoleném období.');
+    const users = plural(total, '{n} uživatel', '{n} uživatelé', '{n} uživatelů', { n: fmtNum(total) });
+    return t('Rozložení hodnot podle posledního nastavení každého uživatele ({users}). Nezávisí na zvoleném období.', { users });
+  });
 
 
   // ========== CSV EXPORTS ==========
@@ -340,7 +360,7 @@ export class StatisticsComponent {
   }
 
   exportQuality(): void {
-    const header = [this.groupByLabel(this.stats.qualityGroupBy()), 'Tituly', 'Skeny', 'Upravené skeny', 'Podíl upravených', 'Podíl skutečně změněných', 'Průměrné IoU', 'Průměrný posun středu', 'Průměrná změna úhlu (°)', 'Přidané strany', 'Odebrané strany', 'Podíl změněné orientace', 'Dokončené', 'Přetrénování', 'Podíl přetrénování', 'Medián doby kontroly (s)'];
+    const header = [this.groupByLabel(this.stats.qualityGroupBy()), ...['Tituly', 'Skeny', 'Upravené skeny', 'Podíl upravených', 'Podíl skutečně změněných', 'Průměrné IoU', 'Průměrný posun středu', 'Průměrná změna úhlu (°)', 'Přidané strany', 'Odebrané strany', 'Podíl změněné orientace', 'Dokončené', 'Přetrénování', 'Podíl přetrénování', 'Medián doby kontroly (s)'].map(h => t(h))];
     const rows = this.stats.quality().map(r => [
       r.key_name, r.n_titles, r.scans_total, r.scans_edited, r.mean_edit_ratio, r.mean_changed_ratio, r.mean_iou, r.mean_center_shift, r.mean_angle_delta,
       r.pages_added, r.pages_removed, r.orientation_change_rate, r.completed, r.retrain, r.retrain_rate, r.median_turnaround_s
@@ -349,27 +369,27 @@ export class StatisticsComponent {
   }
 
   exportAnomalies(): void {
-    const header = ['Skupina', 'Anomálie', 'Počet skenů', 'Upravené skeny', 'Podíl upravených'];
+    const header = ['Skupina', 'Anomálie', 'Počet skenů', 'Upravené skeny', 'Podíl upravených'].map(h => t(h));
     const rows: unknown[][] = [];
     for (const r of this.stats.anomalies()) {
-      for (const [flag, s] of Object.entries(r.flags)) rows.push([r.key_name, flagMessages[flag] ?? flag, s.n, s.edited, s.edit_rate]);
-      rows.push([r.key_name, 'Celkem podezřelé', r.flagged, r.flagged_edited, r.precision]);
+      for (const [flag, s] of Object.entries(r.flags)) rows.push([r.key_name, t(flagMessages[flag] ?? flag), s.n, s.edited, s.edit_rate]);
+      rows.push([r.key_name, t('Celkem podezřelé'), r.flagged, r.flagged_edited, r.precision]);
     }
     downloadCsv(this.csvName('anomalie'), rowsToCsv([header, ...rows]));
   }
 
   exportUsage(): void {
-    const header = [this.groupByLabel(this.stats.usageGroupBy()), 'Otevření editoru', 'Celkový čas (s)', 'Průměrný čas (s)', 'Uložení', 'Uložení na otevření', 'Zkratky', 'Akce myší', 'Podíl klávesnice'];
+    const header = [this.groupByLabel(this.stats.usageGroupBy()), ...['Otevření editoru', 'Celkový čas (s)', 'Průměrný čas (s)', 'Uložení', 'Uložení na otevření', 'Zkratky', 'Akce myší', 'Podíl klávesnice'].map(h => t(h))];
     const rows = this.stats.usage().map(r => [
       r.key_name, r.sessions, r.total_duration_s, r.mean_duration_s, r.saves, r.saves_per_session, r.shortcuts, r.mouse_actions, r.keyboard_ratio
     ]);
-    const actionHeader = ['Akce', 'Klávesnice', 'Myš'];
+    const actionHeader = ['Akce', 'Klávesnice', 'Myš'].map(h => t(h));
     const actionRows = this.actionRows().map(a => [a.label, a.keyboard, a.mouse]);
     downloadCsv(this.csvName('editor'), rowsToCsv([header, ...rows, [], actionHeader, ...actionRows]));
   }
 
   exportSettings(): void {
-    const header = ['Nastavení', 'Hodnota', 'Uživatelů'];
+    const header = ['Nastavení', 'Hodnota', 'Uživatelů'].map(h => t(h));
     const rows: unknown[][] = [];
     for (const s of this.settingRows()) for (const seg of s.segments) rows.push([s.label, seg.label, seg.value]);
     downloadCsv(this.csvName('nastaveni'), rowsToCsv([header, ...rows]));

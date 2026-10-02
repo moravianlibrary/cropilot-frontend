@@ -1,5 +1,6 @@
 import { errorColor, warningColor } from '../app.config';
 import { Page } from '../app.types';
+import { locale, plural, t } from '../i18n/i18n';
 
 // ========== MATH ==========
 export const degreeToRadian = (angle: number): number => {
@@ -23,7 +24,7 @@ export const clamp = (value: number, min: number = 0, max: number = 1): number =
 export const getDate = (input: string): string[] => {
   const date = new Date(input);
   return date
-    .toLocaleString('cs-CZ', {
+    .toLocaleString(locale(), {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -32,6 +33,7 @@ export const getDate = (input: string): string[] => {
       second: '2-digit',
     })
     .replace(/\. /g, '.')
+    .replace(',', '')
     .split(' ');
 }
 
@@ -40,17 +42,17 @@ export const getRelativeDate = (input: string): string => {
   if (Number.isNaN(then)) return '';
 
   const days = Math.floor((Date.now() - then) / 86400000);
-  if (days <= 0) return 'dnes';
-  if (days === 1) return 'včera';
-  if (days < 30) return `před ${days} dny`;
+  if (days <= 0) return t('dnes');
+  if (days === 1) return t('včera');
+  if (days < 30) return plural(days, 'před {n} dnem', 'před {n} dny', 'před {n} dny');
 
   if (days < 365) {
     const months = Math.max(1, Math.floor(days / 30));
-    return months === 1 ? 'před měsícem' : `před ${months} měsíci`;
+    return plural(months, 'před měsícem', 'před {n} měsíci', 'před {n} měsíci');
   }
 
   const years = Math.floor(days / 365);
-  return years === 1 ? 'před rokem' : `před ${years} lety`;
+  return plural(years, 'před rokem', 'před {n} lety', 'před {n} lety');
 }
 
 export const checkEmailValidity = (email: string): boolean => {

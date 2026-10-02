@@ -12,7 +12,7 @@
         <div class="drawer-subtitle">
           <span class="subtitle-text">{{ headerUser.email }}</span>
           @if (headerUser.role === 'admin') {
-            <span class="tag role">Administrátor</span>
+            <span class="tag role">{{ 'Administrátor' | t }}</span>
           }
         </div>
       }
@@ -29,7 +29,7 @@
           <span
             class="drawer-export action icon-button with-label"
             [class.disabled]="dashboard.exportingTitles()"
-            aria-label="Stáhnout seznam titulů jako CSV"
+            [attr.aria-label]="'Stáhnout seznam titulů jako CSV' | t"
             (click)="dashboard.exportTitlesCsv(exportGroup!._id, exportGroup!.name)"
             (keydown.space)="dashboard.exportTitlesCsv(exportGroup!._id, exportGroup!.name)"
             (keydown.enter)="dashboard.exportTitlesCsv(exportGroup!._id, exportGroup!.name)"
@@ -38,7 +38,7 @@
             <span class="icon">
               <app-icon name="arrow-down-in-rect" [size]="14" />
             </span>
-            Stáhnout jako CSV
+            {{ 'Stáhnout jako CSV' | t }}
           </span>
         }
         @if (isAdmin && !isTitlesDrawer) {
@@ -103,23 +103,23 @@
         <div class="many-blocks">
           <div class="many-blocks">
             <div class="block">
-              <div class="label">OŘEZOVÝ MODEL</div>
+              <div class="label">{{ 'OŘEZOVÝ MODEL' | t }}</div>
               <div class="value">{{ group?.default_settings?.crop_model }}</div>
             </div>
             <div class="block">
-              <div class="label">ROTAČNÍ</div>
+              <div class="label">{{ 'ROTAČNÍ' | t }}</div>
               <div class="value">{{ group?.default_settings?.rotation_model }}</div>
             </div>
           </div>
           <div class="block">
-            <div class="label">POČET TITULŮ</div>
+            <div class="label">{{ 'POČET TITULŮ' | t }}</div>
             <div class="value">{{ group?.title_count }}</div>
           </div>
         </div>
 
         <div class="many-blocks dates">
           <span class="block">
-            <div class="label">VYTVOŘENO</div>
+            <div class="label">{{ 'VYTVOŘENO' | t }}</div>
             <div class="value date-time">
               @let created = getDate(group?.created_at ?? '');
               <span class="date">{{ created[0] }}</span>{{ ' ' }}
@@ -127,7 +127,7 @@
             </div>
           </span>
           <span class="block">
-            <div class="label">UPRAVENO</div>
+            <div class="label">{{ 'UPRAVENO' | t }}</div>
             <div class="value date-time">
               @let modified = getDate(group?.modified_at ?? '');
               <span class="date">{{ modified[0] }}</span>{{ ' ' }}
@@ -147,7 +147,7 @@
                 >
                   <app-icon name="copy" [size]="14" />
                 </span>
-                <span class="tooltip" [class.show]="copied['groupId']">Zkopírováno!</span>
+                <span class="tooltip" [class.show]="copied['groupId']">{{ 'Zkopírováno!' | t }}</span>
               </span>
             </div>
             <div class="value mono">{{ group?._id }}</div>
@@ -163,7 +163,7 @@
                 >
                   <app-icon name="copy" [size]="14" />
                 </span>
-                <span class="tooltip" [class.show]="copied['apiKey']">Zkopírováno!</span>
+                <span class="tooltip" [class.show]="copied['apiKey']">{{ 'Zkopírováno!' | t }}</span>
               </span>
             </div>
             <div class="value api-key-row">
@@ -174,14 +174,14 @@
                 (keydown.space)="toggleApiKey()"
                 (keydown.enter)="toggleApiKey()"
                 [tabindex]="dialogOpen ? -1 : 0"
-              >{{ showApiKey() ? 'Skrýt' : 'Zobrazit' }}</span>
+              >{{ (showApiKey() ? 'Skrýt' : 'Zobrazit') | t }}</span>
             </div>
           </div>
         </div>
 
         <div class="block permissions">
           <div class="header">
-            <div class="label">ČLENOVÉ A PRÁVA</div>
+            <div class="label">{{ 'ČLENOVÉ A PRÁVA' | t }}</div>
             @let permissions = dashboard.groupPermissions();
             <div class="add-permission-wrapper">
               <div class="main">
@@ -192,7 +192,7 @@
                   size="compact"
                   [width]="250"
                   [options]="dashboard.availableUsers()"
-                  [placeholder]="'Napište jméno'"
+                  [placeholder]="'Napište jméno' | t"
                   [usedIn]="dashboard.selectedUserUsed()"
                   (usedOut)="dashboard.onSelectUserUsed($event)"
                 ></app-select>
@@ -205,7 +205,7 @@
                   <span class="icon">
                     <app-icon name="add" [size]="16" />
                   </span>
-                  Přidat
+                  {{ 'Přidat' | t }}
                 </span>
                 <span
                   class="button quaternary primary remove-all"
@@ -216,12 +216,12 @@
                   <span class="icon">
                     <app-icon name="delete" [size]="14" />
                   </span>
-                  Odebrat vše
+                  {{ 'Odebrat vše' | t }}
                 </span>
               </div>
               @let selectedUserError = dashboard.selectedUserError();
               @if (selectedUserError) {
-                <span class="error">{{ selectedUserError }}</span>
+                <span class="error">{{ selectedUserError | t }}</span>
               }
             </div>
           </div>
@@ -247,7 +247,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="14" />
                     </span>
-                    Správa
+                    {{ 'Správa' | t }}
                     <span class="icon">
                       <app-icon name="settings" [size]="14" />
                     </span>
@@ -265,7 +265,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="14" />
                     </span>
-                    Úpravy
+                    {{ 'Úpravy' | t }}
                     <span class="icon">
                       <app-icon name="edit" [size]="14" />
                     </span> 
@@ -283,7 +283,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="14" />
                     </span>
-                    Detail titulu
+                    {{ 'Detail titulu' | t }}
                     <span class="icon">
                       <app-icon name="book" [size]="14" />
                     </span>
@@ -301,7 +301,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="14" />
                     </span>
-                    Zobrazení všech titulů
+                    {{ 'Zobrazení všech titulů' | t }}
                     <span class="icon">
                       <app-icon name="open-folder" [size]="14" />
                     </span>
@@ -320,10 +320,10 @@
                 </span>
               </div>
               @if (dashboard.userPermissionsError[user._id]) {
-                <span class="permission-error error">{{ dashboard.userPermissionsError[user._id] }}</span>
+                <span class="permission-error error">{{ dashboard.userPermissionsError[user._id] | t }}</span>
               }
             } @empty {
-              <span class="no-results">Skupina zatím nemá žádné členy.</span>
+              <span class="no-results">{{ 'Skupina zatím nemá žádné členy.' | t }}</span>
             }
           </div>
         </div>
@@ -335,7 +335,7 @@
 
         <div class="block">
           <label class="above-input" for="drawer-title-name">
-            NÁZEV TITULU
+            {{ 'NÁZEV TITULU' | t }}
             <input
               id="drawer-title-name"
               name="drawer-title-name"
@@ -345,7 +345,7 @@
             />
           </label>
           @if (dashboard.titleNameError()) {
-            <span class="error">{{ dashboard.titleNameError() }}</span>
+            <span class="error">{{ dashboard.titleNameError() | t }}</span>
           }
         </div>
 
@@ -356,7 +356,7 @@
               <span class="icon" (click)="copy('titleId', title?._id ?? '')">
                 <app-icon name="copy" [size]="14" />
               </span>
-              <span class="tooltip" [class.show]="copied['titleId']">Zkopírováno!</span>
+              <span class="tooltip" [class.show]="copied['titleId']">{{ 'Zkopírováno!' | t }}</span>
             </span>
           </div>
           <div class="value mono">{{ title?._id }}</div>
@@ -364,11 +364,11 @@
 
         <div class="many-blocks">
           <span class="block">
-            <div class="label">SKUPINA</div>
+            <div class="label">{{ 'SKUPINA' | t }}</div>
             <div class="value">{{ dashboard.selectedGroupPage()?.name ?? '—' }}</div>
           </span>
           <span class="block">
-            <div class="label">STAV</div>
+            <div class="label">{{ 'STAV' | t }}</div>
             <div class="value">
               <span
                 class="tag state"
@@ -376,7 +376,7 @@
                 [class.success]="['user_approved', 'retrain', 'completed'].includes(title?.state ?? '')"
                 [class.pending]="['new', 'scheduled', 'in_progress'].includes(title?.state ?? '')"
                 [class.error]="title?.state === 'failed'"
-              >{{ titleStateDict[title?.state ?? 'new'] }}</span>
+              >{{ titleStateDict[title?.state ?? 'new'] | t }}</span>
             </div>
           </span>
         </div>
@@ -390,7 +390,7 @@
               (keydown.enter)="dashboard.openTitle(title?._id ?? '')"
               [tabindex]="dialogOpen ? -1 : 0"
             >
-              Otevřít v editoru
+              {{ 'Otevřít v editoru' | t }}
               <span class="icon">
                 <app-icon name="arrow-right" [size]="16" />
               </span>
@@ -401,7 +401,7 @@
         @if (dashboard.canAssignInCurrentGroup()) {
           <div class="block">
             <label class="above-input select">
-              ZPRACOVATEL
+              {{ 'ZPRACOVATEL' | t }}
               <app-select
                 [(ngModel)]="dashboard.selectedAssigneeId"
                 [inputName]="'drawer-title-assignee'"
@@ -419,7 +419,7 @@
         <div class="many-blocks title-models">
           <div class="block">
             <label class="above-input select">
-              OŘEZOVÝ MODEL
+              {{ 'OŘEZOVÝ MODEL' | t }}
               <app-select
                 [(ngModel)]="dashboard.selectedCropModel"
                 [inputName]="'drawer-title-crop-model'"
@@ -434,7 +434,7 @@
           </div>
           <div class="block">
             <label class="above-input select">
-              ROTAČNÍ MODEL
+              {{ 'ROTAČNÍ MODEL' | t }}
               <app-select
                 [(ngModel)]="dashboard.selectedRotationModel"
                 [inputName]="'drawer-title-rotation-model'"
@@ -452,13 +452,13 @@
         @if (dashboard.modelChangedFromBaseline()) {
           <div class="model-change-warning">
             <span class="icon"><app-icon name="warning-triangle" [size]="18" /></span>
-            <span>Změnou modelu se zahodí dosavadní uživatelské úpravy titulu a titul se znovu zařadí do fronty ke zpracování.</span>
+            <span>{{ 'Změnou modelu se zahodí dosavadní uživatelské úpravy titulu a titul se znovu zařadí do fronty ke zpracování.' | t }}</span>
           </div>
         }
 
         <div class="many-blocks dates">
           <span class="block">
-            <div class="label">VYTVOŘENO</div>
+            <div class="label">{{ 'VYTVOŘENO' | t }}</div>
             <div class="value date-time">
               @let tCreated = getDate(title?.created_at ?? '');
               <span class="date">{{ tCreated[0] }}</span>{{ ' ' }}
@@ -466,7 +466,7 @@
             </div>
           </span>
           <span class="block">
-            <div class="label">UPRAVENO</div>
+            <div class="label">{{ 'UPRAVENO' | t }}</div>
             <div class="value date-time">
               @let tModified = getDate(title?.modified_at ?? '');
               <span class="date">{{ tModified[0] }}</span>{{ ' ' }}
@@ -490,14 +490,14 @@
               >
                 <app-icon name="copy" [size]="14" />
               </span>
-              <span class="tooltip" [class.show]="copied['userId']">Zkopírováno!</span>
+              <span class="tooltip" [class.show]="copied['userId']">{{ 'Zkopírováno!' | t }}</span>
             </span>
           </div>
           <div class="value mono">{{ user?._id }}</div>
         </div>
 
         <div class="block">
-          <div class="label">NAPOSLEDY ZMĚNĚNO</div>
+          <div class="label">{{ 'NAPOSLEDY ZMĚNĚNO' | t }}</div>
           <div class="value date-time">
             @let modified = getDate(user?.modified_at ?? '');
             <span class="date">{{ modified[0] }}</span>{{ ' ' }}
@@ -507,7 +507,7 @@
 
         <div class="block permissions">
           <div class="header">
-            <div class="label">SKUPINY A PRÁVA</div>
+            <div class="label">{{ 'SKUPINY A PRÁVA' | t }}</div>
             @let permissions = dashboard.userPermissions();
             <div class="add-permission-wrapper">
               <div class="main">
@@ -518,7 +518,7 @@
                   size="compact"
                   [width]="250"
                   [options]="dashboard.availableGroups()"
-                  [placeholder]="'Napište název'"
+                  [placeholder]="'Napište název' | t"
                   [usedIn]="dashboard.selectedGroupUsed()"
                   (usedOut)="dashboard.onSelectGroupUsed($event)"
                 ></app-select>
@@ -533,7 +533,7 @@
                   <span class="icon">
                     <app-icon name="add" [size]="16" />
                   </span>
-                  Přidat
+                  {{ 'Přidat' | t }}
                 </span>
                 <span
                   class="add-perm button quaternary primary remove-all"
@@ -546,12 +546,12 @@
                   <span class="icon">
                     <app-icon name="delete" [size]="14" />
                   </span>
-                  Odebrat vše
+                  {{ 'Odebrat vše' | t }}
                 </span>
               </div>
               @let selectedGroupError = dashboard.selectedGroupError();
               @if (selectedGroupError) {
-                <span class="error">{{ selectedGroupError }}</span>
+                <span class="error">{{ selectedGroupError | t }}</span>
               }
             </div>
           </div>
@@ -577,7 +577,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="14" />
                     </span>
-                    Správa
+                    {{ 'Správa' | t }}
                     <span class="icon">
                       <app-icon name="settings" [size]="14" />
                     </span>
@@ -595,7 +595,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="14" />
                     </span>
-                    Úpravy
+                    {{ 'Úpravy' | t }}
                     <span class="icon">
                       <app-icon name="edit" [size]="14" />
                     </span>
@@ -613,7 +613,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="14" />
                     </span>
-                    Detail titulu
+                    {{ 'Detail titulu' | t }}
                     <span class="icon">
                       <app-icon name="book" [size]="14" />
                     </span>
@@ -631,7 +631,7 @@
                     <span class="check-mark">
                       <app-icon name="checkmark" [size]="14" />
                     </span>
-                    Zobrazení všech titulů
+                    {{ 'Zobrazení všech titulů' | t }}
                     <span class="icon">
                       <app-icon name="open-folder" [size]="14" />
                     </span>
@@ -650,10 +650,10 @@
                 </span>
               </div>
               @if (dashboard.groupPermissionsError[group.group_id]) {
-                <span class="permission-error error">{{ dashboard.groupPermissionsError[group.group_id] }}</span>
+                <span class="permission-error error">{{ dashboard.groupPermissionsError[group.group_id] | t }}</span>
               }
             } @empty {
-              <span class="no-results">Uživatel není v žádné skupině.</span>
+              <span class="no-results">{{ 'Uživatel není v žádné skupině.' | t }}</span>
             }
           </div>
         </div>
@@ -668,7 +668,7 @@
   @let count = dirtyCount();
   <footer class="drawer-footer">
     @if (count > 0) {
-      <span class="dirty-note">Neuložené změny: {{ count }}</span>
+      <span class="dirty-note">{{ 'Neuložené změny: {n}' | t: { n: count } }}</span>
     }
     <span class="footer-buttons">
       @for (btn of drawerButtons; track $index) {
@@ -687,7 +687,7 @@
           (keydown.enter)="btn.action ? btn.action() : dashboard.closeDrawer()"
           [tabindex]="dialogOpen ? -1 : 0"
         >
-          {{ btn.primary && count > 0 ? btn.label + ' (' + count + ')' : btn.label }}
+          {{ btn.primary && count > 0 ? (btn.label | t) + ' (' + count + ')' : (btn.label | t) }}
         </span>
       }
     </span>

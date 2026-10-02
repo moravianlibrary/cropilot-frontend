@@ -18,14 +18,14 @@
       <app-icon name="upload" [size]="24" />
     </span>
 
-    <h3>{{ h3() }}</h3>
-    <p>{{ formatsAndSizeText() }}</p>
+    <h3>{{ h3() | t }}</h3>
+    <p>{{ formatsAndSizeText() | t }}</p>
 
     <span
       class="button real-button tertiary"
       (keydown.space)="fileInput.click()"
       (keydown.enter)="fileInput.click()"
       tabindex="0"
-    >{{ btnLabel() }}</span>
+    >{{ btnLabel() | t }}</span>
   </div>
 </label>

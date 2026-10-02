@@ -10,6 +10,8 @@ import { UploadComponent } from '../upload/upload.component';
 import { UiService } from '../../services/ui.service';
 import { focusElement, waitForElement } from '../../utils/utils';
 import { IconComponent } from '../icon/icon.component';
+import { TPipe } from '../../i18n/t.pipe';
+import { plural, t } from '../../i18n/i18n';
 import {
   SegmentedControlComponent,
   SegmentedControlOption,
@@ -18,7 +20,7 @@ import {
 
 @Component({
   selector: 'app-dialog',
-  imports: [FormsModule, SelectComponent, UploadComponent, IconComponent, SegmentedControlComponent],
+  imports: [FormsModule, SelectComponent, UploadComponent, IconComponent, SegmentedControlComponent, TPipe],
   templateUrl: './dialog.component.html',
   styleUrl: './dialog.component.scss'
 })
@@ -89,57 +91,70 @@ export class DialogComponent {
 
   settingsTab = signal<'editor' | 'behavior'>('editor');
 
-  gridModeOptions: SegmentedControlOption[] = this.gridModeDictKeys.map(value => ({
+  // Option labels are translated at render time (computed() re-runs on a
+  // language switch); option values stay the Czech / enum keys.
+  gridModeOptions = computed<SegmentedControlOption[]>(() => this.gridModeDictKeys.map(value => ({
     value,
-    label: this.gridModeDict[value]
-  }));
+    label: t(this.gridModeDict[value])
+  })));
 
-  gridDensityOptions: SegmentedControlOption[] = this.gridDensityDictKeys.map(value => ({
+  gridDensityOptions = computed<SegmentedControlOption[]>(() => this.gridDensityDictKeys.map(value => ({
     value,
-    label: value
-  }));
+    label: t(value)
+  })));
 
-  cropColorOptions: SegmentedControlOption[] = this.cropColorDictKeys.map(value => ({
+  cropColorOptions = computed<SegmentedControlOption[]>(() => this.cropColorDictKeys.map(value => ({
     value,
-    label: value,
+    label: t(value),
     color: this.cropColorDict[value]
-  }));
+  })));
 
-  gridLineWidthOptions: SegmentedControlOption[] = this.gridLineWidthDictKeys.map(value => ({
+  gridLineWidthOptions = computed<SegmentedControlOption[]>(() => this.gridLineWidthDictKeys.map(value => ({
     value,
-    label: value,
+    label: t(value),
     lineWidth: this.gridLineWidthDict[value]
-  }));
+  })));
 
-  outlineWidthOptions: SegmentedControlOption[] = [...this.outlineWidthDictKeys]
+  outlineWidthOptions = computed<SegmentedControlOption[]>(() => [...this.outlineWidthDictKeys]
     .sort((a, b) => this.outlineWidthDict[a] - this.outlineWidthDict[b])
     .map(value => ({
       value,
-      label: value,
+      label: t(value),
       lineWidth: this.outlineWidthDict[value]
-    }));
+    })));
 
-  dimColorOptions: SegmentedControlOption[] = this.dimColorDictKeys.map(value => ({
+  dimColorOptions = computed<SegmentedControlOption[]>(() => this.dimColorDictKeys.map(value => ({
     value,
-    label: value,
+    label: t(value),
     color: value === 'Žádná' ? undefined : dimColorSwatch(value)
-  }));
+  })));
 
-  scanTypeOptions: SegmentedControlOption[] = this.filterScanTypeStartDictKeys.map(value => ({
+  scanTypeOptions = computed<SegmentedControlOption[]>(() => this.filterScanTypeStartDictKeys.map(value => ({
     value,
-    label: this.filterScanTypeStartDict[value]
-  }));
+    label: t(this.filterScanTypeStartDict[value])
+  })));
 
-  pageNumberOptions: SegmentedControlOption[] = this.filterPageNumberStartDictKeys.map(value => ({
+  pageNumberOptions = computed<SegmentedControlOption[]>(() => this.filterPageNumberStartDictKeys.map(value => ({
     value,
-    label: this.filterPageNumberStartDict[value]
-  }));
+    label: t(this.filterPageNumberStartDict[value])
+  })));
 
-  defaultFitModeOptions: SegmentedControlOption[] = this.defaultFitModeDictKeys.map(value => ({
+  defaultFitModeOptions = computed<SegmentedControlOption[]>(() => this.defaultFitModeDictKeys.map(value => ({
     value,
-    label: this.defaultFitModeDict[value],
+    label: t(this.defaultFitModeDict[value]),
     icon: value === 'page' ? 'fit-to-screen' : 'fit-to-crops'
-  }));
+  })));
+
+  // Heading of the new-title upload area.
+  uploadHeading(count: number): string {
+    if (count === 0) return t('Přetáhněte sem');
+    return plural(
+      count,
+      'Vybrán {n} sken. Chcete sem přetáhnout další?',
+      'Vybrány {n} skeny. Chcete sem přetáhnout další?',
+      'Vybráno {n} skenů. Chcete sem přetáhnout další?'
+    );
+  }
 
   copied: boolean = false;
   private copiedTimer!: number;
@@ -205,8 +220,14 @@ export class DialogComponent {
     this.copiedTimer = window.setTimeout(() => this.copied = false, 1200);
   }
 
+  // The dialog title may be stored as the Czech source or already translated.
+  private dialogTitleIs(...titles: string[]): boolean {
+    const current = this.ui.dialogTitle();
+    return titles.some(title => current === title || current === t(title));
+  }
+
   close(): void {
-    if (this.ui.dialogTitle() === 'Nastavení') this.editor.resetSettingsDraft();
+    if (this.dialogTitleIs('Nastavení')) this.editor.resetSettingsDraft();
     this.closed.emit();
   }
 
@@ -214,6 +235,6 @@ export class DialogComponent {
     this.backdropClick.emit();
     this.close();
 
-    if (['Úprava titulu', 'Smazat titul'].includes(this.ui.dialogTitle())) this.dashboard.selectedTitle.set(null);
+    if (this.dialogTitleIs('Úprava titulu', 'Smazat titul')) this.dashboard.selectedTitle.set(null);
   }
 }

@@ -11,10 +11,12 @@ import { OverlayScrollbars } from 'overlayscrollbars';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { TelemetryService } from '../../services/telemetry.service';
 import { IconComponent } from "../../components/icon/icon.component";
+import { TPipe } from '../../i18n/t.pipe';
+import { t } from '../../i18n/i18n';
 
 @Component({
   selector: 'app-left-panel-editor',
-  imports: [LoaderComponent, NgClass, MenuComponent, IconComponent],
+  imports: [LoaderComponent, NgClass, MenuComponent, IconComponent, TPipe],
   templateUrl: './left-panel.component.html',
   styleUrl: './left-panel.component.scss'
 })
@@ -172,11 +174,11 @@ export class LeftPanelComponent {
 
   getStatusIconTooltip(image: ImageItem): string {
     if (image.edited) {
-      return 'Upraveno';
+      return t('Upraveno');
     }
 
     if (this.isViewedFlagged(image)) {
-      return `Zkontrolováno · původně ${this.flagsSentence(image.flags)}`;
+      return t('Zkontrolováno · původně {flags}', { flags: this.flagsSentence(image.flags) });
     }
 
     return this.flagsSentence(image.flags);
@@ -189,26 +191,26 @@ export class LeftPanelComponent {
       .map(([, message]) => message);
 
     if (matchedMessages.length === 0) {
-      return 'OK';
+      return t('OK');
     }
 
     if (matchedMessages.length > 1 && flags.includes('low_confidence')) {
       matchedMessages = matchedMessages.filter(msg => msg !== flagMessages['low_confidence']);
     }
 
-    if (matchedMessages.length === 1) {
-      return matchedMessages[0];
+    const messages = matchedMessages.map(msg => t(msg));
+
+    if (messages.length === 1) {
+      return messages[0];
     }
 
-    const messages = [...matchedMessages];
-
     if (messages.length === 2) {
-      return messages.join(' a ');
+      return t('{a} a {b}', { a: messages[0], b: messages[1] });
     }
 
     const last = messages[messages.length - 1];
     const secondLast = messages[messages.length - 2];
 
-    return `${messages.join(', ')}, ${secondLast} a ${last}`;
+    return t('{list}, {a} a {b}', { list: messages.slice(0, -2).join(', '), a: secondLast, b: last });
   }
 }

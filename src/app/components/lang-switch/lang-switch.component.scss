@@ -1,0 +1,33 @@
+:host {
+  display: inline-flex;
+}
+
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-x1);
+  height: 28px;
+  padding: 0 var(--spacing-x2);
+  border: none;
+  border-radius: var(--spacing-x2);
+  background: transparent;
+  color: var(--text-bright);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--text-base);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+  }
+}

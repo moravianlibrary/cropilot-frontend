@@ -1,5 +1,6 @@
 import { ApplicationConfig, inject, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, TitleStrategy } from '@angular/router';
+import { TranslatedTitleStrategy } from './i18n/title-strategy';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { EnvironmentService } from './services/environment.service';
@@ -187,6 +188,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideHttpClient(),
     provideRouter(routes),
+    { provide: TitleStrategy, useClass: TranslatedTitleStrategy },
     provideAppInitializer(() => {
       // Inject services
       const envService = inject(EnvironmentService);

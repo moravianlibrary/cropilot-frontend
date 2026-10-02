@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { SelectOption } from '../app.types';
 import { AnomaliesRow, EditorUsageRow, ReviewQualityRow, StatsEnvelope, StatsGroupBy, StatsOverview, StatsPreset, StatsSettings, UsageGroupBy } from '../stats.types';
 import { isoDaysAgo, isoToday } from '../utils/stats-format';
+import { t } from '../i18n/i18n';
 
 // Admin statistics: filter state + the five GET /stats/* calls.
 // Everything returned is aggregated per group / model / month — never per user.
@@ -25,9 +26,9 @@ export class StatisticsService {
   anomaliesGroupBy = signal<StatsGroupBy | ''>('');
   usageGroupBy = signal<UsageGroupBy>('group');
 
-  groupOptions = signal<SelectOption[]>([{ value: '', label: 'Všechny skupiny' }]);
-  cropModelOptions = signal<SelectOption[]>([{ value: '', label: 'Všechny ořezové modely' }]);
-  rotationModelOptions = signal<SelectOption[]>([{ value: '', label: 'Všechny rotační modely' }]);
+  groupOptions = signal<SelectOption[]>([{ value: '', label: t('Všechny skupiny') }]);
+  cropModelOptions = signal<SelectOption[]>([{ value: '', label: t('Všechny ořezové modely') }]);
+  rotationModelOptions = signal<SelectOption[]>([{ value: '', label: t('Všechny rotační modely') }]);
 
   // ========== DATA ==========
   loading = signal<boolean>(false);

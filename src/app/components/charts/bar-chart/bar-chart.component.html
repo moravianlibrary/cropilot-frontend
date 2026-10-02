@@ -1,5 +1,5 @@
 @if (!data().length) {
-  <div class="empty">{{ emptyText() }}</div>
+  <div class="empty">{{ emptyText() | t }}</div>
 } @else if (horizontal()) {
   <div class="rows">
     @for (d of data(); track d.label) {
