@@ -89,30 +89,80 @@
       </span>
     </span>
   }
-  <app-lang-switch [tabindex]="dialogOrDrawerOpen ? -1 : 0" />
   @if (user?._id !== '69b92fc488cb90543bf1a587') {
     <span
-      class="logout button real-button secondary"
-      (click)="auth.logout()"
-      (keydown.space)="auth.logout()"
-      (keydown.enter)="auth.logout()"
+      class="user-chip button real-button secondary"
+      [class.open]="userMenuOpen"
+      role="button"
+      aria-haspopup="menu"
+      [attr.aria-expanded]="userMenuOpen"
+      (click)="userMenuOpen = !userMenuOpen"
+      (keydown.space)="$event.preventDefault(); userMenuOpen = !userMenuOpen"
+      (keydown.enter)="userMenuOpen = !userMenuOpen"
       [tabindex]="dialogOrDrawerOpen ? -1 : 0"
+      cdkOverlayOrigin
+      #userMenuOrigin="cdkOverlayOrigin"
     >
-      @if (isAdmin) {
-        <span class="icon">
-          <app-icon name="admin" [size]="16" />
-        </span>
-      } @else {
-        <span class="icon">
-          <app-icon name="user" [size]="16" />
-        </span>
-      }
-      <span class="user-name">{{ user?.full_name }}</span>
       <span class="icon">
-        <app-icon name="logout" [size]="16" />
+        <app-icon [name]="isAdmin ? 'admin' : 'user'" [size]="16" />
+      </span>
+      <span class="user-name">{{ user?.full_name }}</span>
+      <span class="icon chevron">
+        <app-icon name="chevron-down" [size]="16" />
       </span>
     </span>
+
+    <ng-template
+      cdkConnectedOverlay
+      [cdkConnectedOverlayOrigin]="userMenuOrigin"
+      [cdkConnectedOverlayOpen]="userMenuOpen"
+      [cdkConnectedOverlayPositions]="userMenuPositions"
+      (overlayOutsideClick)="closeUserMenu($event)"
+      (detach)="userMenuOpen = false"
+      (overlayKeydown)="$event.key === 'Escape' && (userMenuOpen = false)"
+    >
+      <div class="user-menu" role="menu">
+        <div class="user-info">
+          <span class="name">{{ user?.full_name }}</span>
+          <span class="email">{{ user?.email }}</span>
+          @if (user?.role) {
+            <span class="role">{{ userRolesDict[user!.role] | t }}</span>
+          }
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="lang">
+          <span class="section-label">{{ 'Jazyk' | t }}</span>
+          <app-segmented-control
+            [options]="langOptions"
+            [value]="lang()"
+            [ariaLabel]="'Jazyk'"
+            size="small"
+            [fit]="true"
+            (valueChange)="setLang($any($event))"
+          />
+        </div>
+
+        <div class="divider"></div>
+
+        <div
+          class="menu-item red"
+          role="menuitem"
+          tabindex="0"
+          (click)="logout()"
+          (keydown.enter)="logout()"
+          (keydown.space)="$event.preventDefault(); logout()"
+        >
+          <span class="icon">
+            <app-icon name="logout" [size]="16" />
+          </span>
+          {{ 'Odhlásit se' | t }}
+        </div>
+      </div>
+    </ng-template>
   } @else {
+    <app-lang-switch [tabindex]="dialogOrDrawerOpen ? -1 : 0" />
     <span
       class="login button real-button secondary"
       (click)="auth.redirectToLogin()"

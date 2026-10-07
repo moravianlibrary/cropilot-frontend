@@ -122,7 +122,7 @@
   }
 }
 
-.logout, .login {
+.user-chip, .login {
   height: var(--control-md);
   gap: var(--spacing-x3);
   transition: background-color .15s ease, border-color .15s ease;
@@ -147,5 +147,101 @@
 
   .user-name {
     @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
+  }
+}
+
+.user-chip {
+  .chevron {
+    transition: transform .15s ease;
+  }
+
+  &.open {
+    background-color: var(--bg-hover);
+    border-color: var(--border-tertiary-hover);
+
+    .chevron {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+// User menu (CDK overlay under the user chip): info, language, logout.
+.user-menu {
+  min-width: 240px;
+  padding: var(--spacing-x1-5);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-tertiary-color);
+  border-radius: var(--radius-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-x1-5);
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-x0-5);
+    padding: var(--spacing-x1-5) var(--spacing-x2-5) var(--spacing-x1);
+
+    .name {
+      @include styles.font(500, var(--font-size-x1-5), var(--spacing-x5), var(--text-base));
+    }
+
+    .email {
+      @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
+    }
+
+    .role {
+      @include styles.micro-label();
+      margin-top: var(--spacing-x1);
+    }
+  }
+
+  .divider {
+    height: 1px;
+    background-color: var(--border-light);
+  }
+
+  .lang {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-x3);
+    padding: var(--spacing-x1) var(--spacing-x2-5) var(--spacing-x1-5);
+
+    .section-label {
+      @include styles.micro-label();
+    }
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-x2-5);
+    padding: var(--spacing-x2) var(--spacing-x2-5);
+    border-radius: var(--spacing-x1-5);
+    cursor: pointer;
+    @include styles.font(400, var(--font-size-x1-5), var(--spacing-x5), var(--text-secondary));
+
+    .icon {
+      display: inline-flex;
+    }
+
+    &.red {
+      color: var(--text-destructive);
+
+      .icon {
+        color: var(--text-destructive);
+      }
+
+      &:hover,
+      &:focus-visible {
+        background-color: var(--bg-color-error);
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
+    }
   }
 }

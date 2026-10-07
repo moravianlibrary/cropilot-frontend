@@ -179,4 +179,6 @@ export const EN_COMMON: Record<string, string> = {
   'Všechny skupiny': 'All groups',
   'Všechny ořezové modely': 'All crop models',
   'Všechny rotační modely': 'All rotation models',
+  'Jazyk': 'Language',
+  'Odhlásit se': 'Log out',
 };
