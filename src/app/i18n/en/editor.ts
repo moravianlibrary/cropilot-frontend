@@ -90,11 +90,8 @@ export const EN_EDITOR: Record<string, string> = {
   'Stáhnout ořezaný titul': 'Download cropped title',
   'Stáhnout ořez skenu': 'Download scan crop',
   'JPEG náhled': 'JPEG preview',
-  'Připravuji… {done} z {total} skenů': 'Preparing… {done} of {total} scans',
-  'Připravuji náhledy ořezů ({n} skenů)…': 'Preparing crop previews ({n} scans)…',
-  'Staženy zmenšené náhledy ořezů (JPEG, delší strana max. {px} px), ne soubory v plném rozlišení.': 'Downloaded downscaled crop previews (JPEG, longer side max. {px} px), not full-resolution files.',
   'Sken nemá žádný ořez ke stažení.': 'The scan has no crop to download.',
   'Titul nemá žádné ořezy ke stažení.': 'The title has no crops to download.',
-  'Náhled ořezu se nepodařilo vytvořit. Zkuste to znovu.': 'Failed to create the crop preview. Try again.',
-  'Náhledy ořezů se nepodařilo vytvořit. Zkuste to znovu.': 'Failed to create the crop previews. Try again.',
+  'Ořez skenu se nepodařilo stáhnout. Zkuste to znovu.': 'Failed to download the scan crop. Try again.',
+  'Stahují se uložené ořezy. Neuložené změny v nich nejsou – nejdřív je uložte.': 'Downloading the saved crops. Unsaved changes are not included – save them first.',
 };

@@ -353,22 +353,20 @@
               </span>
             }
             @if (canDownload) {
-              @let download = dashboard.titleDownload();
+              @let download = dashboard.cropDownload.titleDownload();
               <span
                 class="button real-button with-icon secondary"
                 [class.busy]="download"
-                (click)="title && dashboard.downloadTitleCropPreviews(title)"
-                (keydown.space)="title && dashboard.downloadTitleCropPreviews(title)"
-                (keydown.enter)="title && dashboard.downloadTitleCropPreviews(title)"
+                (click)="title && dashboard.downloadTitleCrops(title)"
+                (keydown.space)="title && dashboard.downloadTitleCrops(title)"
+                (keydown.enter)="title && dashboard.downloadTitleCrops(title)"
                 [tabindex]="dialogOpen ? -1 : 0"
               >
                 <span class="icon">
                   <app-icon name="download" [size]="16" />
                 </span>
-                @if (download?.total) {
-                  {{ 'Připravuji… {done}/{total}' | t: { done: download!.done, total: download!.total } }}
-                } @else if (download) {
-                  {{ 'Připravuji…' | t }}
+                @if (download) {
+                  {{ 'Stahuji… {mb} MB' | t: { mb: (download.loaded / 1048576).toFixed(1) } }}
                 } @else {
                   {{ 'Stáhnout JPEG náhled' | t }}
                 }

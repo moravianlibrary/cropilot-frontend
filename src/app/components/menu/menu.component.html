@@ -82,12 +82,13 @@
     </div>
   </ng-template>
 
-  <!-- Crop preview download: always says it is a downscaled preview. -->
+  <!-- Crop download: the scan is cut here, the whole title on the backend. -->
   <ng-template #downloadItem let-label="label" let-scope="scope">
-    @let progress = editor.cropDownloadProgress();
+    @let titleDownload = cropDownload.titleDownload();
+    @let busy = scope === 'title' ? !!titleDownload : editor.scanDownloading();
     <div
       class="menu-item"
-      [class.disabled]="progress"
+      [class.disabled]="busy"
       (click)="onDownloadClick(scope)"
     >
       <span class="icon">
@@ -96,8 +97,8 @@
       <span class="menu-item-text">
         {{ label | t }}
         <span class="menu-item-hint">
-          @if (progress && progress.total > 1) {
-            {{ 'Připravuji… {done} z {total} skenů' | t: { done: progress.done, total: progress.total } }}
+          @if (scope === 'title' && titleDownload) {
+            {{ 'Stahuji… {mb} MB' | t: { mb: (titleDownload.loaded / 1048576).toFixed(1) } }}
           } @else {
             {{ 'JPEG náhled' | t }}
           }

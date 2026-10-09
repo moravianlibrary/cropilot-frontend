@@ -1,15 +1,14 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { catchError, EMPTY, expand, finalize, firstValueFrom, forkJoin, from, map, mergeMap, Observable, of, reduce, retry, switchMap, tap, throwError, timer, toArray } from 'rxjs';
+import { catchError, EMPTY, expand, finalize, forkJoin, from, map, mergeMap, Observable, of, reduce, retry, switchMap, tap, throwError, timer, toArray } from 'rxjs';
 import { AuthService } from './auth.service';
-import { AssignableUser, ChangedGroupMember, DashboardPage, DrawerButton, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Paginated, PagedQuery, Permission, PermissionType, SelectOption, Title, TitleDetail, TitlesQuery, User, UserInGroup } from '../app.types';
+import { AssignableUser, ChangedGroupMember, DashboardPage, DrawerButton, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Paginated, PagedQuery, Permission, PermissionType, SelectOption, Title, TitlesQuery, User, UserInGroup } from '../app.types';
 import { Router } from '@angular/router';
 import { checkEmailValidity, defer, downloadCsv, focusMainWrapper, getDate, rowsToCsv, scrollToAndFocusElement, scrollToElement } from '../utils/utils';
 import { inlineErrors, titleStateDict } from '../app.config';
 import { UiService } from './ui.service';
 import { t } from '../i18n/i18n';
-import { cropToDisplayFrame, CropSource, downloadBlob, loadImageBlob, normalizeOrientation, PREVIEW_MAX_SIDE, renderTitlePreviews, safeFileName, scanFileBase } from '../utils/crop-export';
-import { createZip } from '../utils/zip';
+import { CropDownloadService } from './crop-download.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +18,7 @@ export class DashboardService {
   private auth = inject(AuthService);
   private ui = inject(UiService);
   private router = inject(Router);
+  cropDownload = inject(CropDownloadService);
 
   dashboardPage = signal<DashboardPage>('groups');
   errors = inlineErrors;
@@ -582,59 +582,15 @@ export class DashboardService {
     window.location.href = `${this.auth.baseUri}/book/${bookId}`;
   }
 
-  // ========== CROP PREVIEW DOWNLOAD ==========
-  // Whole title as a ZIP of downscaled JPEG previews of its saved crops (the
-  // editor's ☰ menu does the same from its live state). Only for title managers.
-  titleDownload = signal<{ titleId: string; done: number; total: number } | null>(null);
-
+  // ========== CROP DOWNLOAD ==========
+  // Whole title as a ZIP of its saved crops, cut on the backend. Title managers only.
   canDownloadTitle(title: Title | null): boolean {
     return !!title && ['ready', 'user_approved', 'retrain', 'completed'].includes(title.state);
   }
 
-  async downloadTitleCropPreviews(title: Title): Promise<void> {
-    if (this.titleDownload() || !this.canUploadInCurrentGroup() || !this.canDownloadTitle(title)) return;
-
-    const api = this.auth.apiUrl;
-    this.titleDownload.set({ titleId: title._id, done: 0, total: 0 });
-    const toastId = this.ui.showToast(t('Připravuji náhledy ořezů…'), { type: 'info', duration: 10 * 60 * 1000 });
-
-    try {
-      const detail = await firstValueFrom(this.http.get<TitleDetail>(`${api}/${title._id}/scans`, { headers: this.auth.authHeaders('json', true) }));
-      const scans = detail.scans ?? [];
-      this.titleDownload.set({ titleId: title._id, done: 0, total: scans.length });
-
-      const sources: CropSource[] = scans.map((scan, index) => {
-        const orientation = normalizeOrientation(scan.orientation);
-        return {
-          fileBase: scanFileBase(scan.scan_name, index),
-          orientation,
-          pages: scan.pages.map(page => cropToDisplayFrame(page, orientation)),
-          image: async () => loadImageBlob(await firstValueFrom(this.http.get(
-            `${api}/${title._id}/files?scan_id=${scan._id}`,
-            { responseType: 'blob', headers: this.auth.authHeaders('*/*') }
-          )))
-        };
-      });
-
-      const entries = await renderTitlePreviews(sources, () =>
-        this.titleDownload.update(p => p && { ...p, done: p.done + 1 }));
-      if (!entries.length) {
-        this.ui.showToast(t('Titul nemá žádné ořezy ke stažení.'), { type: 'info' });
-        return;
-      }
-
-      downloadBlob(await createZip(entries), `${safeFileName(title.external_id || title._id)}_nahled.zip`);
-      this.ui.showToast(
-        t('Staženy zmenšené náhledy ořezů (JPEG, delší strana max. {px} px), ne soubory v plném rozlišení.', { px: PREVIEW_MAX_SIDE }),
-        { type: 'success', duration: 6000 }
-      );
-    } catch (err) {
-      this.ui.showToast(t('Náhledy ořezů se nepodařilo vytvořit. Zkuste to znovu.'), { type: 'error' });
-      console.error(err);
-    } finally {
-      this.ui.dismissToast(toastId);
-      this.titleDownload.set(null);
-    }
+  downloadTitleCrops(title: Title): void {
+    if (!this.canUploadInCurrentGroup() || !this.canDownloadTitle(title)) return;
+    void this.cropDownload.downloadTitle(title._id, title.external_id ?? '');
   }
 
   navigateToUsers(): void {

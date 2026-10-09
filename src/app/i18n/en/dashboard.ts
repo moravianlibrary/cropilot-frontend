@@ -121,7 +121,8 @@ export const EN_DASHBOARD: Record<string, string> = {
   'Nahrávání {done}/{total}': 'Uploading {done}/{total}',
   'Nezavírejte ani neobnovujte stránku, dokud se skeny nenahrají.': 'Do not close or reload the page until the scans are uploaded.',
   'Stáhnout JPEG náhled': 'Download JPEG preview',
-  'Připravuji…': 'Preparing…',
-  'Připravuji… {done}/{total}': 'Preparing… {done}/{total}',
-  'Připravuji náhledy ořezů…': 'Preparing crop previews…',
+  'Stahuji… {mb} MB': 'Downloading… {mb} MB',
+  'Připravuji ořezy titulu…': 'Preparing the title crops…',
+  'Ořezy titulu byly staženy jako JPEG náhled.': 'The title crops were downloaded as a JPEG preview.',
+  'Ořezy titulu se nepodařilo stáhnout. Zkuste to znovu.': 'Failed to download the title crops. Try again.',
 };

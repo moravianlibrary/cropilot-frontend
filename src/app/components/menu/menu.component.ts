@@ -3,6 +3,7 @@ import { Component, ElementRef, inject, input, viewChild } from '@angular/core';
 import { NgClass, NgTemplateOutlet } from '../../../../node_modules/@angular/common';
 import { EditorService } from '../../services/editor.service';
 import { AuthService } from '../../services/auth.service';
+import { CropDownloadService } from '../../services/crop-download.service';
 import { IconComponent } from '../icon/icon.component';
 import { TPipe } from '../../i18n/t.pipe';
 
@@ -15,6 +16,7 @@ import { TPipe } from '../../i18n/t.pipe';
 export class MenuComponent {
   editor = inject(EditorService);
   auth = inject(AuthService);
+  cropDownload = inject(CropDownloadService);
   type = input('menu-primary');
 
 
@@ -47,10 +49,8 @@ export class MenuComponent {
   }
 
   onDownloadClick(scope: 'scan' | 'title'): void {
-    if (this.editor.cropDownloadProgress()) return;
     this.show = false;
-    void (scope === 'scan'
-      ? this.editor.downloadScanCropPreviews()
-      : this.editor.downloadTitleCropPreviews());
+    if (scope === 'scan') void this.editor.downloadScanCrops();
+    else this.editor.downloadTitleCrops();
   }
 }
