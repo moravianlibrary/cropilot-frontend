@@ -38,10 +38,13 @@ export const getDate = (input: string): string[] => {
 }
 
 export const getRelativeDate = (input: string): string => {
-  const then = new Date(input).getTime();
-  if (Number.isNaN(then)) return '';
+  const then = new Date(input);
+  if (Number.isNaN(then.getTime())) return '';
 
-  const days = Math.floor((Date.now() - then) / 86400000);
+  // Calendar days in local time, not elapsed 24 h blocks: yesterday 16:00 is
+  // "včera" even at 10:00 today. Rounding absorbs the 23/25 h DST days.
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOfDay(new Date()) - startOfDay(then)) / 86400000);
   if (days <= 0) return t('dnes');
   if (days === 1) return t('včera');
   if (days < 30) return plural(days, 'před {n} dnem', 'před {n} dny', 'před {n} dny');
