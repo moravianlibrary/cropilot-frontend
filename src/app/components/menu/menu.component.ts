@@ -1,6 +1,6 @@
 import { CdkConnectedOverlay, CdkOverlayOrigin } from '@angular/cdk/overlay';
 import { Component, ElementRef, inject, input, viewChild } from '@angular/core';
-import { NgClass } from '../../../../node_modules/@angular/common';
+import { NgClass, NgTemplateOutlet } from '../../../../node_modules/@angular/common';
 import { EditorService } from '../../services/editor.service';
 import { AuthService } from '../../services/auth.service';
 import { IconComponent } from '../icon/icon.component';
@@ -8,7 +8,7 @@ import { TPipe } from '../../i18n/t.pipe';
 
 @Component({
   selector: 'app-menu',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgClass, IconComponent, TPipe],
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgClass, NgTemplateOutlet, IconComponent, TPipe],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
 })
@@ -44,5 +44,13 @@ export class MenuComponent {
   onResetScanClick(): void {
     this.editor.openResetScanDialog();
     this.show = false;
+  }
+
+  onDownloadClick(scope: 'scan' | 'title'): void {
+    if (this.editor.cropDownloadProgress()) return;
+    this.show = false;
+    void (scope === 'scan'
+      ? this.editor.downloadScanCropPreviews()
+      : this.editor.downloadTitleCropPreviews());
   }
 }

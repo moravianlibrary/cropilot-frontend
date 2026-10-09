@@ -653,6 +653,35 @@
   }
 }
 
+// Title detail: the primary actions sit in one row right under the header,
+// each button taking an equal share of the width.
+.title-actions {
+  display: flex;
+  gap: var(--spacing-x3);
+  padding-inline: var(--spacing-x4);
+
+  .real-button {
+    flex: 1 1 0;
+    justify-content: center;
+    height: var(--control-md);
+    white-space: nowrap;
+  }
+
+  .busy {
+    cursor: progress;
+    opacity: 0.6;
+  }
+}
+
+// Title detail: read-only metadata, separated from the editable fields.
+.title-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-x6);
+  padding-top: var(--spacing-x6);
+  border-top: 1px solid var(--border-color);
+}
+
 // Warning shown in the title detail when the crop/rotation model is changed:
 // saving will discard user edits and re-queue the title for processing.
 .model-change-warning {

@@ -1,13 +1,15 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { catchError, EMPTY, expand, forkJoin, from, map, mergeMap, Observable, of, reduce, switchMap, tap, throwError, toArray } from 'rxjs';
+import { catchError, EMPTY, expand, finalize, firstValueFrom, forkJoin, from, map, mergeMap, Observable, of, reduce, retry, switchMap, tap, throwError, timer, toArray } from 'rxjs';
 import { AuthService } from './auth.service';
-import { AssignableUser, ChangedGroupMember, DashboardPage, DrawerButton, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Paginated, PagedQuery, Permission, PermissionType, SelectOption, Title, TitlesQuery, User, UserInGroup } from '../app.types';
+import { AssignableUser, ChangedGroupMember, DashboardPage, DrawerButton, Group, GroupPage, Models, NewGroup, NewPassword, NewUser, Paginated, PagedQuery, Permission, PermissionType, SelectOption, Title, TitleDetail, TitlesQuery, User, UserInGroup } from '../app.types';
 import { Router } from '@angular/router';
 import { checkEmailValidity, defer, downloadCsv, focusMainWrapper, getDate, rowsToCsv, scrollToAndFocusElement, scrollToElement } from '../utils/utils';
 import { inlineErrors, titleStateDict } from '../app.config';
 import { UiService } from './ui.service';
 import { t } from '../i18n/i18n';
+import { cropToDisplayFrame, CropSource, downloadBlob, loadImageBlob, normalizeOrientation, PREVIEW_MAX_SIDE, renderTitlePreviews, safeFileName, scanFileBase } from '../utils/crop-export';
+import { createZip } from '../utils/zip';
 
 @Injectable({
   providedIn: 'root'
@@ -422,18 +424,66 @@ export class DashboardService {
     return this.http.post<{ id: string }>(`${this.auth.apiUrl}/create?group_id=${groupId}`, payload, { headers: this.auth.authHeaders('json', true) });
   }
 
+  // Uploads in this tab, titleId -> scans done / total. Drives the "Nahrávání"
+  // state in the titles table and the leave-page warning: closing or reloading
+  // the tab cancels the uploads still in flight, and the title then stays in
+  // 'new' because /process is never called.
+  uploadProgress = signal<Record<string, { done: number; total: number }>>({});
+
+  private readonly warnBeforeUnload = (event: BeforeUnloadEvent): void => {
+    if (!Object.keys(this.uploadProgress()).length) return;
+    event.preventDefault();
+    event.returnValue = '';
+  };
+
+  constructor() {
+    window.addEventListener('beforeunload', this.warnBeforeUnload);
+  }
+
   uploadScan(titleId: string, file: File): Observable<void> {
     const form = new FormData();
     form.append('scan_data', file, file.name);
-    return this.http.post<void>(`${this.auth.apiUrl}/${titleId}/upload-scan`, form, { headers: this.auth.authHeaders() });
+    return this.http.post<void>(`${this.auth.apiUrl}/${titleId}/upload-scan`, form, { headers: this.auth.authHeaders() }).pipe(
+      // Network drops, proxy errors (502) and rate limits are retried with
+      // backoff; client errors (wrong state, permissions) are not.
+      retry({
+        count: 2,
+        delay: (err: HttpErrorResponse, attempt) => [0, 408, 429].includes(err.status) || err.status >= 500
+          ? timer(1000 * 2 ** (attempt - 1))
+          : throwError(() => err)
+      })
+    );
   }
 
-  uploadAllScans(titleId: string, files: File[], concurrency: number = 5): Observable<string> {
+  // Uploads every scan (a failed one does not cancel the others) and emits the
+  // number of scans that could not be uploaded.
+  uploadAllScans(titleId: string, files: File[], concurrency: number = 5): Observable<number> {
+    this.uploadProgress.update(p => ({ ...p, [titleId]: { done: 0, total: files.length } }));
     return from(files).pipe(
-      mergeMap(file => this.uploadScan(titleId, file), concurrency),
-      toArray(), // collects all emitted values, and emits one single array
-      map(() => titleId)
+      mergeMap(file => this.uploadScan(titleId, file).pipe(
+        map(() => true),
+        catchError(err => {
+          console.error(`Failed to upload scan '${file.name}'.`, err);
+          return of(false);
+        }),
+        tap(ok => {
+          if (ok) this.uploadProgress.update(p => p[titleId]
+            ? { ...p, [titleId]: { ...p[titleId], done: p[titleId].done + 1 } }
+            : p);
+        })
+      ), concurrency),
+      toArray(),
+      map(results => results.filter(ok => !ok).length)
     );
+  }
+
+  private clearUploadProgress(titleId: string): void {
+    this.uploadProgress.update(({ [titleId]: _, ...rest }) => rest);
+  }
+
+  private setTitleState(titleId: string, state: Title['state']): void {
+    this.titles.update(prev => prev.map(title => title._id === titleId ? { ...title, state } : title));
+    this.displayedTitles.set(this.titles());
   }
 
   processTitle(titleId: string): Observable<void> {
@@ -530,6 +580,61 @@ export class DashboardService {
 
   openTitle(bookId: string): void {
     window.location.href = `${this.auth.baseUri}/book/${bookId}`;
+  }
+
+  // ========== CROP PREVIEW DOWNLOAD ==========
+  // Whole title as a ZIP of downscaled JPEG previews of its saved crops (the
+  // editor's ☰ menu does the same from its live state). Only for title managers.
+  titleDownload = signal<{ titleId: string; done: number; total: number } | null>(null);
+
+  canDownloadTitle(title: Title | null): boolean {
+    return !!title && ['ready', 'user_approved', 'retrain', 'completed'].includes(title.state);
+  }
+
+  async downloadTitleCropPreviews(title: Title): Promise<void> {
+    if (this.titleDownload() || !this.canUploadInCurrentGroup() || !this.canDownloadTitle(title)) return;
+
+    const api = this.auth.apiUrl;
+    this.titleDownload.set({ titleId: title._id, done: 0, total: 0 });
+    const toastId = this.ui.showToast(t('Připravuji náhledy ořezů…'), { type: 'info', duration: 10 * 60 * 1000 });
+
+    try {
+      const detail = await firstValueFrom(this.http.get<TitleDetail>(`${api}/${title._id}/scans`, { headers: this.auth.authHeaders('json', true) }));
+      const scans = detail.scans ?? [];
+      this.titleDownload.set({ titleId: title._id, done: 0, total: scans.length });
+
+      const sources: CropSource[] = scans.map((scan, index) => {
+        const orientation = normalizeOrientation(scan.orientation);
+        return {
+          fileBase: scanFileBase(scan.scan_name, index),
+          orientation,
+          pages: scan.pages.map(page => cropToDisplayFrame(page, orientation)),
+          image: async () => loadImageBlob(await firstValueFrom(this.http.get(
+            `${api}/${title._id}/files?scan_id=${scan._id}`,
+            { responseType: 'blob', headers: this.auth.authHeaders('*/*') }
+          )))
+        };
+      });
+
+      const entries = await renderTitlePreviews(sources, () =>
+        this.titleDownload.update(p => p && { ...p, done: p.done + 1 }));
+      if (!entries.length) {
+        this.ui.showToast(t('Titul nemá žádné ořezy ke stažení.'), { type: 'info' });
+        return;
+      }
+
+      downloadBlob(await createZip(entries), `${safeFileName(title.external_id || title._id)}_nahled.zip`);
+      this.ui.showToast(
+        t('Staženy zmenšené náhledy ořezů (JPEG, delší strana max. {px} px), ne soubory v plném rozlišení.', { px: PREVIEW_MAX_SIDE }),
+        { type: 'success', duration: 6000 }
+      );
+    } catch (err) {
+      this.ui.showToast(t('Náhledy ořezů se nepodařilo vytvořit. Zkuste to znovu.'), { type: 'error' });
+      console.error(err);
+    } finally {
+      this.ui.dismissToast(toastId);
+      this.titleDownload.set(null);
+    }
   }
 
   navigateToUsers(): void {
@@ -820,8 +925,16 @@ export class DashboardService {
           }
 
           ui.closeDialog();
-          
+
+          const files = this.files();
+          const fail = (message: string, err?: unknown) => {
+            this.ui.showToast(message, { type: 'error' });
+            if (err) console.error(err);
+            return EMPTY;
+          };
+
           return this.createTitle(this.selectedGroupPage()?._id ?? '').pipe(
+            catchError(err => fail(t('Při vytváření titulu se něco pokazilo. Zkuste to znovu.'), err)),
             map(res => {
               const now = new Date().toISOString();
               const newTitle: Title = {
@@ -833,7 +946,8 @@ export class DashboardService {
                 },
                 created_at: now,
                 modified_at: now,
-                state: 'scheduled'
+                // Stays 'new' (shown as "Nahrávání x/y") until /process succeeds.
+                state: 'new'
               };
 
               this.searchTitles.set('');
@@ -843,26 +957,18 @@ export class DashboardService {
 
               return res.id;
             }),
-            switchMap(id => this.uploadAllScans(id, this.files()).pipe(
-              catchError(err => {
-                this.ui.showToast(t('Při nahrávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.'), { type: 'error' });
-                console.error(err);
-                return throwError(() => err);
-              })
-            )),
-            switchMap(id => this.processTitle(id).pipe(
-              tap(() => this.forgetTitleThumbnail(id)),
-              catchError(err => {
-                this.ui.showToast(t('Při zpracovávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.'), { type: 'error' });
-                console.error(err);
-                return throwError(() => err);
-              })
-            )),
-            catchError(err => {
-              this.ui.showToast(t('Při vytváření titulu se něco pokazilo. Titul smažte a přidejte ho jako nový.'), { type: 'error' });
-              console.error(err);
-              return throwError(() => err);
-            })
+            switchMap(id => this.uploadAllScans(id, files).pipe(
+              switchMap(failed => failed
+                ? fail(t('Nepodařilo se nahrát {failed} z {total} skenů, titul se proto nezpracoval. Titul smažte a přidejte ho jako nový.', { failed, total: files.length }))
+                : this.processTitle(id).pipe(
+                    catchError(err => fail(t('Při zpracovávání skenů se něco pokazilo. Titul smažte a přidejte ho jako nový.'), err))
+                  )),
+              tap(() => {
+                this.setTitleState(id, 'scheduled');
+                this.forgetTitleThumbnail(id);
+              }),
+              finalize(() => this.clearUploadProgress(id))
+            ))
           ).subscribe();
         }
       }

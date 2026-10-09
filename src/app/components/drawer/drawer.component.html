@@ -332,6 +332,50 @@
       <!-- Titles -->
       @if (ui.drawerContentType() === 'titles') {
         @let title = dashboard.selectedTitle();
+        @let canOpen = auth.canReadTitle() && ['ready', 'user_approved'].includes(title?.state ?? '');
+        @let canDownload = dashboard.canUploadInCurrentGroup() && dashboard.canDownloadTitle(title);
+
+        <!-- Actions -->
+        @if (canOpen || canDownload) {
+          <div class="title-actions">
+            @if (canOpen) {
+              <span
+                class="button real-button with-icon secondary"
+                (click)="dashboard.openTitle(title?._id ?? '')"
+                (keydown.space)="dashboard.openTitle(title?._id ?? '')"
+                (keydown.enter)="dashboard.openTitle(title?._id ?? '')"
+                [tabindex]="dialogOpen ? -1 : 0"
+              >
+                {{ 'Otevřít v editoru' | t }}
+                <span class="icon">
+                  <app-icon name="arrow-right" [size]="16" />
+                </span>
+              </span>
+            }
+            @if (canDownload) {
+              @let download = dashboard.titleDownload();
+              <span
+                class="button real-button with-icon secondary"
+                [class.busy]="download"
+                (click)="title && dashboard.downloadTitleCropPreviews(title)"
+                (keydown.space)="title && dashboard.downloadTitleCropPreviews(title)"
+                (keydown.enter)="title && dashboard.downloadTitleCropPreviews(title)"
+                [tabindex]="dialogOpen ? -1 : 0"
+              >
+                <span class="icon">
+                  <app-icon name="download" [size]="16" />
+                </span>
+                @if (download?.total) {
+                  {{ 'Připravuji… {done}/{total}' | t: { done: download!.done, total: download!.total } }}
+                } @else if (download) {
+                  {{ 'Připravuji…' | t }}
+                } @else {
+                  {{ 'Stáhnout JPEG náhled' | t }}
+                }
+              </span>
+            }
+          </div>
+        }
 
         <div class="block">
           <label class="above-input" for="drawer-title-name">
@@ -348,55 +392,6 @@
             <span class="error">{{ dashboard.titleNameError() | t }}</span>
           }
         </div>
-
-        <div class="block">
-          <div class="label">
-            ID
-            <span class="copy-wrap">
-              <span class="icon" (click)="copy('titleId', title?._id ?? '')">
-                <app-icon name="copy" [size]="14" />
-              </span>
-              <span class="tooltip" [class.show]="copied['titleId']">{{ 'Zkopírováno!' | t }}</span>
-            </span>
-          </div>
-          <div class="value mono">{{ title?._id }}</div>
-        </div>
-
-        <div class="many-blocks">
-          <span class="block">
-            <div class="label">{{ 'SKUPINA' | t }}</div>
-            <div class="value">{{ dashboard.selectedGroupPage()?.name ?? '—' }}</div>
-          </span>
-          <span class="block">
-            <div class="label">{{ 'STAV' | t }}</div>
-            <div class="value">
-              <span
-                class="tag state"
-                [class.info]="title?.state === 'ready'"
-                [class.success]="['user_approved', 'retrain', 'completed'].includes(title?.state ?? '')"
-                [class.pending]="['new', 'scheduled', 'in_progress'].includes(title?.state ?? '')"
-                [class.error]="title?.state === 'failed'"
-              >{{ titleStateDict[title?.state ?? 'new'] | t }}</span>
-            </div>
-          </span>
-        </div>
-
-        @if (auth.canReadTitle() && ['ready', 'user_approved'].includes(title?.state ?? '')) {
-          <div class="block">
-            <span
-              class="button real-button with-icon secondary"
-              (click)="dashboard.openTitle(title?._id ?? '')"
-              (keydown.space)="dashboard.openTitle(title?._id ?? '')"
-              (keydown.enter)="dashboard.openTitle(title?._id ?? '')"
-              [tabindex]="dialogOpen ? -1 : 0"
-            >
-              {{ 'Otevřít v editoru' | t }}
-              <span class="icon">
-                <app-icon name="arrow-right" [size]="16" />
-              </span>
-            </span>
-          </div>
-        }
 
         @if (dashboard.canAssignInCurrentGroup()) {
           <div class="block">
@@ -456,23 +451,58 @@
           </div>
         }
 
-        <div class="many-blocks dates">
-          <span class="block">
-            <div class="label">{{ 'VYTVOŘENO' | t }}</div>
-            <div class="value date-time">
-              @let tCreated = getDate(title?.created_at ?? '');
-              <span class="date">{{ tCreated[0] }}</span>{{ ' ' }}
-              <span class="time">{{ tCreated[1] }}</span>
+        <!-- Read-only info -->
+        <div class="title-info">
+          <div class="many-blocks">
+            <span class="block">
+              <div class="label">{{ 'STAV' | t }}</div>
+              <div class="value">
+                <span
+                  class="tag state"
+                  [class.info]="title?.state === 'ready'"
+                  [class.success]="['user_approved', 'retrain', 'completed'].includes(title?.state ?? '')"
+                  [class.pending]="['new', 'scheduled', 'in_progress'].includes(title?.state ?? '')"
+                  [class.error]="title?.state === 'failed'"
+                >{{ titleStateDict[title?.state ?? 'new'] | t }}</span>
+              </div>
+            </span>
+            <span class="block">
+              <div class="label">{{ 'SKUPINA' | t }}</div>
+              <div class="value">{{ dashboard.selectedGroupPage()?.name ?? '—' }}</div>
+            </span>
+          </div>
+
+          <div class="block">
+            <div class="label">
+              ID
+              <span class="copy-wrap">
+                <span class="icon" (click)="copy('titleId', title?._id ?? '')">
+                  <app-icon name="copy" [size]="14" />
+                </span>
+                <span class="tooltip" [class.show]="copied['titleId']">{{ 'Zkopírováno!' | t }}</span>
+              </span>
             </div>
-          </span>
-          <span class="block">
-            <div class="label">{{ 'UPRAVENO' | t }}</div>
-            <div class="value date-time">
-              @let tModified = getDate(title?.modified_at ?? '');
-              <span class="date">{{ tModified[0] }}</span>{{ ' ' }}
-              <span class="time">{{ tModified[1] }}</span>
-            </div>
-          </span>
+            <div class="value mono">{{ title?._id }}</div>
+          </div>
+
+          <div class="many-blocks dates">
+            <span class="block">
+              <div class="label">{{ 'VYTVOŘENO' | t }}</div>
+              <div class="value date-time">
+                @let tCreated = getDate(title?.created_at ?? '');
+                <span class="date">{{ tCreated[0] }}</span>{{ ' ' }}
+                <span class="time">{{ tCreated[1] }}</span>
+              </div>
+            </span>
+            <span class="block">
+              <div class="label">{{ 'UPRAVENO' | t }}</div>
+              <div class="value date-time">
+                @let tModified = getDate(title?.modified_at ?? '');
+                <span class="date">{{ tModified[0] }}</span>{{ ' ' }}
+                <span class="time">{{ tModified[1] }}</span>
+              </div>
+            </span>
+          </div>
         </div>
       }
 

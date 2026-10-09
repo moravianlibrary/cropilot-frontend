@@ -42,6 +42,12 @@
           </span>
           {{ 'Klávesové zkratky' | t }}
         </div>
+        @if (editor.canDownloadCrops()) {
+          <ng-container
+            [ngTemplateOutlet]="downloadItem"
+            [ngTemplateOutletContext]="{ label: 'Stáhnout ořezaný titul', scope: 'title' }"
+          />
+        }
         @if (canWriteTitle) {
           <div
             class="menu-item last red"
@@ -54,17 +60,49 @@
           </div>
         }
       }
-      @if (type() === 'menu-secondary' && canWriteTitle) {
-        <div
-          class="menu-item only-item red"
-          (click)="onResetScanClick()"
-        >
-          <span class="icon">
-            <app-icon name="reset" [size]="16" />
-          </span>
-          {{ 'Reset mých změn ve skenu' | t }}
-        </div>
+      @if (type() === 'menu-secondary') {
+        @if (editor.canDownloadCrops()) {
+          <ng-container
+            [ngTemplateOutlet]="downloadItem"
+            [ngTemplateOutletContext]="{ label: 'Stáhnout ořez skenu', scope: 'scan' }"
+          />
+        }
+        @if (canWriteTitle) {
+          <div
+            class="menu-item last red"
+            (click)="onResetScanClick()"
+          >
+            <span class="icon">
+              <app-icon name="reset" [size]="16" />
+            </span>
+            {{ 'Reset mých změn ve skenu' | t }}
+          </div>
+        }
       }
+    </div>
+  </ng-template>
+
+  <!-- Crop preview download: always says it is a downscaled preview. -->
+  <ng-template #downloadItem let-label="label" let-scope="scope">
+    @let progress = editor.cropDownloadProgress();
+    <div
+      class="menu-item"
+      [class.disabled]="progress"
+      (click)="onDownloadClick(scope)"
+    >
+      <span class="icon">
+        <app-icon name="download" [size]="16" />
+      </span>
+      <span class="menu-item-text">
+        {{ label | t }}
+        <span class="menu-item-hint">
+          @if (progress && progress.total > 1) {
+            {{ 'Připravuji… {done} z {total} skenů' | t: { done: progress.done, total: progress.total } }}
+          } @else {
+            {{ 'JPEG náhled' | t }}
+          }
+        </span>
+      </span>
     </div>
   </ng-template>
 </div>

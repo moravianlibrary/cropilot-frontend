@@ -598,14 +598,20 @@
                       </span>
                     </td>
                     <td>
+                      @let upload = dashboard.uploadProgress()[title._id];
                       <span
                         class="tag state"
                         [class.info]="title.state === 'ready'"
                         [class.success]="['user_approved', 'retrain', 'completed'].includes(title.state)"
                         [class.pending]="['new', 'scheduled', 'in_progress'].includes(title.state)"
                         [class.error]="['failed'].includes(title.state)"
+                        [title]="upload ? ('Nezavírejte ani neobnovujte stránku, dokud se skeny nenahrají.' | t) : ''"
                       >
-                        {{ titleStateDict[title.state] | t }}
+                        @if (upload) {
+                          {{ 'Nahrávání {done}/{total}' | t: { done: upload.done, total: upload.total } }}
+                        } @else {
+                          {{ titleStateDict[title.state] | t }}
+                        }
                       </span>
                     </td>
                     <td class="assign-cell">

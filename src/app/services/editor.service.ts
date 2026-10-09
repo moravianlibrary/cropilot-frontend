@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { CropColorLabel, DefaultFitMode, DimColor, GridDensityLabel, GridLineWidthLabel, GridMode, HitInfo, ImageItem, ImageRect, MousePos, OutlineWidthLabel, Page, PageNumberType, ScanType, TitleDetail, UpdateImagePayload, Viewport, ImageOrientation, RotationScope } from '../app.types';
-import { catchError, Observable, throwError } from 'rxjs';
+import { catchError, firstValueFrom, Observable, throwError } from 'rxjs';
 import { clamp, degreeToRadian, getStatusColor, roundToDecimals, scrollToSelectedImage } from '../utils/utils';
 import { EnvironmentService } from './environment.service';
 import { CROP_COLOR_DEFAULT, DIM_OPACITY_DEFAULT, OUTLINE_WIDTH_DEFAULT, cropColorDict, dimColorRgba, gridColor, gridDensityDict, gridLineWidthDict, gridModeDict, outlineWidthDict, predictedColor, transparentColor } from '../app.config';
@@ -13,6 +13,8 @@ import { EditorSettingsSnapshot, TelemetryVia } from '../stats.types';
 import { shortcutAction } from '../utils/shortcut-actions';
 import { proposeNewPage } from '../utils/page-placement';
 import { t } from '../i18n/i18n';
+import { cropFileNames, CropSource, downloadBlob, loadImage, loadImageBlob, PREVIEW_MAX_SIDE, renderCropPreviews, renderTitlePreviews, safeFileName, scanFileBase } from '../utils/crop-export';
+import { createZip } from '../utils/zip';
 
 @Injectable({
   providedIn: 'root'
@@ -326,6 +328,110 @@ export class EditorService {
 
     this.ui.showToast(t('Změny skenu byly úspěšně resetovány!'), { type: 'success' });
     this.telemetry.track('reset_scan', {});
+  }
+
+  // ========== CROP PREVIEW DOWNLOAD ==========
+  // Downscaled JPEG previews (max PREVIEW_MAX_SIDE px) of the crops exactly as
+  // the editor draws them, unsaved edits included. Rendered in the browser from
+  // the /files image, so they are previews, not full-resolution crops.
+  cropDownloadProgress = signal<{ done: number; total: number } | null>(null);
+  // Group of the open title; downloading is for admins and users with the
+  // `upload` ("Správa") permission in that group only.
+  titleGroupId = signal<string>('');
+  canDownloadCrops = computed<boolean>(() => this.auth.isAdmin()
+    || !!this.auth.user()?.permissions?.find(p => p.group_id === this.titleGroupId())?.permission.includes('upload'));
+
+  async downloadScanCropPreviews(): Promise<void> {
+    const item = this.mainImageItem();
+    if (!item._id || !this.mainImage || this.cropDownloadProgress() || !this.canDownloadCrops()) return;
+
+    if (!this.currentPages.length) {
+      this.ui.showToast(t('Sken nemá žádný ořez ke stažení.'), { type: 'info' });
+      return;
+    }
+
+    this.cropDownloadProgress.set({ done: 0, total: 1 });
+    try {
+      const blobs = await renderCropPreviews(this.mainImage, this.orientation(), this.currentPages);
+      const index = this.images().findIndex(img => img._id === item._id);
+      const names = cropFileNames(scanFileBase(item.scan_name, index), blobs.length);
+      const prefix = `${safeFileName(this.titleExternalId() || this.book())}_nahled`;
+      // One JPEG per crop; a short gap between them, as browsers can drop
+      // downloads started in the same tick.
+      for (const [i, blob] of blobs.entries()) {
+        if (i) await new Promise(resolve => setTimeout(resolve, 300));
+        downloadBlob(blob, `${prefix}_${names[i]}`);
+      }
+      this.ui.showToast(this.previewNotice(), { type: 'success', duration: 6000 });
+    } catch (err) {
+      this.ui.showToast(t('Náhled ořezu se nepodařilo vytvořit. Zkuste to znovu.'), { type: 'error' });
+      console.error(err);
+    } finally {
+      this.cropDownloadProgress.set(null);
+    }
+  }
+
+  async downloadTitleCropPreviews(): Promise<void> {
+    const scans = this.images();
+    if (!scans.length || this.cropDownloadProgress() || !this.canDownloadCrops()) return;
+
+    // The open scan may hold edits that are not in images() yet.
+    const currentId = this.mainImageItem()._id;
+    const currentPages = this.currentPages;
+    const currentOrientation = this.orientation();
+    const currentImage = this.mainImage;
+    const bookId = this.book();
+    const prefix = safeFileName(this.titleExternalId() || bookId);
+
+    const sources: CropSource[] = scans.map((scan, index) => {
+      const isCurrent = scan._id === currentId && !!currentImage;
+      return {
+        fileBase: scanFileBase(scan.scan_name, index),
+        orientation: isCurrent ? currentOrientation : this.normalizeOrientation(scan.orientation),
+        pages: isCurrent ? currentPages : scan.pages.map(page => this.correctPageBounds(page)),
+        image: () => isCurrent ? Promise.resolve(currentImage!) : this.loadScanImage(scan)
+      };
+    });
+
+    this.cropDownloadProgress.set({ done: 0, total: scans.length });
+    const toastId = this.ui.showToast(
+      t('Připravuji náhledy ořezů ({n} skenů)…', { n: scans.length }),
+      { type: 'info', duration: 10 * 60 * 1000 }
+    );
+
+    try {
+      const entries = await renderTitlePreviews(sources, () => {
+        if (bookId !== this.book()) throw new Error('Title changed during download.');
+        this.cropDownloadProgress.update(p => p && { ...p, done: p.done + 1 });
+      });
+
+      if (!entries.length) {
+        this.ui.showToast(t('Titul nemá žádné ořezy ke stažení.'), { type: 'info' });
+        return;
+      }
+
+      downloadBlob(await createZip(entries), `${prefix}_nahled.zip`);
+      this.ui.showToast(this.previewNotice(), { type: 'success', duration: 6000 });
+    } catch (err) {
+      if (bookId === this.book()) {
+        this.ui.showToast(t('Náhledy ořezů se nepodařilo vytvořit. Zkuste to znovu.'), { type: 'error' });
+      }
+      console.error(err);
+    } finally {
+      this.ui.dismissToast(toastId);
+      this.cropDownloadProgress.set(null);
+    }
+  }
+
+  private previewNotice(): string {
+    return t('Staženy zmenšené náhledy ořezů (JPEG, delší strana max. {px} px), ne soubory v plném rozlišení.', { px: PREVIEW_MAX_SIDE });
+  }
+
+  // Scan image for rendering: the cached blob URL when the scan was already
+  // opened, otherwise fetched just for this and released right after.
+  private async loadScanImage(scan: ImageItem): Promise<HTMLImageElement> {
+    if (scan.url?.startsWith('blob:')) return loadImage(scan.url);
+    return loadImageBlob(await firstValueFrom(this.fetchImage(scan._id)));
   }
 
   resetDoc(): void {
