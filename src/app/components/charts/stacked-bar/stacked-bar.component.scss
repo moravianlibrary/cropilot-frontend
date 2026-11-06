@@ -49,3 +49,24 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+// Inline layout (compact strip): bar and legend side by side on one line.
+:host.inline {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-x3);
+
+  .bar {
+    flex: 1 1 120px;
+    height: var(--bar-h);
+  }
+
+  .legend {
+    margin-top: 0;
+    flex: 0 0 auto;
+
+    .item {
+      white-space: nowrap;
+    }
+  }
+}

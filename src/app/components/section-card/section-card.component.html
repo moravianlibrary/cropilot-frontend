@@ -1,0 +1,23 @@
+<section class="section-card" [class.open]="open()">
+  <div class="head">
+    <button type="button" class="toggle" (click)="toggle()" [attr.aria-expanded]="open()">
+      <span class="chevron"><app-icon name="chevron-right" [size]="14" /></span>
+      <h2>{{ title() }}</h2>
+    </button>
+    <div class="summary">
+      @for (item of summary(); track $index) {
+        <span class="item"><b>{{ item.value }}</b> {{ item.label }}</span>
+      }
+      @if (exportLabel()) {
+        <button type="button" class="icon-btn" [title]="exportLabel()" [attr.aria-label]="exportLabel()" [disabled]="exportDisabled()" (click)="exportClick.emit()">
+          <app-icon name="download" [size]="15" />
+        </button>
+      }
+    </div>
+  </div>
+  @if (open()) {
+    <div class="body">
+      <ng-content />
+    </div>
+  }
+</section>

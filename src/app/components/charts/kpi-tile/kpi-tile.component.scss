@@ -24,11 +24,78 @@
   }
 
   .value {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-x2);
+    flex-wrap: wrap;
     @include styles.font(600, var(--font-size-x4), 28px, var(--text-base));
     font-variant-numeric: tabular-nums;
   }
 
   .hint {
     @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-light));
+  }
+
+  // The page headline: primary border + soft glow, 32px number.
+  &.hero {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+
+    .value {
+      font-size: 32px;
+      line-height: 36px;
+    }
+  }
+}
+
+// "málo dat": muted chip with a dot, same construction as the permission tags.
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-x1);
+  height: 20px;
+  padding: 0 var(--spacing-x2);
+  border-radius: var(--radius-chip);
+  background-color: var(--bg-bright);
+  @include styles.font(500, var(--font-size-x0-7-5), var(--spacing-x4), var(--text-light), 0.02em);
+  white-space: nowrap;
+  vertical-align: middle;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--text-bright);
+  }
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-x2);
+  margin-top: var(--spacing-x1);
+}
+
+// Delta vs. the previous period; status colours only here (green = improvement).
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-x1);
+  @include styles.font(400, var(--font-size-x1), var(--spacing-x4), var(--text-bright));
+  white-space: nowrap;
+
+  &.good {
+    color: var(--status-icon-success);
+  }
+
+  &.bad {
+    color: var(--status-icon-error);
+  }
+
+  .vs {
+    color: var(--text-bright);
+    font-weight: 400;
   }
 }

@@ -1,0 +1,118 @@
+@use '../../../../styles' as styles;
+
+// Column widths shared by the grid and the gridline overlay.
+$label-w: 150px;
+$value-w: 96px;
+$gap: var(--spacing-x3);
+$ticks-h: 18px;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.empty {
+  padding: var(--spacing-x3) 0;
+  @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-light));
+}
+
+.phase-wrap {
+  position: relative;
+}
+
+.phases {
+  display: grid;
+  grid-template-columns: $label-w minmax(0, 1fr) $value-w;
+  row-gap: var(--spacing-x2);
+  column-gap: $gap;
+  align-items: center;
+}
+
+.pl {
+  @include styles.font(400, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-secondary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track {
+  position: relative;
+  height: 14px;
+}
+
+.fill {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  height: 10px;
+  border-radius: 0 999px 999px 0;
+  transition: width 200ms ease-out;
+
+  &.tone-machine { background-color: var(--bg-contrast); }
+  &.tone-human { background-color: var(--primary); }
+  &.tone-human-idle { background-color: var(--primary); opacity: 0.45; }
+  &.tone-integration { background-color: #7367A8; }
+}
+
+.pv {
+  @include styles.font(500, var(--font-size-x1-2-5), var(--spacing-x5), var(--text-base));
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+// Tick labels under the track column; the small stroke above each sits on the axis.
+.ticks {
+  grid-column: 2;
+  position: relative;
+  height: $ticks-h;
+
+  span {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    @include styles.font(400, var(--font-size-x0-7-5), 14px, var(--text-bright));
+    white-space: nowrap;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: -6px;
+      width: 1px;
+      height: 5px;
+      background-color: var(--border-tertiary-color);
+    }
+  }
+}
+
+// Vertical gridlines through all rows, aligned with the track column.
+.gridlines {
+  position: absolute;
+  left: calc(#{$label-w} + #{$gap});
+  right: calc(#{$value-w} + #{$gap});
+  top: 0;
+  bottom: calc(#{$ticks-h} + var(--spacing-x2));
+  pointer-events: none;
+
+  i {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: var(--border-light);
+  }
+}
+
+// Narrow cards: shorter label column.
+@media (max-width: 899px) {
+  $label-w-sm: 110px;
+
+  .phases {
+    grid-template-columns: $label-w-sm minmax(0, 1fr) $value-w;
+  }
+
+  .gridlines {
+    left: calc(#{$label-w-sm} + #{$gap});
+  }
+}

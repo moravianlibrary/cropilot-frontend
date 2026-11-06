@@ -102,3 +102,110 @@
     max-width: 100%;
   }
 }
+
+// Multi-series columns with a value axis (gridlines + ticks on the left).
+$axis-w: 40px;
+
+.grouped {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.plot {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-left: $axis-w;
+  border-bottom: 1px solid var(--border-color);
+}
+
+// Headroom above the tallest bar for its value label.
+.area {
+  position: absolute;
+  inset: 20px 0 0 0;
+}
+
+.gridline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--border-light);
+
+  .tick {
+    position: absolute;
+    right: calc(100% + var(--spacing-x1-5));
+    top: 0;
+    transform: translateY(-50%);
+  }
+}
+
+.tick {
+  @include styles.font(400, var(--font-size-x0-7-5), 14px, var(--text-bright));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  &.zero {
+    position: absolute;
+    right: calc(100% + var(--spacing-x1-5));
+    bottom: 0;
+    transform: translateY(50%);
+  }
+}
+
+.groups {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+.group {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--spacing-x1-5);
+  padding: 0 var(--spacing-x1);
+}
+
+.bar {
+  position: relative;
+  flex: 0 1 44px;
+  min-width: 6px;
+  border-radius: 3px 3px 0 0;
+  transition: height 200ms ease-out;
+
+  &.none {
+    visibility: hidden;
+  }
+
+  .bar-value {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: var(--spacing-x0-7-5);
+    @include styles.font(500, var(--font-size-x0-7-5), 14px, var(--text-secondary));
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+}
+
+.x-labels {
+  display: flex;
+  margin-left: $axis-w;
+  padding-top: var(--spacing-x1-5);
+
+  span {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+    @include styles.font(400, var(--font-size-x0-7-5), 14px, var(--text-bright));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

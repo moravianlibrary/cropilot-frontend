@@ -1,5 +1,43 @@
-@if (!data().length) {
+@if (isEmpty()) {
   <div class="empty">{{ emptyText() | t }}</div>
+} @else if (grouped()) {
+  <div class="grouped" [style.height.px]="height()">
+    <div class="plot">
+      <div class="area">
+        @for (tick of axis().ticks; track tick) {
+          <div class="gridline" [style.bottom.%]="axisPercent(tick)">
+            <span class="tick">{{ fmtTick(tick) }}</span>
+          </div>
+        }
+        <div class="groups">
+          @for (g of groups(); track g.label) {
+            <div class="group">
+              @for (s of series(); track s.label; let i = $index) {
+                @let v = g.values[i];
+                <div
+                  class="bar tip"
+                  [class.none]="v === null || v === undefined"
+                  [style.height.%]="axisPercent(v)"
+                  [style.background-color]="s.color"
+                  [attr.data-tooltip]="g.label + ' · ' + s.label + ': ' + (v === null || v === undefined ? '–' : fmtValue(v))"
+                >
+                  @if (showValues() && v !== null && v !== undefined) {
+                    <span class="bar-value">{{ fmtValue(v) }}</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+      <span class="tick zero">0</span>
+    </div>
+    <div class="x-labels">
+      @for (g of groups(); track g.label) {
+        <span>{{ g.label }}</span>
+      }
+    </div>
+  </div>
 } @else if (horizontal()) {
   <div class="rows">
     @for (d of data(); track d.label) {
@@ -9,7 +47,7 @@
           <span class="fill" [style.width.%]="percent(d.value)"></span>
         </span>
         @if (showValues()) {
-          <span class="row-value">{{ d.value }}</span>
+          <span class="row-value">{{ fmtValue(d.value) }}</span>
         }
       </div>
     }
@@ -19,7 +57,7 @@
     @for (d of data(); track d.label) {
       <div class="column" [title]="d.hint ?? d.label">
         @if (showValues()) {
-          <span class="col-value">{{ d.value }}</span>
+          <span class="col-value">{{ fmtValue(d.value) }}</span>
         }
         <span class="col-track">
           <span class="col-fill" [style.height.%]="percent(d.value)"></span>

@@ -1,0 +1,25 @@
+@if (!rows().length) {
+  <div class="empty">{{ emptyText() | t }}</div>
+} @else {
+  <div class="phase-wrap">
+    <div class="gridlines" aria-hidden="true">
+      @for (tick of ticks; track tick.seconds) {
+        <i [style.left.%]="tick.pct"></i>
+      }
+    </div>
+    <div class="phases">
+      @for (r of bars(); track r.key) {
+        <div class="pl" [attr.title]="r.tooltip || null">{{ r.label }}</div>
+        <div class="track">
+          <div class="fill" [class]="'fill tone-' + r.tone" [style.width.%]="r.pct" [attr.title]="r.label + ' · ' + format()(r.seconds)"></div>
+        </div>
+        <div class="pv">{{ format()(r.seconds) }}</div>
+      }
+      <div class="ticks">
+        @for (tick of ticks; track tick.seconds) {
+          <span [style.left.%]="tick.pct">{{ tick.label | t }}</span>
+        }
+      </div>
+    </div>
+  </div>
+}

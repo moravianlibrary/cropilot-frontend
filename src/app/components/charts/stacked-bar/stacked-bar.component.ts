@@ -24,11 +24,16 @@ const PALETTE = [
   selector: 'app-stacked-bar',
   imports: [TPipe],
   templateUrl: './stacked-bar.component.html',
-  styleUrl: './stacked-bar.component.scss'
+  styleUrl: './stacked-bar.component.scss',
+  host: {
+    '[class.inline]': 'inline()'
+  }
 })
 export class StackedBarComponent {
   segments = input.required<StackedSegment[]>();
   showLegend = input<boolean>(true);
+  // Bar and legend on one line (compact strips) instead of legend below.
+  inline = input<boolean>(false);
   emptyText = input<string>('Žádná data');
 
   total = computed<number>(() => this.segments().reduce((sum, s) => sum + s.value, 0));

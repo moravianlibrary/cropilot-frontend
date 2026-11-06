@@ -199,6 +199,40 @@ html, body {
   font-size: var(--font-size-x1-2-5);
 }
 
+// Quiet 28px icon button (section export, collapsible card header): borderless
+// until hovered, primary icon on hover.
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--control-sm);
+  height: var(--control-sm);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--icon-gray);
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease, color .15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--border-tertiary-color);
+    background-color: var(--bg-base);
+    color: var(--primary);
+  }
+
+  &:disabled {
+    color: var(--icon-disabled);
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
 .with-icon {
   padding: var(--spacing-x2) var(--spacing-x6) var(--spacing-x2) var(--spacing-x4);
   gap: var(--spacing-x2);

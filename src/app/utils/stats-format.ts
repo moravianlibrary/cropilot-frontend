@@ -36,6 +36,12 @@ export const fmtDuration = (seconds: number | null | undefined): string => {
   return s % 60 ? `${m} min ${s % 60} s` : `${m} min`;
 };
 
+// 1.84 -> "1,8 s"; 90 -> "1 min 30 s" (`decimals` below a minute, fmtDuration above)
+export const fmtSeconds = (seconds: number | null | undefined, decimals = 1): string => {
+  if (seconds === null || seconds === undefined || Number.isNaN(seconds)) return '–';
+  return seconds < 60 ? `${nf(decimals).format(seconds)} s` : fmtDuration(seconds);
+};
+
 // Date -> "YYYY-MM-DD" in local time (what the API date filters expect)
 export const toIsoDate = (date: Date): string => {
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -49,3 +55,22 @@ export const isoDaysAgo = (days: number): string => {
 };
 
 export const isoToday = (): string => toIsoDate(new Date());
+
+// "YYYY-MM-DD" -> local-time Date (new Date(iso) would parse it as UTC midnight).
+const parseIsoDate = (iso: string): Date => {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+};
+
+// The window of equal length right before [from, to] (both inclusive):
+// [from − length, from − 1 day], used for the "vs. previous period" deltas.
+export const previousRange = (from: string, to: string): { from: string; to: string } => {
+  const start = parseIsoDate(from);
+  const end = parseIsoDate(to);
+  const days = Math.max(0, Math.round((end.getTime() - start.getTime()) / 86400000));
+  const prevTo = new Date(start);
+  prevTo.setDate(prevTo.getDate() - 1);
+  const prevFrom = new Date(prevTo);
+  prevFrom.setDate(prevFrom.getDate() - days);
+  return { from: toIsoDate(prevFrom), to: toIsoDate(prevTo) };
+};

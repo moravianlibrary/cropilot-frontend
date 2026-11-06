@@ -101,6 +101,8 @@ export interface StatsOverview {
   active_users: number;
   sessions: number;
   editor_time_s: number;
+  // Active editor time (idle excluded); missing on older backends.
+  editor_active_time_s?: number;
 }
 
 export interface ReviewQualityRow extends StatsKeyed {
@@ -120,6 +122,35 @@ export interface ReviewQualityRow extends StatsKeyed {
   completed: number;
   retrain_rate: number | null;
   median_turnaround_s: number | null;
+}
+
+// GET /stats/time — machine (worker) vs. human (active editor) time per scan.
+export interface TimeRow extends StatsKeyed {
+  n_titles: number;
+  scans_total: number;
+  scans_changed: number;
+  // Worker processing (started_at → ready_at)
+  titles_with_machine: number;
+  machine_scans: number;
+  machine_total_s: number;
+  machine_s_per_scan: number | null;
+  // Active human time in the editor from heartbeats (idle excluded)
+  titles_with_review: number;
+  reviewed_scans: number;
+  reviewed_scans_changed: number;
+  review_active_total_s: number;
+  review_visible_total_s: number;
+  sessions: number;
+  review_s_per_scan: number | null;
+  review_s_per_changed_scan: number | null;
+  // Per-title medians of the pipeline phases
+  median_queue_s: number | null;          // scheduled → worker start
+  median_processing_s: number | null;     // worker start → ready
+  median_wait_review_s: number | null;    // ready → first editor open
+  median_review_active_s: number | null;  // active editor time per title
+  median_lead_s: number | null;           // title created → first save
+  median_after_save_s: number | null;     // first save → completed (integration only)
+  human_machine_ratio: number | null;     // review_active_total_s / machine_total_s
 }
 
 export interface AnomalyFlagStats {
@@ -149,6 +180,9 @@ export interface EditorUsageRow extends StatsKeyed {
   sessions: number;
   total_duration_s: number;
   mean_duration_s: number | null;
+  // Active time (idle excluded); missing on older backends.
+  total_active_s?: number;
+  mean_active_s?: number | null;
   saves: number;
   saves_per_session: number | null;
   shortcuts: number;
