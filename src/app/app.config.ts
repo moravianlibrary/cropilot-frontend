@@ -80,7 +80,7 @@ export const gridLineWidthDict: Record<GridLineWidthLabel, number> = {
   'Výrazná': 3
 };
 
-export const OUTLINE_WIDTH_DEFAULT: OutlineWidthLabel = 'Střední';
+export const OUTLINE_WIDTH_DEFAULT: OutlineWidthLabel = 'Tenký';
 export const outlineWidthDict: Record<OutlineWidthLabel, number> = {
   'Silný': 3,
   'Střední': 2,
