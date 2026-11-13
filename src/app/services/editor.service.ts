@@ -1432,6 +1432,11 @@ export class EditorService {
 
 
   // ========== ROTATING ==========
+  // Current scan's orientation turned by `delta` degrees (multiple of 90).
+  rotatedOrientation(delta: number): ImageOrientation {
+    return this.normalizeOrientation((this.orientation() + delta) as ImageOrientation);
+  }
+
   rotate(orientation: ImageOrientation): void {
     if (this.rotationScope() === 'all') {
       this.rotateAll(orientation);
@@ -2291,7 +2296,7 @@ export class EditorService {
       'Shift',                                              // + arrows = change width / height by 1
       'Control', 'Meta',                                    // + R = reset změn skenu; + shift + R = reset změn dokumentu
       'a', 'A', 's', 'S',                                   // Rotate page by 1
-      'd', 'D', 'f', 'F', 'g', 'G', 'h', 'H',               // Rotate scan
+      'd', 'D', 'f', 'F',                                   // Rotate scan counter-clockwise / clockwise
       'k', 'K',                                             // Shortcuts
       'q', 'Q', 'w', 'W', 'e', 'E', 'r', 'R',               // Zooming
       'Tab',                                                // Cycle through current pages
@@ -2305,7 +2310,7 @@ export class EditorService {
     event.preventDefault();
     event.stopPropagation();
     const dialogOpen = this.ui.dialogOpen();
-    const action = shortcutAction(event, { pageSelected: !!this.selectedPage, dialogOpen });
+    const action = shortcutAction(event, { pageSelected: !!this.selectedPage, dialogOpen, orientation: this.orientation() });
     if (action) this.telemetry.track('shortcut', { action, key });
     const canWriteTitle = this.auth.canWriteTitle();
     // Editing shortcuts are available in read mode too; only saving is restricted.
@@ -2756,12 +2761,9 @@ export class EditorService {
       this.redrawAllPages();
     }
 
-    // Rotate scan
-    if (canEditTitle && ['d', 'D', 'f', 'F', 'g', 'G', 'h', 'H'].includes(key) && !dialogOpen) {
-      if (['d', 'D'].includes(key)) this.rotate(270);
-      if (['f', 'F'].includes(key)) this.rotate(0);
-      if (['g', 'G'].includes(key)) this.rotate(90);
-      if (['h', 'H'].includes(key)) this.rotate(180);
+    // Rotate scan by 90° counter-clockwise (D) / clockwise (F)
+    if (canEditTitle && ['d', 'D', 'f', 'F'].includes(key) && !event.ctrlKey && !event.metaKey && !event.altKey && !dialogOpen) {
+      this.rotate(this.rotatedOrientation(['d', 'D'].includes(key) ? -90 : 90));
     }
 
     // Zooming

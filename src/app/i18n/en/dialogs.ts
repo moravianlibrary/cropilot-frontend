@@ -60,7 +60,7 @@ export const EN_DIALOGS: Record<string, string> = {
   'Změnit pozici výřezu (X, Y)': 'Move crop (X, Y)',
   'Změnit šířku / výšku výřezu': 'Change crop width / height',
   'Otočit výřez': 'Rotate crop',
-  'Otočit sken o -90° / 0° / 90° / 180°': 'Rotate scan by -90° / 0° / 90° / 180°',
+  'Otočit sken o 90° proti směru / po směru hodinových ručiček': 'Rotate scan 90° counter-clockwise / clockwise',
   'Přepnout zobrazení mřížky (jen pro tuto relaci)': 'Toggle grid (this session only)',
   'Přepnout zobrazení obrysu (jen pro tuto relaci)': 'Toggle outline (this session only)',
   'Přepnout barvu clony (jen pro tuto relaci)': 'Switch dim overlay color (this session only)',

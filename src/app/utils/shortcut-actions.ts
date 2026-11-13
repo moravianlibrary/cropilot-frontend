@@ -1,18 +1,17 @@
+import { ImageOrientation } from '../app.types';
 import { TelemetryAction } from '../stats.types';
 
 export interface ShortcutContext {
   pageSelected: boolean;
   dialogOpen: boolean;
+  orientation: ImageOrientation;  // current scan's orientation before the key takes effect
 }
 
 const MODIFIER_KEYS = ['Shift', 'Control', 'Meta', 'Alt'];
 const ARROWS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
-const SCAN_ROTATION: Record<string, TelemetryAction> = {
-  d: 'rotate_scan_270',
-  f: 'rotate_scan_0',
-  g: 'rotate_scan_90',
-  h: 'rotate_scan_180'
-};
+// D / F turn the scan by 90° counter-clockwise / clockwise. Reported as the
+// resulting orientation so keyboard and mouse share the rotate_scan_* actions.
+const SCAN_ROTATION: Record<string, number> = { d: -90, f: 90 };
 const FILTER_KEYS: Record<string, TelemetryAction> = {
   F1: 'filter_all',
   F2: 'filter_flagged',
@@ -62,7 +61,11 @@ export function shortcutAction(e: KeyboardEvent, ctx: ShortcutContext): Telemetr
   if (key === 'End') return 'nav_last';
 
   if (k === 'a' || k === 's') return ctx.pageSelected ? 'rotate_page' : null;
-  if (SCAN_ROTATION[k]) return SCAN_ROTATION[k];
+  if (k in SCAN_ROTATION) {
+    if (mod || e.altKey) return null;
+    const target = (((ctx.orientation + SCAN_ROTATION[k]) % 360) + 360) % 360;
+    return `rotate_scan_${target}` as TelemetryAction;
+  }
 
   if (k === 'q') return 'zoom_in';
   if (k === 'w') return 'zoom_out';
